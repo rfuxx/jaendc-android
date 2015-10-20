@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:padding="8dp"
+    >
+    <ImageView
+        android:scaleType="fitXY"
+        android:id="@+id/notification_icon"
+        android:layout_width="30sp"
+        android:layout_height="30sp"
+        android:src="@mipmap/ic_launcher" />
+    <TextView style="@style/NotificationTitle"
+        android:id="@+id/notification_app_name"
+        android:text="@string/app_name"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/notification_icon"
+        android:layout_toRightOf="@id/notification_icon"
+        />
+    <TextView style="@style/NotificationText"
+        android:text="@string/notification_exposure_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/notification_app_name"
+        />
+</RelativeLayout>

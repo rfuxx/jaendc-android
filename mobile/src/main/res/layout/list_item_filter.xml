@@ -1,0 +1,20 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="8sp"
+    android:paddingRight="8sp"
+    >
+    <TextView
+        style="?android:attr/textAppearanceLarge"
+        android:id="@+id/list_item_filter_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+    />
+    <TextView
+        style="?android:attr/textAppearanceSmall"
+        android:id="@+id/list_item_filter_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/list_item_filter_name"
+    />
+</RelativeLayout>

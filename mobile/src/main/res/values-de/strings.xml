@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">JaeNDC</string>
+    <string name="app_name_long">Just An Essential ND Calculator</string>
+    <string name="action_multi">Mehrere Filter</string>
+    <string name="action_multi_single">Einzelner Filter</string>
+    <string name="action_manage">ND-Filter bearbeiten</string>
+    <string name="action_add">Hinzufügen</string>
+    <string name="action_delete">Löschen</string>
+    <string name="action_save">Speichern</string>
+    <string name="action_mode_select_all">Alle auswählen</string>
+    <string name="action_mode_select_all_condensed">Alle</string>
+    <string name="action_mode_title">Zum Löschen auswählen</string>
+    <plurals name="action_mode_subtitle">
+        <item quantity="one">%d ausgewählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
+    <string name="edit_header_name">Name</string>
+    <string name="edit_header_nd">ND</string>
+    <string name="edit_header_factor">Faktor</string>
+    <string name="edit_header_fstops">Blendenstufen</string>
+    <string name="confirm_delete_title">Bestätigen</string>
+    <string name="confirm_delete">%s löschen?</string>
+    <string name="confirm_delete_this_filter">Diesen ND-Filter</string>
+    <plurals name="confirm_delete_multiple_filter">
+        <item quantity="one">Diesen ND-Filter löschen?</item>
+        <item quantity="other">Diese %d ND-Filter löschen?</item>
+    </plurals>
+    <string name="list_drag">Verschieben</string>
+
+    <string name="dialog_create_filters_title">Wiederherstellen</string>
+    <string name="dialog_create_filters_text">Keine ND-Filter mehr vorhanden. Sollen die Default ND-Filter wiederhergestellt werden?</string>
+
+    <string name="text_na">n/a</string>
+    <string name="text_longer_than">länger als %s</string>
+    <string name="text_longer_than_symbol">&gt; %s</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="hrs">h</string>
+    <string name="min">m</string>
+    <string name="sec">s</string>
+    <string name="factor">Faktor:</string>
+    <string name="fstops">Blendenstufen:</string>
+    <string name="notification_exposure_time">Belichtungszeit ist abgelaufen</string>
+    <string name="title_ndfilter_list">Verwaltung der ND-Filter</string>
+    <string name="title_ndfilter_detail">ND-Filter ändern</string>
+    <string name="title_ndfilter_detail_new">Neuer ND-Filter</string>
+</resources>

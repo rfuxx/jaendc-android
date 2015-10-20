@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">JaeNDC</string>
+    <string name="app_name_long">Just An Essential ND Calculator</string>
+    <string name="action_multi">Multiple Filters</string>
+    <string name="action_multi_single">Single Filter</string>
+    <string name="action_manage">Manage ND Filters</string>
+    <string name="action_add">Add</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_save">Save</string>
+    <string name="action_mode_select_all">Select All</string>
+    <string name="action_mode_select_all_condensed">All</string>
+    <string name="action_mode_title">Select to Delete</string>
+    <plurals name="action_mode_subtitle">
+        <item quantity="one">one item selected</item>
+        <item quantity="other">%d items selected</item>
+    </plurals>
+    <string name="edit_header_name">Name</string>
+    <string name="edit_header_nd">ND</string>
+    <string name="edit_header_factor">Factor</string>
+    <string name="edit_header_fstops">F&#8209;Stops</string>
+    <string name="confirm_delete_title">Confirm</string>
+    <string name="confirm_delete">Delete %s?</string>
+    <string name="confirm_delete_this_filter">this ND Filter</string>
+    <plurals name="confirm_delete_multiple_filter">
+        <item quantity="one">Delete this %d ND Filter?</item>
+        <item quantity="other">Delete these %d ND Filters?</item>
+    </plurals>
+    <string name="list_drag">Drag</string>
+
+    <string name="dialog_create_filters_title">Restore</string>
+    <string name="dialog_create_filters_text">All ND Filters have been deleted. Restore the default set of ND Filters?</string>
+
+    <string name="text_na">n/a</string>
+    <string name="text_longer_than">longer than %s</string>
+    <string name="text_longer_than_symbol">&gt; %s</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="hrs">h</string>
+    <string name="min">m</string>
+    <string name="sec">s</string>
+    <string name="factor">Factor:</string>
+    <string name="fstops">f-stops:</string>
+    <string name="notification_exposure_time">Exposure time is over</string>
+    <string name="title_ndfilter_list">Manage ND Filters</string>
+    <string name="title_ndfilter_detail">Edit ND Filter</string>
+    <string name="title_ndfilter_detail_new">New ND Filter</string>
+</resources>

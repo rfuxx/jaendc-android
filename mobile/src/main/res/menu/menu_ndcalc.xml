@@ -1,0 +1,6 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".NDCalcActivity">
+    <item android:id="@+id/action_multiselect" android:title="@string/action_multi"
+        android:icon="@drawable/ic_multiselect_old" android:checkable="true" android:showAsAction="ifRoom"/>
+</menu>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="NotificationTitle" parent="@android:style/TextAppearance.StatusBar.EventContent.Title">
+        <!-- Customize your theme here. -->
+    </style>
+    <style name="NotificationText" parent="@android:style/TextAppearance.StatusBar.EventContent">
+        <!-- Customize your theme here. -->
+    </style>
+
+</resources>

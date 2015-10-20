@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="de.westfalen.fuldix.jaendc" >
+
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="de.westfalen.fuldix.jaendc.NDCalculatorActivity"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="de.westfalen.fuldix.jaendc.manage.NDFilterListActivity"
+            android:label="@string/title_ndfilter_list"
+            android:parentActivityName="de.westfalen.fuldix.jaendc.NDCalculatorActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.westfalen.fuldix.jaendc.NDCalculatorActivity" />
+        </activity>
+        <activity
+            android:name="de.westfalen.fuldix.jaendc.manage.NDFilterDetailActivity"
+            android:label="@string/title_ndfilter_detail"
+            android:parentActivityName="de.westfalen.fuldix.jaendc.manage.NDFilterListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="de.westfalen.fuldix.jaendc.manage.NDFilterListActivity" />
+        </activity>
+        <receiver android:name="de.westfalen.fuldix.jaendc.CalculatorAlarm" />
+        <receiver android:name="de.westfalen.fuldix.jaendc.NotificationCanceler" />
+        <receiver android:name="de.westfalen.fuldix.jaendc.RingtoneStopper" />
+    </application>
+
+</manifest>
