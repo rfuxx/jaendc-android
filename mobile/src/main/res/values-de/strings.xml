@@ -17,7 +17,7 @@
     <string name="edit_header_name">Name</string>
     <string name="edit_header_nd">ND</string>
     <string name="edit_header_factor">Faktor</string>
-    <string name="edit_header_fstops">Blendenstufen</string>
+    <string name="edit_header_fstops">Blenden</string>
     <string name="confirm_delete_title">Bestätigen</string>
     <string name="confirm_delete">%s löschen?</string>
     <string name="confirm_delete_this_filter">Diesen ND-Filter</string>
