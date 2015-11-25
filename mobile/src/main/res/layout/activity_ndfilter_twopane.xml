@@ -18,10 +18,10 @@
     -->
 
     <fragment android:id="@+id/ndfilter_list" android:name="de.westfalen.fuldix.jaendc.manage.NDFilterListFragment"
-        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+        android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_weight="9"
         tools:layout="@android:layout/list_content" />
 
-    <FrameLayout android:id="@+id/ndfilter_detail_container" android:layout_width="0dp"
-        android:layout_height="match_parent" android:layout_weight="3" />
+    <FrameLayout android:id="@+id/ndfilter_detail_container" android:layout_width="wrap_content"
+        android:layout_height="match_parent" android:layout_weight="4" />
 
 </LinearLayout>
