@@ -153,7 +153,9 @@ public class NDFilterListActivity extends Activity
             // In two-pane mode, delete the currently selected filter
             // which is displayed in the detail pane
             final NDFilterDetailFragment fr = (NDFilterDetailFragment) getFragmentManager().findFragmentById(R.id.ndfilter_detail_container);
-            fr.actionDelete(); // this will call onDetailDeleteDone when done.
+            if(fr != null) {
+                fr.actionDelete(); // this will call onDetailDeleteDone when done.
+            }
         } else {
             // in single-pane mode... use ActionMode
             // to allow selection of filters for deletion
