@@ -69,13 +69,15 @@ public class CalculatorAlarm extends BroadcastReceiver {
             }
             if(ringerMode == AudioManager.RINGER_MODE_NORMAL) {
                 Ringtone r = RingtoneManager.getRingtone(context, sound);
-                if (Build.VERSION.SDK_INT >= 21) {
-                    ringtoneSetAudioAttributes(r);
-                } else {
-                    r.setStreamType(AudioManager.STREAM_ALARM);
+                if(r != null) {
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        ringtoneSetAudioAttributes(r);
+                    } else {
+                        r.setStreamType(AudioManager.STREAM_ALARM);
+                    }
+                    r.play();
+                    RingtoneStopper.schedule(context, r);
                 }
-                r.play();
-                RingtoneStopper.schedule(context, r);
             }
         } else {
             Intent cIntent = new Intent(context, NDCalculatorActivity.class);
@@ -168,7 +170,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
     }
 
     @TargetApi(21)
-    private static void ringtoneSetAudioAttributes(Ringtone r) {
+    private static void ringtoneSetAudioAttributes(final Ringtone r) {
         r.setAudioAttributes(mkAudioAttributes());
     }
 }
