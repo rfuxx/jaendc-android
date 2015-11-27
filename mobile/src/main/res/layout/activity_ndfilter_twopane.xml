@@ -18,10 +18,13 @@
     -->
 
     <fragment android:id="@+id/ndfilter_list" android:name="de.westfalen.fuldix.jaendc.manage.NDFilterListFragment"
-        android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_weight="9"
+        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="3"
         tools:layout="@android:layout/list_content" />
 
-    <FrameLayout android:id="@+id/ndfilter_detail_container" android:layout_width="wrap_content"
+    <FrameLayout android:id="@+id/ndfilter_detail_container" android:layout_width="0dp"
         android:layout_height="match_parent" android:layout_weight="4" />
-
+<!--
+Use 0dp in order to ensure that layout_weight is used correctly, according to
+http://www.chess-ix.com/blog/the-use-of-layout_weight-with-android-layouts/
+-->
 </LinearLayout>
