@@ -1,6 +1,8 @@
 package de.westfalen.fuldix.jaendc.model;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import de.westfalen.fuldix.jaendc.R;
 
@@ -8,7 +10,23 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 
-public class NDFilter {
+public class NDFilter implements Parcelable {
+    public static Parcelable.Creator<NDFilter> CREATOR = new Parcelable.Creator<NDFilter>() {
+        @Override
+        public NDFilter createFromParcel(Parcel source) {
+            return new NDFilter(
+                    source.readLong(),
+                    source.readString(),
+                    source.readInt(),
+                    source.readInt()
+            );
+        }
+
+        @Override
+        public NDFilter[] newArray(int size) {
+            return new NDFilter[size];
+        }
+    };
     private static final double log2 = Math.log(2);
     public final NumberFormat decimalFormat = new DecimalFormat("#,###,###,###,##0.#");
     public final DecimalFormat textEnterFormat = new DecimalFormat("############0.#");
@@ -93,6 +111,16 @@ public class NDFilter {
         return "ND " + decimalFormat.format(getND()) + " | " + context.getString(R.string.factor) + decimalFormat.format(factor) + " | " + context.getString(R.string.fstops) + decimalFormat.format(getFstops());
     }
 
+    @Override
+    public int hashCode(){
+        return (int) id;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return (other instanceof NDFilter) && (this.id == ((NDFilter) other).id);
+    }
+
     public static boolean isValidND(double nd) {
         int factor = (int) Math.round(Math.pow(10, nd));
         double fstops = Math.log(factor)/log2;
@@ -127,4 +155,17 @@ public class NDFilter {
             new NDFilter(-12, "BW 113", 10000),
             new NDFilter(-13, "BW 120", 1000000)
     };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(id);
+        dest.writeString(name);
+        dest.writeInt(factor);
+        dest.writeInt(orderpos);
+    }
 }

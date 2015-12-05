@@ -29,39 +29,16 @@ import java.util.StringTokenizer;
 
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
-import de.westfalen.fuldix.jaendc.text.CameraTimeFormat;
+import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
 import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 
 public class Calculator implements ListView.OnItemClickListener, CompoundButton.OnCheckedChangeListener, Runnable {
-    private final static double[] times = { 1d/8000, 1d/6400, 1d/5000,
-            1d/4000, 1d/3200, 1d/2500,
-            1d/2000, 1d/1600, 1d/1250,
-            1d/1000, 1d/800, 1d/640,
-            1d/500, 1d/400, 1d/320,
-            1d/250, 1d/200, 1d/160,
-            1d/125, 1d/100, 1d/80,
-            1d/60, 1d/50, 1d/40,
-            1d/30, 1d/25, 1d/20,
-            1d/15, 1d/12, 1d/10,
-            1d/8, 1d/6, 1d/5,
-            1d/4, 0.3d, 0.4d,
-            0.5d, 0.6d, 0.8d,
-            1, 1.3d, 1.6d,
-            2, 2.5d, 3.2d,
-            3, 5, 6,
-            8, 10, 13,
-            15, 20, 25,
-            30
-    };
-    private final String[] timeTexts;
-
     private static final String PERS_TIMER_ENDING = "timer_ending";
     private static final String PERS_MULTISELECT = "multiselect";
     private static final String PERS_TIMELIST_CHECKED_INDEX = "timeList.checkedIndex";
     private static final String PERS_FILTERLIST_CHECKED_IDS = "filterList.checkedIds";
 
-    private final NumberFormat cameraTimeFormat = new CameraTimeFormat();
     private final NumberFormat clearTextTimeFormat = new ClearTextTimeFormat();
     private final NumberFormat outputTimeFormat = new OutputTimeFormat();
 
@@ -89,18 +66,14 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     public Calculator(final Activity activity)
     {
-        timeTexts = new String[times.length];
-        for(int i=timeTexts.length-1; i>=0; i--) {
-            timeTexts[i] = cameraTimeFormat.format(times[i]);
-        }
         context = activity;
         filterList = (ListView) activity.findViewById(R.id.filterList);
         filterAdapter = new NDFilterAdapter(activity);
         final ArrayAdapter<String> timeAdapter;
         if (Build.VERSION.SDK_INT >= 11) {
-            timeAdapter = new ArrayAdapter<>(activity, R.layout.list_item_single, timeTexts);
+            timeAdapter = new ArrayAdapter<>(activity, R.layout.list_item_single, Time.getTimeTexts());
         } else {
-            timeAdapter = new HighlightSelectionArrayAdapter<>(activity, R.layout.list_item_single, timeTexts);
+            timeAdapter = new HighlightSelectionArrayAdapter<>(activity, R.layout.list_item_single, Time.getTimeTexts());
         }
         timeList = (ListView) activity.findViewById(R.id.timeList);
         timeList.setAdapter(timeAdapter);
@@ -208,7 +181,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             largeTime.setText(R.string.text_na);
             smallTime.setText(R.string.text_na);
         } else {
-            double time = times[timePos];
+            double time = Time.times[timePos];
             SparseBooleanArray states = filterList.getCheckedItemPositions();
             for(int f=0; f<filterAdapter.getCount(); f++) {
                 NDFilter filter = filterAdapter.getItem(f);
@@ -219,7 +192,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             if(time < Integer.MAX_VALUE / 1000) {
                 largeTime.setText(outputTimeFormat.format(time));
                 smallTime.setText(clearTextTimeFormat.format(time));
-                if (time >= 4) {
+                if (time >= 4.0) {
                     startStopButton.setVisibility(View.VISIBLE);
                     progressBar.setMax((int) (time * 1000));
                 } else {
