@@ -259,8 +259,8 @@ public class AppWidget extends AppWidgetProvider{
                     int delayToNext;
                     if (width > 0) {
                         delayToNext = data.ndtimeMillis / width; // mdTimeMillis/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
-                        if (delayToNext < 50) {
-                            delayToNext = 50;
+                        if (delayToNext < 20) {
+                            delayToNext = 20;
                         }
                     } else {
                         delayToNext = remaining;

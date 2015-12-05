@@ -250,8 +250,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             int delayToNext;
             if(width > 0) {
                 delayToNext = milliseconds / width; // milliseconds/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
-                if (delayToNext < 50) {
-                    delayToNext = 50;
+                if (delayToNext < 20) {
+                    delayToNext = 20;
                 }
             } else {
                 delayToNext = remaining;
