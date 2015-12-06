@@ -33,7 +33,7 @@ public class AppWidget extends AppWidgetProvider{
     private static class NDCalcData {
         double time;
         Set<NDFilter> filters = new HashSet<>();
-        int ndtimeMillis;
+        double ndtime;
         long timerEnding;
         int showTimer = 4;
         Uri alarmTone;
@@ -41,6 +41,7 @@ public class AppWidget extends AppWidgetProvider{
         Handler myHandler;
         Runnable timerRunner;
         Ringtone ringtonePlaying;
+        Runnable ringtoneStopperRunner;
     }
 
     private static class TimerRunner implements Runnable {
@@ -58,18 +59,19 @@ public class AppWidget extends AppWidgetProvider{
             if (remaining > 0) {
                 final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
                 final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
+                final int ndtimeMillis = (int) (data.ndtime*1000);
                 remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                 remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
                 remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
                 remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
                 // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
                 // strictly need onthe the below
-                remoteViews.setProgressBar(R.id.progressBar, data.ndtimeMillis, remaining, false);
+                remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, remaining, false);
                 appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
                 final int width = 600; // should actually be something like progressBar.getWidth(); -- if only we could query the remoteview about its size...
                 int delayToNext;
                 if (width > 0) {
-                    delayToNext = data.ndtimeMillis / width; // mdTimeMillis/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
+                    delayToNext = ndtimeMillis / width; // mdTimeMillis/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
                     if (delayToNext < 20) {
                         delayToNext = 20;
                     }
@@ -82,16 +84,25 @@ public class AppWidget extends AppWidgetProvider{
                 if(data.alarmTone != null) {
                     data.ringtonePlaying = RingtoneManager.getRingtone(context, data.alarmTone);
                     data.ringtonePlaying.play();
-                    data.myHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (data.ringtonePlaying != null) {
-                                data.ringtonePlaying.stop();
-                                data.ringtonePlaying = null;
-                            }
-                        }
-                    }, 30*1000);
+                    data.ringtoneStopperRunner = new RingtoneStopperRunner(appWidgetId);
+                    data.myHandler.postDelayed(data.ringtoneStopperRunner, 30*1000);
                 }
+            }
+        }
+    }
+
+    private static class RingtoneStopperRunner implements Runnable {
+        private final int appWidgetId;
+        RingtoneStopperRunner(final int appWidgetId) {
+            this.appWidgetId = appWidgetId;
+        }
+        @Override
+        public void run() {
+            NDCalcData data = getWidgetData(appWidgetId);
+            if (data.ringtonePlaying != null) {
+                data.ringtonePlaying.stop();
+                data.ringtonePlaying = null;
+                data.ringtoneStopperRunner = null;
             }
         }
     }
@@ -135,13 +146,7 @@ public class AppWidget extends AppWidgetProvider{
     public void onAppWidgetOptionsChanged(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId, final Bundle newOptions) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
 
-        final NDCalcData data = getWidgetData(appWidgetId);
-        data.showTimer = newOptions.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
-        data.transparency = newOptions.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
-        final String alarmToneStr = newOptions.getString(ConfigActivity.ALARM_TONE);
-        if(alarmToneStr != null){
-            data.alarmTone = Uri.parse(alarmToneStr);
-        }
+        // the changed newOptions() data is already handled in updateAppWidget()
         updateAppWidget(context, appWidgetManager, appWidgetId);
     }
 
@@ -163,6 +168,8 @@ public class AppWidget extends AppWidgetProvider{
         if(data.ringtonePlaying != null) {
             data.ringtonePlaying.stop();
             data.ringtonePlaying = null;
+            data.myHandler.removeCallbacks(data.ringtoneStopperRunner);
+            data.ringtoneStopperRunner = null;
         }
         switch(intent.getAction()) {
             case "de.westfalen.fuldix.jaendc.time_list":
@@ -184,10 +191,28 @@ public class AppWidget extends AppWidgetProvider{
             case "de.westfalen.fuldix.jaendc.stop_button":
                 stopTimer(context, appWidgetId);
                 break;
+            case "de.westfalen.fuldix.jaendc.config_button":
+                final Intent configIntent = new Intent(context, ConfigActivity.class);
+                configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                configIntent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+                context.startActivity(configIntent);
+                break;
         }
     }
 
     private static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId){
+        final NDCalcData data = getWidgetData(appWidgetId);
+        if (android.os.Build.VERSION.SDK_INT >= 16) {
+            final Bundle widgetOption = appWidgetManager.getAppWidgetOptions(appWidgetId);
+            data.showTimer = widgetOption.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
+            data.transparency = widgetOption.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
+            final String alarmToneStr = widgetOption.getString(ConfigActivity.ALARM_TONE);
+            if (alarmToneStr != null) {
+                data.alarmTone = Uri.parse(alarmToneStr);
+            }
+        }
+
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
 
         final int transpValue = 255 - getWidgetData(appWidgetId).transparency * 255 / 100;
@@ -199,6 +224,31 @@ public class AppWidget extends AppWidgetProvider{
 
         setupButtonIntent(context, appWidgetId, remoteViews, R.id.startButton, "de.westfalen.fuldix.jaendc.start_button");
         setupButtonIntent(context, appWidgetId, remoteViews, R.id.stopButton, "de.westfalen.fuldix.jaendc.stop_button");
+        setupButtonIntent(context, appWidgetId, remoteViews, R.id.configButton, "de.westfalen.fuldix.jaendc.config_button");
+
+
+        // when options about showTime have changed, adjust current visibilities and stop existing timer
+        if (data.showTimer > 0 && data.ndtime >= data.showTimer) {
+            if(data.timerEnding > 0 && data.myHandler != null && data.timerRunner != null) {
+                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+            } else {
+                remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+            }
+            remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+        } else {
+            remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+            remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+            remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
+            remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
+            remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
+            remoteViews.setProgressBar(R.id.progressBar, (int) (data.ndtime * 1000), 0, false);
+            if(data.timerEnding > 0 && data.myHandler != null && data.timerRunner != null) {
+                data.myHandler.removeCallbacks(data.timerRunner);
+                data.timerEnding = 0;
+            }
+        }
 
         remoteViews.setScrollPosition(R.id.timeList, 16);
 
@@ -274,20 +324,19 @@ public class AppWidget extends AppWidgetProvider{
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
-        double ndtime = data.time;
+        data.ndtime = data.time;
         for(final NDFilter filter : data.filters) {
-            ndtime *= filter.getFactor();
+            data.ndtime *= filter.getFactor();
         }
         final String largeTimeText;
         final String smallTimeText;
-        if(ndtime < Integer.MAX_VALUE / 1000) {
-            if (ndtime > 0.0) {
-                largeTimeText = outputTimeFormat.format(ndtime);
-                smallTimeText = clearTextTimeFormat.format(ndtime);
-                if (data.showTimer > 0 && ndtime >= data.showTimer) {
+        if(data.ndtime < Integer.MAX_VALUE / 1000) {
+            if (data.ndtime > 0.0) {
+                largeTimeText = outputTimeFormat.format(data.ndtime);
+                smallTimeText = clearTextTimeFormat.format(data.ndtime);
+                if (data.showTimer > 0 && data.ndtime >= data.showTimer) {
                     remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
-                    data.ndtimeMillis = (int) ndtime * 1000;
                 } else {
                     remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
@@ -309,13 +358,14 @@ public class AppWidget extends AppWidgetProvider{
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
+        final int ndtimeMillis = (int) (data.ndtime*1000);
         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
         remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
-        remoteViews.setProgressBar(R.id.progressBar, data.ndtimeMillis, data.ndtimeMillis, false);
+        remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, ndtimeMillis, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
-        data.timerEnding = SystemClock.elapsedRealtime() + data.ndtimeMillis;
+        data.timerEnding = SystemClock.elapsedRealtime() + ndtimeMillis;
         if(data.myHandler == null) {
             data.myHandler = new Handler();
         }
@@ -331,7 +381,7 @@ public class AppWidget extends AppWidgetProvider{
         final NDCalcData data = getWidgetData(appWidgetId);
         remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
         remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
-        remoteViews.setProgressBar(R.id.progressBar, data.ndtimeMillis, 0, false);
+        remoteViews.setProgressBar(R.id.progressBar, (int) (data.ndtime * 1000), 0, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);

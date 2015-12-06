@@ -92,7 +92,12 @@ public class ConfigActivity extends Activity {
                 if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                     final Bundle options = AppWidgetManager.getInstance(this).getAppWidgetOptions(appWidgetId);
                     showTimerValue = options.getInt(SHOW_TIMER, showTimerValue);
-                    alarmTone = options.getParcelable(ALARM_TONE);
+                    final String alarmToneStr = options.getString(ALARM_TONE);
+                    if(alarmToneStr != null){
+                        alarmTone = Uri.parse(alarmToneStr);
+                    } else {
+                        alarmTone = null;
+                    }
                     transparencyValue = options.getInt(TRANSPARENCY, transparencyValue);
                 }
             }

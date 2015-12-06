@@ -6,6 +6,20 @@
     android:id="@+id/widget"
     tools:context=".AppWidget">
 
+    <Button
+        style="?android:attr/borderlessButtonStyle"
+        android:id="@+id/configButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:padding="8sp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="&#9881;"
+        android:textSize="20sp"
+        />
     <TextView
         android:id="@+id/largeTime"
         android:layout_width="wrap_content"
