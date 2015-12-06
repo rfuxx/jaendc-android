@@ -63,6 +63,38 @@
         android:layout_below="@id/alarmToneButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/config_alarm_duration"
+        android:id="@+id/alarmDurationLabel"
+        android:labelFor="@+id/alarmDurationSeek"
+        android:paddingTop="12sp"
+        />
+
+    <SeekBar
+        android:layout_below="@id/alarmDurationLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/alarmDurationSeek"
+        android:paddingTop="4dp"
+        android:max="299"
+        />
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBaseline="@id/alarmDurationLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:id="@+id/alarmDurationValue"
+        android:paddingTop="4dp"
+        />
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_below="@id/alarmDurationSeek"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/config_transparency"
         android:id="@+id/transparencyLabel"
         android:labelFor="@+id/transparencySeek"

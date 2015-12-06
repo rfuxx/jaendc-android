@@ -16,13 +16,15 @@ import de.westfalen.fuldix.jaendc.R;
 
 public class ConfigActivity extends Activity {
     static final String SHOW_TIMER = "showTimer";
-    static final String ALARM_TONE = "alarmTOne";
+    static final String ALARM_TONE = "alarmTone";
+    static final String ALARM_DURATION = "alarmDuration";
     static final String TRANSPARENCY = "transparency";
     private static final int PICK_RINGTONE = 1;
     private Button alarmToneButton;
     private int showTimerValue = 4;
     private int transparencyValue = 33;
     private Uri alarmTone;
+    private int alarmDurationValue = 29;
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
     @Override
@@ -38,7 +40,9 @@ public class ConfigActivity extends Activity {
         final SeekBar transparencyBar = (SeekBar) findViewById(R.id.transparencySeek);
         final TextView transparencyText = (TextView) findViewById(R.id.transparencyValue);
         final Button applyButton = (Button) findViewById(R.id.applyButton);
-        showTimerBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        final SeekBar alarmDurationBar = (SeekBar) findViewById(R.id.alarmDurationSeek);
+        final TextView alarmDurationText = (TextView) findViewById(R.id.alarmDurationValue);
+        final SeekBar.OnSeekBarChangeListener showTimerSeekBarListener = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
                 final String text;
@@ -50,6 +54,7 @@ public class ConfigActivity extends Activity {
                 showTimerText.setText(text);
                 showTimerValue = progress;
             }
+
             @Override
             public void onStartTrackingTouch(final SeekBar seekBar) {
             }
@@ -57,7 +62,7 @@ public class ConfigActivity extends Activity {
             @Override
             public void onStopTrackingTouch(final SeekBar seekBar) {
             }
-        });
+        };
         alarmToneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -70,7 +75,22 @@ public class ConfigActivity extends Activity {
                 startActivityForResult(intent, PICK_RINGTONE);
             }
         });
-        transparencyBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        final SeekBar.OnSeekBarChangeListener alarmDurationSeekBarListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
+                alarmDurationText.setText(String.format(getString(R.string.config_alarm_duration_value), progress+1));
+                alarmDurationValue = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(final SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(final SeekBar seekBar) {
+            }
+        };
+        final SeekBar.OnSeekBarChangeListener transparencySeekBarListner = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
                 transparencyText.setText(String.format(getString(R.string.config_transparency_value), progress));
@@ -82,7 +102,7 @@ public class ConfigActivity extends Activity {
             @Override
             public void onStopTrackingTouch(final SeekBar seekBar) {
             }
-        });
+        };
 
         final Intent intent = getIntent();
         final Bundle extras = intent.getExtras();
@@ -98,11 +118,15 @@ public class ConfigActivity extends Activity {
                     } else {
                         alarmTone = null;
                     }
+                    alarmDurationValue = options.getInt(ALARM_DURATION, alarmDurationValue);
                     transparencyValue = options.getInt(TRANSPARENCY, transparencyValue);
                 }
             }
         }
+
         showTimerBar.setProgress(showTimerValue);
+        showTimerSeekBarListener.onProgressChanged(showTimerBar, showTimerValue, false);
+        showTimerBar.setOnSeekBarChangeListener(showTimerSeekBarListener);
         if(alarmTone == null && appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             final Uri uriFromSystem = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
             final Ringtone ringtone = RingtoneManager.getRingtone(this, uriFromSystem);
@@ -116,8 +140,12 @@ public class ConfigActivity extends Activity {
         } else {
             alarmToneButton.setText(getString(R.string.config_alarm_tone_silent));
         }
+        alarmDurationBar.setProgress(alarmDurationValue);
+        alarmDurationSeekBarListener.onProgressChanged(alarmDurationBar, alarmDurationValue, false);
+        alarmDurationBar.setOnSeekBarChangeListener(alarmDurationSeekBarListener);
         transparencyBar.setProgress(transparencyValue);
-
+        transparencySeekBarListner.onProgressChanged(transparencyBar, transparencyValue, false);
+        transparencyBar.setOnSeekBarChangeListener(transparencySeekBarListner);
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -128,6 +156,7 @@ public class ConfigActivity extends Activity {
                         if (alarmTone != null) {
                             bundle.putString(ALARM_TONE, alarmTone.toString());
                         }
+                        bundle.putInt(ALARM_DURATION, alarmDurationValue);
                         bundle.putInt(TRANSPARENCY, transparencyValue);
                         AppWidgetManager.getInstance(ConfigActivity.this).updateAppWidgetOptions(appWidgetId, bundle);
                     }

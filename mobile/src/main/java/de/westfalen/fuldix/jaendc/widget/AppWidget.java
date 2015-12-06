@@ -37,6 +37,7 @@ public class AppWidget extends AppWidgetProvider{
         long timerEnding;
         int showTimer = 4;
         Uri alarmTone;
+        int alarmDuration = 29;
         int transparency = 33;
         Handler myHandler;
         Runnable timerRunner;
@@ -85,7 +86,7 @@ public class AppWidget extends AppWidgetProvider{
                     data.ringtonePlaying = RingtoneManager.getRingtone(context, data.alarmTone);
                     data.ringtonePlaying.play();
                     data.ringtoneStopperRunner = new RingtoneStopperRunner(appWidgetId);
-                    data.myHandler.postDelayed(data.ringtoneStopperRunner, 30*1000);
+                    data.myHandler.postDelayed(data.ringtoneStopperRunner, (data.alarmDuration+1)*1000);
                 }
             }
         }
@@ -206,6 +207,7 @@ public class AppWidget extends AppWidgetProvider{
         if (android.os.Build.VERSION.SDK_INT >= 16) {
             final Bundle widgetOption = appWidgetManager.getAppWidgetOptions(appWidgetId);
             data.showTimer = widgetOption.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
+            data.alarmDuration = widgetOption.getInt(ConfigActivity.ALARM_DURATION, data.alarmDuration);
             data.transparency = widgetOption.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
             final String alarmToneStr = widgetOption.getString(ConfigActivity.ALARM_TONE);
             if (alarmToneStr != null) {
