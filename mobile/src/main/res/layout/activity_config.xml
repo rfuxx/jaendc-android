@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="de.westfalen.fuldix.jaendc.widget.ConfigActivity">
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/config_show_timer"
+        android:id="@+id/showTimerLabel"
+        android:labelFor="@+id/showTimerSeek"
+        />
+
+    <SeekBar
+        android:layout_below="@id/showTimerLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/showTimerSeek"
+        android:paddingTop="4dp"
+        android:max="60"
+        />
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBaseline="@id/showTimerLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:id="@+id/showTimerValue"
+        android:paddingTop="4dp"
+        />
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_below="@id/showTimerSeek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/config_alarm_tone"
+        android:id="@+id/alarmToneLabel"
+        android:labelFor="@+id/alarmToneButton"
+        android:paddingTop="12sp"
+        />
+
+    <Button
+        style="@android:style/TextAppearance.Medium"
+        android:layout_below="@id/alarmToneLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/alarmToneButton"
+        />
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_below="@id/alarmToneButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/config_transparency"
+        android:id="@+id/transparencyLabel"
+        android:labelFor="@+id/transparencySeek"
+        android:paddingTop="12sp"
+        />
+
+    <SeekBar
+        android:layout_below="@id/transparencyLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/transparencySeek"
+        android:paddingTop="4dp"
+        android:max="100"
+        />
+
+    <TextView
+        style="@android:style/TextAppearance.Medium"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBaseline="@id/transparencyLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:id="@+id/transparencyValue"
+        android:paddingTop="4dp"
+        />
+
+    <Button
+        style="@android:style/TextAppearance.Medium"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/applyButton"
+        android:text="@string/config_apply"
+        />
+
+</RelativeLayout>

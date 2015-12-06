@@ -26,9 +26,9 @@
         </activity>
         <activity
             android:name=".manage.NDFilterListActivity"
+            android:exported="false"
             android:label="@string/title_ndfilter_list"
-            android:parentActivityName=".NDCalculatorActivity"
-            android:exported="false">
+            android:parentActivityName=".NDCalculatorActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="de.westfalen.fuldix.jaendc.NDCalculatorActivity" />
@@ -42,10 +42,19 @@
                 android:value="de.westfalen.fuldix.jaendc.manage.NDFilterListActivity" />
         </activity>
 
-        <receiver android:name=".CalculatorAlarm" android:exported="false"/>
-        <receiver android:name=".NotificationCanceler" android:exported="false"/>
-        <receiver android:name=".RingtoneStopper" android:exported="false" />
-        <receiver android:name=".widget.AppWidget" android:label="@string/widget_label" android:enabled="true">
+        <receiver
+            android:name=".CalculatorAlarm"
+            android:exported="false" />
+        <receiver
+            android:name=".NotificationCanceler"
+            android:exported="false" />
+        <receiver
+            android:name=".RingtoneStopper"
+            android:exported="false" />
+        <receiver
+            android:name=".widget.AppWidget"
+            android:enabled="true"
+            android:label="@string/widget_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="de.westfalen.fuldix.jaendc.time_list" />
@@ -58,6 +67,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/app_widget_info" />
         </receiver>
+
         <service
             android:name=".widget.TimeListService"
             android:exported="false"
@@ -66,6 +76,15 @@
             android:name=".widget.NDFilterListService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <activity
+            android:name=".widget.ConfigActivity"
+            android:label="@string/title_activity_config"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

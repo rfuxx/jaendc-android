@@ -7,6 +7,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,7 +35,67 @@ public class AppWidget extends AppWidgetProvider{
         Set<NDFilter> filters = new HashSet<>();
         int ndtimeMillis;
         long timerEnding;
+        int showTimer = 4;
+        Uri alarmTone;
+        int transparency = 33;
+        Handler myHandler;
+        Runnable timerRunner;
+        Ringtone ringtonePlaying;
     }
+
+    private static class TimerRunner implements Runnable {
+        private final Context context;
+        private final int appWidgetId;
+        TimerRunner(final Context context, final int appWidgetId) {
+            this.appWidgetId = appWidgetId;
+            this.context = context;
+        }
+        @Override
+        public void run() {
+            final NDCalcData data = getWidgetData(appWidgetId);
+            final long current = SystemClock.elapsedRealtime();
+            final int remaining = (int) (data.timerEnding - current);
+            if (remaining > 0) {
+                final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
+                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+                remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
+                remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
+                // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
+                // strictly need onthe the below
+                remoteViews.setProgressBar(R.id.progressBar, data.ndtimeMillis, remaining, false);
+                appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
+                final int width = 600; // should actually be something like progressBar.getWidth(); -- if only we could query the remoteview about its size...
+                int delayToNext;
+                if (width > 0) {
+                    delayToNext = data.ndtimeMillis / width; // mdTimeMillis/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
+                    if (delayToNext < 20) {
+                        delayToNext = 20;
+                    }
+                } else {
+                    delayToNext = remaining;
+                }
+                data.myHandler.postDelayed(this, delayToNext);
+            } else {
+                stopTimer(context, appWidgetId);
+                if(data.alarmTone != null) {
+                    data.ringtonePlaying = RingtoneManager.getRingtone(context, data.alarmTone);
+                    data.ringtonePlaying.play();
+                    data.myHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (data.ringtonePlaying != null) {
+                                data.ringtonePlaying.stop();
+                                data.ringtonePlaying = null;
+                            }
+                        }
+                    }, 30*1000);
+                }
+            }
+        }
+    }
+
     private static final boolean multiselect = false; // due to limitations that we have no influence and are not even notified about screen orientation change - and the list views do not even keep their "checked items" states then :-(
     private static final NumberFormat clearTextTimeFormat = new ClearTextTimeFormat();
     private static final NumberFormat outputTimeFormat = new OutputTimeFormat();
@@ -71,8 +133,16 @@ public class AppWidget extends AppWidgetProvider{
 
     @Override
     public void onAppWidgetOptionsChanged(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId, final Bundle newOptions) {
-        System.out.println("JaeNDC AppWidget onAppWidgetOptionsChanged");
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
+
+        final NDCalcData data = getWidgetData(appWidgetId);
+        data.showTimer = newOptions.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
+        data.transparency = newOptions.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
+        final String alarmToneStr = newOptions.getString(ConfigActivity.ALARM_TONE);
+        if(alarmToneStr != null){
+            data.alarmTone = Uri.parse(alarmToneStr);
+        }
+        updateAppWidget(context, appWidgetManager, appWidgetId);
     }
 
     @Override
@@ -88,6 +158,11 @@ public class AppWidget extends AppWidgetProvider{
         int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         if(appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             return;
+        }
+        NDCalcData data = getWidgetData(appWidgetId);
+        if(data.ringtonePlaying != null) {
+            data.ringtonePlaying.stop();
+            data.ringtonePlaying = null;
         }
         switch(intent.getAction()) {
             case "de.westfalen.fuldix.jaendc.time_list":
@@ -112,9 +187,11 @@ public class AppWidget extends AppWidgetProvider{
         }
     }
 
-    private void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId){
+    private static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId){
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
-        remoteViews.setInt(R.id.widget, "setBackgroundColor", 0xaa000000);
+
+        final int transpValue = 255 - getWidgetData(appWidgetId).transparency * 255 / 100;
+        remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24);
 //        remoteViews.setInt(R.id.filterList, "setChoiceMode", ListView.CHOICE_MODE_MULTIPLE);  // does not accept this - but it's not working well, anyway (checked item states on screen rotation)
 
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, "de.westfalen.fuldix.jaendc.time_list");
@@ -139,7 +216,7 @@ public class AppWidget extends AppWidgetProvider{
         }, 1000);
     }
 
-    private void setupListAdapterAndIntent(final Context context, final int appWidgetId, final RemoteViews remoteViews, final int remoteViewId, final Class remoteViewsService, final String intentAction) {
+    private static void setupListAdapterAndIntent(final Context context, final int appWidgetId, final RemoteViews remoteViews, final int remoteViewId, final Class remoteViewsService, final String intentAction) {
         final Intent svcIntent = new Intent(context, remoteViewsService);
         svcIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         svcIntent.setData(Uri.parse(svcIntent.toUri(Intent.URI_INTENT_SCHEME)));
@@ -156,7 +233,7 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setPendingIntentTemplate(remoteViewId, clickPendingIntent);
     }
 
-    private void setupButtonIntent(final Context context, final int appWidgetId, final RemoteViews remoteViews, final int remoteViewId, final String intentAction) {
+    private static void setupButtonIntent(final Context context, final int appWidgetId, final RemoteViews remoteViews, final int remoteViewId, final String intentAction) {
         final Intent buttonClickIntent = new Intent(context, AppWidget.class);
         buttonClickIntent.setAction(intentAction);
         buttonClickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -165,7 +242,7 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setOnClickPendingIntent(remoteViewId, clickPendingIntent);
     }
 
-    private NDCalcData getWidgetData(final int appWidgetId) {
+    private static NDCalcData getWidgetData(final int appWidgetId) {
         NDCalcData data = widgetData.get(appWidgetId);
         if(data == null) {
             data = new NDCalcData();
@@ -174,12 +251,12 @@ public class AppWidget extends AppWidgetProvider{
         return data;
     }
 
-    private void setTime(final int appWidgetId, final double time) {
+    private static void setTime(final int appWidgetId, final double time) {
         NDCalcData data = getWidgetData(appWidgetId);
         data.time = time;
     }
 
-    private void setFilter(final int appWidgetId, final NDFilter filter) {
+    private static void setFilter(final int appWidgetId, final NDFilter filter) {
         NDCalcData data = getWidgetData(appWidgetId);
         if(multiselect) {
             if (data.filters.contains(filter)) {
@@ -193,7 +270,7 @@ public class AppWidget extends AppWidgetProvider{
         }
     }
 
-    private void setCalculation(final Context context, final int appWidgetId) {
+    private static void setCalculation(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
@@ -207,7 +284,7 @@ public class AppWidget extends AppWidgetProvider{
             if (ndtime > 0.0) {
                 largeTimeText = outputTimeFormat.format(ndtime);
                 smallTimeText = clearTextTimeFormat.format(ndtime);
-                if (ndtime >= 4.0) {
+                if (data.showTimer > 0 && ndtime >= data.showTimer) {
                     remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
                     data.ndtimeMillis = (int) ndtime * 1000;
@@ -228,7 +305,7 @@ public class AppWidget extends AppWidgetProvider{
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
     }
 
-    public void startTimer(final Context context, final int appWidgetId) {
+    public static void startTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
@@ -239,41 +316,16 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
         data.timerEnding = SystemClock.elapsedRealtime() + data.ndtimeMillis;
-        final Handler myHandler = new Handler();
-        myHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                final long current = SystemClock.elapsedRealtime();
-                final int remaining = (int) (data.timerEnding - current);
-                if (remaining > 0) {
-                    final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
-                    remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                    remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
-                    remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
-                    remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
-                    // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
-                    // strictly need onthe the below
-                    remoteViews.setProgressBar(R.id.progressBar, data.ndtimeMillis, remaining, false);
-                    appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
-                    final int width = 600; // should actually be something like progressBar.getWidth(); -- if only we could query the remoteview about its size...
-                    int delayToNext;
-                    if (width > 0) {
-                        delayToNext = data.ndtimeMillis / width; // mdTimeMillis/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
-                        if (delayToNext < 20) {
-                            delayToNext = 20;
-                        }
-                    } else {
-                        delayToNext = remaining;
-                    }
-                    myHandler.postDelayed(this, delayToNext);
-                } else {
-                    stopTimer(context, appWidgetId);
-                }
-            }
-        });
+        if(data.myHandler == null) {
+            data.myHandler = new Handler();
+        }
+        if(data.timerRunner == null) {
+            data.timerRunner = new TimerRunner(context, appWidgetId);
+        }
+        data.myHandler.post(data.timerRunner);
     }
 
-    public void stopTimer(final Context context, final int appWidgetId) {
+    public static void stopTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
@@ -284,5 +336,6 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
         data.timerEnding = 0;
+        data.myHandler.removeCallbacks(data.timerRunner);
     }
 }

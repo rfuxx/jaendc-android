@@ -46,4 +46,15 @@
     <string name="title_ndfilter_detail_new">New ND Filter</string>
 
     <string name="widget_label">JaeNDC</string>
+    <string name="title_activity_config">JaeNDC Widget Configuration</string>
+
+    <string name="config_show_timer">Show timer when</string>
+    <string name="config_show_timer_value">at least %dsec</string>
+    <string name="config_show_timer_value_never">Never</string>
+    <string name="config_alarm_tone">Alarm tone</string>
+    <string name="config_alarm_tone_silent">Silent</string>
+    <string name="config_alarm_tone_select">Select alarm tone for timer:</string>
+    <string name="config_transparency">Transparency</string>
+    <string name="config_transparency_value">%d%%</string>
+    <string name="config_apply">Apply</string>
 </resources>

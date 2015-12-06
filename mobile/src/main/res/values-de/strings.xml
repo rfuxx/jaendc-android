@@ -44,4 +44,14 @@
     <string name="title_ndfilter_list">Verwaltung der ND-Filter</string>
     <string name="title_ndfilter_detail">ND-Filter ändern</string>
     <string name="title_ndfilter_detail_new">Neuer ND-Filter</string>
+
+    <string name="config_show_timer">Timer anzeigen bei</string>
+    <string name="config_show_timer_value">mind. %dsec</string>
+    <string name="config_show_timer_value_never">Nie</string>
+    <string name="config_alarm_tone">Timer-Ton</string>
+    <string name="config_alarm_tone_silent">Stumm</string>
+    <string name="config_alarm_tone_select">Timer-Ton auswählen:</string>
+    <string name="config_transparency">Transparenz</string>
+    <string name="config_transparency_value">%d%%</string>
+    <string name="config_apply">Übernehmen</string>
 </resources>
