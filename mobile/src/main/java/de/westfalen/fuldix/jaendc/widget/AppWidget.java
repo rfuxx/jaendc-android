@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.RemoteViews;
 
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 import de.westfalen.fuldix.jaendc.R;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
+import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
 import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 
@@ -230,39 +232,74 @@ public class AppWidget extends AppWidgetProvider{
 
 
         // when options about showTime have changed, adjust current visibilities and stop existing timer
-        if (data.showTimer > 0 && data.ndtime >= data.showTimer) {
-            if(data.timerEnding > 0 && data.myHandler != null && data.timerRunner != null) {
-                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+        final String largeTimeText;
+        final String smallTimeText;
+        if(data.ndtime < Integer.MAX_VALUE / 1000) {
+            if (data.ndtime > 0.0) {
+                largeTimeText = outputTimeFormat.format(data.ndtime);
+                smallTimeText = clearTextTimeFormat.format(data.ndtime);
+                if (data.showTimer > 0 && data.ndtime >= data.showTimer) {
+                    if(data.timerEnding > 0 && data.timerRunner != null) {
+                        remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                        remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+                    } else {
+                        remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
+                        remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+                    }
+                    remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+                } else {
+                    remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                    remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+                    remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
+                    remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
+                    remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
+                    remoteViews.setProgressBar(R.id.progressBar, (int) (data.ndtime * 1000), 0, false);
+                    if(data.timerEnding > 0 && data.timerRunner != null) {
+                        data.myHandler.removeCallbacks(data.timerRunner);
+                        data.timerEnding = 0;
+                    }
+                }
             } else {
-                remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
-                remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+                largeTimeText = context.getString(R.string.text_na);
+                smallTimeText = context.getString(R.string.text_na);
+                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
             }
-            remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
         } else {
+            largeTimeText = String.format(context.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000));
+            smallTimeText = String.format(context.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
             remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-            remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
             remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
-            remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
-            remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
-            remoteViews.setProgressBar(R.id.progressBar, (int) (data.ndtime * 1000), 0, false);
-            if(data.timerEnding > 0 && data.myHandler != null && data.timerRunner != null) {
-                data.myHandler.removeCallbacks(data.timerRunner);
-                data.timerEnding = 0;
-            }
         }
+        remoteViews.setTextViewText(R.id.largeTime, largeTimeText);
+        remoteViews.setTextViewText(R.id.smallTime, smallTimeText);
 
-        remoteViews.setScrollPosition(R.id.timeList, 16);
+        // try to restore list indexes -- can only scroll to them but not set them as checked?!?
+        int index = Arrays.binarySearch(Time.times, data.time);
+        if(index < 0) {
+            index = 16;
+        }
+        final int restoreTimeIndex = index;
+        remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
+        final int restoreFilterIndex;
+        if(data.filters.isEmpty()) {
+            restoreFilterIndex = -1;
+        } else {
+            restoreFilterIndex = data.filters.iterator().next().getOrderpos();
+            remoteViews.setScrollPosition(R.id.filterList, restoreFilterIndex);
+        }
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 
-        final Handler myHandler = new Handler();
-        myHandler.postDelayed(new Runnable() {
+        data.myHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
-                remoteViews.setScrollPosition(R.id.timeList, 16);
+                remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
+                if(restoreFilterIndex >= 0) {
+                    remoteViews.setScrollPosition(R.id.filterList, restoreFilterIndex);
+                }
                 appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
             }
         }, 1000);
@@ -298,6 +335,7 @@ public class AppWidget extends AppWidgetProvider{
         NDCalcData data = widgetData.get(appWidgetId);
         if(data == null) {
             data = new NDCalcData();
+            data.myHandler = new Handler();
             widgetData.put(appWidgetId, data);
         }
         return data;
@@ -339,6 +377,21 @@ public class AppWidget extends AppWidgetProvider{
                 if (data.showTimer > 0 && data.ndtime >= data.showTimer) {
                     remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+                    data.myHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            // try to scroll list items back into view -- due to making the timer visible, they may have disappeared from view
+                            final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
+                            final int restoreTimeIndex = Arrays.binarySearch(Time.times, data.time);
+                            if(restoreTimeIndex >= 0) {
+                                remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
+                            }
+                            if(!data.filters.isEmpty()) {
+                                remoteViews.setScrollPosition(R.id.filterList, data.filters.iterator().next().getOrderpos());
+                            }
+                            appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
+                        }
+                    }, 1000);
                 } else {
                     remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
@@ -346,10 +399,14 @@ public class AppWidget extends AppWidgetProvider{
             } else {
                 largeTimeText = context.getString(R.string.text_na);
                 smallTimeText = context.getString(R.string.text_na);
+                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
             }
         } else {
             largeTimeText = String.format(context.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000));
             smallTimeText = String.format(context.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
+            remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+            remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
         }
         remoteViews.setTextViewText(R.id.largeTime, largeTimeText);
         remoteViews.setTextViewText(R.id.smallTime, smallTimeText);
@@ -368,9 +425,6 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
         data.timerEnding = SystemClock.elapsedRealtime() + ndtimeMillis;
-        if(data.myHandler == null) {
-            data.myHandler = new Handler();
-        }
         if(data.timerRunner == null) {
             data.timerRunner = new TimerRunner(context, appWidgetId);
         }
