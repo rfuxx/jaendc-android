@@ -8,8 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 
 public class NDFilterSQLiteHelper extends SQLiteOpenHelper {
-    public static final String DATABASE_NAME = "ndfilters";
-    public static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "ndfilters";
+    private static final int DATABASE_VERSION = 1;
 
     public static final String NDFILTERS_TABLE = "ndfilters";
     public static final String NDFILTERS_NAME = "name";

@@ -9,7 +9,7 @@ public class ClearTextTimeFormat extends DecimalFormat {
     private static final char HOURS = 'h';
     private static final char MINUTES = 'm';
     private static final char SECONDS = 's';
-    private NumberFormat decimal = new DecimalFormat("#0.##");
+    private final NumberFormat decimal = new DecimalFormat("#0.##");
 
     @Override
     public StringBuffer format(double value, StringBuffer buffer, FieldPosition field) {

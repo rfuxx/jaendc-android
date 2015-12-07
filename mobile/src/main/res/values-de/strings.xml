@@ -7,7 +7,6 @@
     <string name="action_config">Einstellungen</string>
     <string name="action_add">Hinzufügen</string>
     <string name="action_delete">Löschen</string>
-    <string name="action_save">Speichern</string>
     <string name="action_mode_select_all">Alle auswählen</string>
     <string name="action_mode_select_all_condensed">Alle</string>
     <string name="action_mode_title">Zum Löschen auswählen</string>
@@ -36,9 +35,6 @@
     <string name="text_longer_than_symbol">&gt; %s</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="hrs">h</string>
-    <string name="min">m</string>
-    <string name="sec">s</string>
     <string name="factor">Faktor:</string>
     <string name="fstops">Blenden:</string>
     <string name="notification_exposure_time">Belichtungszeit ist abgelaufen</string>
@@ -48,6 +44,7 @@
 
     <string name="widget_label">JaeNDC</string>
     <string name="widget_not_for_2x">Das Widget für JaeNDC benötigt Android 3.0 oder höher.</string>
+    <string name="widget_config_button">Einstellungen</string>
     <string name="title_activity_config">JaeNDC Einstellungen</string>
     <string name="subtitle_activity_config_explain">Konfiguration für die JaeNDC App</string>
     <string name="title_activity_config_widget">JaeNDC Widget-Einstellungen</string>

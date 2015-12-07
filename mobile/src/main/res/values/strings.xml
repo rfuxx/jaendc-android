@@ -7,7 +7,6 @@
     <string name="action_config">Settings</string>
     <string name="action_add">Add</string>
     <string name="action_delete">Delete</string>
-    <string name="action_save">Save</string>
     <string name="action_mode_select_all">Select All</string>
     <string name="action_mode_select_all_condensed">All</string>
     <string name="action_mode_title">Select to Delete</string>
@@ -36,9 +35,6 @@
     <string name="text_longer_than_symbol">&gt; %s</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="hrs">h</string>
-    <string name="min">m</string>
-    <string name="sec">s</string>
     <string name="factor">Factor:</string>
     <string name="fstops">f-stops:</string>
     <string name="notification_exposure_time">Exposure time is over</string>
@@ -48,6 +44,7 @@
 
     <string name="widget_label">JaeNDC</string>
     <string name="widget_not_for_2x">The Widget for JaeNDC requires Android 3.0 or higher.</string>
+    <string name="widget_config_button">Settings</string>
     <string name="title_activity_config">JaeNDC Settings</string>
     <string name="subtitle_activity_config_explain">Configure the app settings</string>
     <string name="title_activity_config_widget">JaeNDC Widget Settings</string>

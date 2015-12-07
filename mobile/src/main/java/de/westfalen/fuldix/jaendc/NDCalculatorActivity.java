@@ -12,8 +12,6 @@ import android.view.MenuItem;
 import de.westfalen.fuldix.jaendc.manage.NDFilterListActivity;
 
 public class NDCalculatorActivity extends Activity {
-    public static final int ACT_MANAGE = 1;
-    public static final int ACT_CONFIG = 2;
     private Calculator calculator;
 
     @Override
@@ -60,13 +58,13 @@ public class NDCalculatorActivity extends Activity {
             case R.id.action_manage: {
                 Intent intent = new Intent();
                 intent.setClass(this, NDFilterListActivity.class);
-                startActivityForResult(intent, ACT_MANAGE);
+                startActivity(intent);
                 break;
             }
             case R.id.action_config: {
                 Intent intent = new Intent();
                 intent.setClass(this, ConfigActivity.class);
-                startActivityForResult(intent, ACT_CONFIG);
+                startActivity(intent);
                 break;
             }
         }

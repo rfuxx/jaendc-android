@@ -28,7 +28,7 @@ import de.westfalen.fuldix.jaendc.model.NDFilter;
  */
 @TargetApi(11)
 public class NDFilterListFragment extends Fragment implements AdapterView.OnItemClickListener{
-    class MyDragListener implements View.OnDragListener {
+    private class MyDragListener implements View.OnDragListener {
         @Override
         public boolean onDrag(View v, DragEvent event) {
             int action = event.getAction();
@@ -83,14 +83,14 @@ public class NDFilterListFragment extends Fragment implements AdapterView.OnItem
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(NDFilter filter);
+        void onItemSelected(NDFilter filter);
     }
 
     /**
      * A dummy implementation of the {@link Callbacks} interface that does
      * nothing. Used only when this fragment is not attached to an activity.
      */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
+    private static final Callbacks sDummyCallbacks = new Callbacks() {
         @Override
         public void onItemSelected(NDFilter filter) {
         }
@@ -112,11 +112,6 @@ public class NDFilterListFragment extends Fragment implements AdapterView.OnItem
 
     public NDFilterAdapter getListAdapter() {
         return listAdapter;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -184,12 +179,10 @@ public class NDFilterListFragment extends Fragment implements AdapterView.OnItem
      * Turns on activate-on-click mode. When this mode is on, list items will be
      * given the 'activated' state when touched.
      */
-    public void setActivateOnItemClick(boolean activateOnItemClick) {
+    public void setActivateOnItemClick() {
         // When setting CHOICE_MODE_SINGLE, ListView will automatically
         // give items the 'activated' state when touched.
-        getListView().setChoiceMode(activateOnItemClick
-                ? ListView.CHOICE_MODE_SINGLE
-                : ListView.CHOICE_MODE_NONE);
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
     }
 
     private void setActivatedPosition(int position) {

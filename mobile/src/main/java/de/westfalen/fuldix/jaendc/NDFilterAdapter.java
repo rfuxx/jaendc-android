@@ -15,16 +15,16 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
-import de.westfalen.fuldix.jaendc.model.NDFilter;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
+import de.westfalen.fuldix.jaendc.model.NDFilter;
 
 public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
     @TargetApi(11)
     private class OnTouchDragListener implements View.OnTouchListener {
-        private int pos;
+        private final int pos;
         protected OnTouchDragListener(final int pos) {
             this.pos = pos;
         }
@@ -49,7 +49,7 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
 
     public NDFilterAdapter(final Context context, final boolean indicateDragable) {
         this.context = context;
-        this.filters = new ArrayList<NDFilter>();
+        this.filters = new ArrayList<>();
         this.indicateDragable = indicateDragable;
     }
 

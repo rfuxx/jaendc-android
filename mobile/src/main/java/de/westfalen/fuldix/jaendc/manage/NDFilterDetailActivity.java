@@ -1,9 +1,10 @@
 package de.westfalen.fuldix.jaendc.manage;
 
 import android.annotation.TargetApi;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Activity;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -30,7 +31,10 @@ public class NDFilterDetailActivity extends Activity implements NDFilterDetailFr
         setContentView(R.layout.activity_ndfilter_detail);
 
         // Show the Up button in the action bar.
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar ab = getActionBar();
+        if(ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         // savedInstanceState is non-null when there is fragment state
         // saved from previous configurations of this activity

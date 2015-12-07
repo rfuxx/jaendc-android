@@ -5,11 +5,11 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 
+import java.text.ParseException;
+
 import de.westfalen.fuldix.jaendc.R;
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
-
-import java.text.ParseException;
 
 public class NDFilterEditController {
     private final NDFilter filter;
@@ -141,10 +141,10 @@ public class NDFilterEditController {
         val2ui();
     }
 
-    void val2ui() {
+    private void val2ui() {
         isUpdating = true;
         nameBox.setText(filter.getName());
-        if(filter.isValidFactor(filter.getFactor())) {
+        if(NDFilter.isValidFactor(filter.getFactor())) {
             ndBox.setText(filter.decimalFormat.format(filter.getND()));
             factorBox.setText(filter.decimalFormat.format(filter.getFactor()));
             fstopsBox.setText(filter.decimalFormat.format(filter.getFstops()));
@@ -153,7 +153,7 @@ public class NDFilterEditController {
     }
 
     public void saveIfPossible() {
-        if(filter.isValidFactor(filter.getFactor())) {
+        if(NDFilter.isValidFactor(filter.getFactor())) {
             dao.storeNDFilter(filter);
             callbacks.onEditSaved(filter);
         }

@@ -36,7 +36,7 @@ import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 public class AppWidget extends AppWidgetProvider{
     private static class NDCalcData {
         double time;
-        Set<NDFilter> filters = new HashSet<>();
+        final Set<NDFilter> filters = new HashSet<>();
         double ndtime;
         long timerEnding;
         int showTimer = 4;
@@ -141,12 +141,6 @@ public class AppWidget extends AppWidgetProvider{
             widgetData.remove(id);
         }
         super.onDeleted(context, appWidgetIds);
-    }
-
-    @Override
-    public void onEnabled(final Context context){
-        // Enter relevant functionality for when the first widget is created
-        super.onEnabled(context);
     }
 
     @Override
@@ -422,7 +416,7 @@ public class AppWidget extends AppWidgetProvider{
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
     }
 
-    public static void startTimer(final Context context, final int appWidgetId) {
+    private static void startTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
@@ -441,7 +435,7 @@ public class AppWidget extends AppWidgetProvider{
         data.myHandler.post(data.timerRunner);
     }
 
-    public static void stopTimer(final Context context, final int appWidgetId) {
+    private static void stopTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
@@ -456,7 +450,7 @@ public class AppWidget extends AppWidgetProvider{
         data.myHandler.removeCallbacks(data.timerRunner);
     }
 
-    public static void stopRingtoneNow(final NDCalcData data) {
+    private static void stopRingtoneNow(final NDCalcData data) {
         if(data.ringtonePlaying != null) {
             data.ringtonePlaying.stop();
             data.ringtonePlaying = null;

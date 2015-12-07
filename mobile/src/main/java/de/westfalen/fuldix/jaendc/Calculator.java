@@ -74,7 +74,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         if (Build.VERSION.SDK_INT >= 11) {
             timeAdapter = new ArrayAdapter<>(activity, R.layout.list_item_single, Time.getTimeTexts());
         } else {
-            timeAdapter = new HighlightSelectionArrayAdapter<>(activity, R.layout.list_item_single, Time.getTimeTexts());
+            timeAdapter = new HighlightSelectionArrayAdapter<>(activity, Time.getTimeTexts());
         }
         timeList = (ListView) activity.findViewById(R.id.timeList);
         timeList.setAdapter(timeAdapter);

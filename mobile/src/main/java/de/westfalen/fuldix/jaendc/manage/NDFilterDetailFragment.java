@@ -3,9 +3,9 @@ package de.westfalen.fuldix.jaendc.manage;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +37,8 @@ public class NDFilterDetailFragment extends Fragment {
     private NDFilterEditController controller;
 
     public interface Callbacks {
-        public void onDetailDeleteDone();
-        public void onEditSaved(NDFilter filter);
+        void onDetailDeleteDone();
+        void onEditSaved(NDFilter filter);
     }
 
     /**
@@ -78,7 +78,7 @@ public class NDFilterDetailFragment extends Fragment {
         }
     }
 
-    public boolean actionDelete() {
+    public void actionDelete() {
         Activity activity = getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(R.string.confirm_delete_title);
@@ -105,6 +105,5 @@ public class NDFilterDetailFragment extends Fragment {
         AlertDialog dialog = builder.create();
         dialog.setCanceledOnTouchOutside(true);
         dialog.show();
-        return false;
     }
 }

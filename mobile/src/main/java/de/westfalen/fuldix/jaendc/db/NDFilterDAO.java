@@ -13,9 +13,9 @@ import de.westfalen.fuldix.jaendc.model.NDFilter;
 public class NDFilterDAO {
     private static final String[] allColumns = { NDFilterSQLiteHelper.ID, NDFilterSQLiteHelper.NDFILTERS_NAME, NDFilterSQLiteHelper.NDFILTERS_FACTOR, NDFilterSQLiteHelper.ORDERPOS };
     private static final String[] idColumn = { NDFilterSQLiteHelper.ID };
-    private static String WHERE_ID = NDFilterSQLiteHelper.ID+"=?";
+    private static final String WHERE_ID = NDFilterSQLiteHelper.ID+"=?";
     private SQLiteDatabase database;
-    private NDFilterSQLiteHelper dbHelper;
+    private final NDFilterSQLiteHelper dbHelper;
 
     public NDFilterDAO(Context context) {
         dbHelper = new NDFilterSQLiteHelper(context);
@@ -115,6 +115,7 @@ public class NDFilterDAO {
             if(cursor.moveToFirst()) {
                 filter.setId(cursor.getLong(0));
             }
+            cursor.close();
         }
 
         if(!wasWritable) {

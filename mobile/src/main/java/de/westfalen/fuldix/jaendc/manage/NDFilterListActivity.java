@@ -1,6 +1,7 @@
 package de.westfalen.fuldix.jaendc.manage;
 
 import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -53,7 +54,10 @@ public class NDFilterListActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ndfilter_list);
         // Show the Up button in the action bar.
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar ab = getActionBar();
+        if(ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         if (findViewById(R.id.ndfilter_detail_container) != null) {
             // The detail container view will be present only in the
@@ -66,7 +70,7 @@ public class NDFilterListActivity extends Activity
             // 'activated' state when touched.
             ((NDFilterListFragment) getFragmentManager()
                     .findFragmentById(R.id.ndfilter_list))
-                    .setActivateOnItemClick(true);
+                    .setActivateOnItemClick();
         }
 
         // TODO: If exposing deep links into your app, handle intents here.
@@ -214,7 +218,7 @@ public class NDFilterListActivity extends Activity
                     actionMode = null;
                 }
 
-                private boolean confirmDelete() {
+                private void confirmDelete() {
                     final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
                     final ListView lv = fr.getListView();
                     final NDFilterAdapter la = fr.getListAdapter();
@@ -226,7 +230,7 @@ public class NDFilterListActivity extends Activity
                         builder.setIcon(android.R.drawable.ic_dialog_alert);
                         final String msg;
                         if(numFiltersToDelete > 1) {
-                            msg = String.format(getResources().getQuantityString(R.plurals.confirm_delete_multiple_filter, numFiltersToDelete, numFiltersToDelete));
+                            msg = getResources().getQuantityString(R.plurals.confirm_delete_multiple_filter, numFiltersToDelete, numFiltersToDelete);
                         } else {
                             int pos=-1;
                             for(int i = la.getCount()-1; i>=0; i--) {
@@ -269,7 +273,6 @@ public class NDFilterListActivity extends Activity
                         dialog.setCanceledOnTouchOutside(true);
                         dialog.show();
                     }
-                    return false;
                 }
             });
         }

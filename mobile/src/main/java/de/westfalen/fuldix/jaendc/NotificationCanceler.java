@@ -26,7 +26,7 @@ public class NotificationCanceler extends BroadcastReceiver {
         am.set(AlarmManager.ELAPSED_REALTIME, timeout, mkPendingIntent(context));
     }
 
-    public static void cancelSchedule(Context context) {
+    private static void cancelSchedule(Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(mkPendingIntent(context));
     }

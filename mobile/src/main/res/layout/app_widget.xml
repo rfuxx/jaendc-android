@@ -16,6 +16,7 @@
         android:layout_alignParentEnd="true"
         android:padding="8sp"
         android:src="@drawable/ic_settings"
+        android:contentDescription="@string/widget_config_button"
         android:minWidth="0dp"
         android:minHeight="0dp"
         />
