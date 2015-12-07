@@ -40,7 +40,7 @@ public class AppWidget extends AppWidgetProvider{
         double ndtime;
         long timerEnding;
         int showTimer = 4;
-        String alarmToneStr;
+        String alarmToneStr = ConfigActivity.ALARM_TONE_BE_SILENT;
         int alarmDuration = 29;
         int transparency = 33;
         Handler myHandler;
@@ -136,6 +136,8 @@ public class AppWidget extends AppWidgetProvider{
     @Override
     public void onDeleted(final Context context, final int[] appWidgetIds) {
         for(int id : appWidgetIds) {
+            NDCalcData data = getWidgetData(id);
+            stopRingtoneNow(data);
             widgetData.remove(id);
         }
         super.onDeleted(context, appWidgetIds);
@@ -177,12 +179,7 @@ public class AppWidget extends AppWidgetProvider{
             return;
         }
         NDCalcData data = getWidgetData(appWidgetId);
-        if(data.ringtonePlaying != null) {
-            data.ringtonePlaying.stop();
-            data.ringtonePlaying = null;
-            data.myHandler.removeCallbacks(data.ringtoneStopperRunner);
-            data.ringtoneStopperRunner = null;
-        }
+        stopRingtoneNow(data);
         switch(intent.getAction()) {
             case "de.westfalen.fuldix.jaendc.time_list":
                 final double time = intent.getDoubleExtra("SELECTED_TIME", 0);
@@ -214,16 +211,21 @@ public class AppWidget extends AppWidgetProvider{
     }
 
     private static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId){
+        if (android.os.Build.VERSION.SDK_INT < 11) {
+            return;
+        }
         final NDCalcData data = getWidgetData(appWidgetId);
+        final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
+
         if (android.os.Build.VERSION.SDK_INT >= 16) {
             final Bundle widgetOption = appWidgetManager.getAppWidgetOptions(appWidgetId);
             data.showTimer = widgetOption.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
             data.alarmDuration = widgetOption.getInt(ConfigActivity.ALARM_DURATION, data.alarmDuration);
             data.transparency = widgetOption.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
             data.alarmToneStr = widgetOption.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_BE_SILENT);
+        } else {
+            remoteViews.setViewVisibility(R.id.configButton, View.GONE);
         }
-
-        final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
 
         final int transpValue = 255 - getWidgetData(appWidgetId).transparency * 255 / 100;
         remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24);
@@ -452,5 +454,14 @@ public class AppWidget extends AppWidgetProvider{
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
         data.timerEnding = 0;
         data.myHandler.removeCallbacks(data.timerRunner);
+    }
+
+    public static void stopRingtoneNow(final NDCalcData data) {
+        if(data.ringtonePlaying != null) {
+            data.ringtonePlaying.stop();
+            data.ringtonePlaying = null;
+            data.myHandler.removeCallbacks(data.ringtoneStopperRunner);
+            data.ringtoneStopperRunner = null;
+        }
     }
 }

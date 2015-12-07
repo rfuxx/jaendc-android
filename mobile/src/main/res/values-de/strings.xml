@@ -47,6 +47,7 @@
     <string name="title_ndfilter_detail_new">Neuer ND-Filter</string>
 
     <string name="widget_label">JaeNDC</string>
+    <string name="widget_not_for_2x">Das Widget für JaeNDC benötigt Android 3.0 oder höher.</string>
     <string name="title_activity_config">JaeNDC Einstellungen</string>
     <string name="subtitle_activity_config_explain">Konfiguration für die JaeNDC App</string>
     <string name="title_activity_config_widget">JaeNDC Widget-Einstellungen</string>

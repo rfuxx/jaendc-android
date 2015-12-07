@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ConfigActivity extends Activity {
     public static final String SHOW_TIMER = "showTimer";
@@ -27,7 +28,7 @@ public class ConfigActivity extends Activity {
     private Button alarmToneButton;
     private int showTimerValue = 4;
     private int transparencyValue = 33;
-    private String alarmToneStr;
+    private String alarmToneStr = ALARM_TONE_BE_SILENT;
     private int alarmDurationValue = 29;
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
@@ -54,6 +55,11 @@ public class ConfigActivity extends Activity {
             appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
         if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+            if (android.os.Build.VERSION.SDK_INT < 11) {
+                Toast.makeText(this, R.string.widget_not_for_2x, Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
             if (android.os.Build.VERSION.SDK_INT >= 16) {
                 final Bundle options = AppWidgetManager.getInstance(this).getAppWidgetOptions(appWidgetId);
                 showTimerValue = options.getInt(SHOW_TIMER, showTimerValue);
@@ -68,6 +74,14 @@ public class ConfigActivity extends Activity {
                 transparencyLabel.setVisibility(View.VISIBLE);
                 transparencyBar.setVisibility(View.VISIBLE);
                 transparencyText.setVisibility(View.VISIBLE);
+            } else {
+                // This is for Android 3.x: The getAppWidgetOptions does not exist,
+                // so we decide we are not really configurable
+                // and so we just bypass this activity.
+                final Intent resultValue = new Intent();
+                setResult(RESULT_OK, resultValue);
+                finish();
+                return;
             }
         } else {
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -164,7 +178,7 @@ public class ConfigActivity extends Activity {
             default: {
                 Uri alarmTone = getConfiguredAlarmTone(this, alarmToneStr);
                 final Ringtone ringtone = RingtoneManager.getRingtone(this, alarmTone);
-                if(ringtone != null) {
+                if (ringtone != null) {
                     alarmToneButton.setText(ringtone.getTitle(this));
                 } else {
                     alarmToneButton.setText(getString(R.string.config_alarm_tone_system));
