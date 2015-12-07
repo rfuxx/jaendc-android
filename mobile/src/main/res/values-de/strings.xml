@@ -58,8 +58,8 @@
     <string name="config_alarm_tone">Timer-Ton</string>
     <string name="config_alarm_tone_silent">Stumm</string>
     <string name="config_alarm_tone_system">Standardklingelton</string>
-    <string name="config_alarm_tone_select">Timer-Ton auswählen:</string>
-    <string name="config_alarm_duration">Längste Dauer für den Timer-Ton</string>
+    <string name="config_alarm_tone_select">Ton für Timer auswählen:</string>
+    <string name="config_alarm_duration">Längste Dauer für den Ton</string>
     <string name="config_alarm_duration_value">%dsec</string>
     <string name="config_transparency">Transparenz</string>
     <string name="config_transparency_value">%d%%</string>

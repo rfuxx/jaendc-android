@@ -51,7 +51,6 @@
         />
 
     <Button
-        style="@android:style/TextAppearance.Medium"
         android:layout_below="@id/alarmToneLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -123,7 +122,6 @@
         />
 
     <Button
-        style="@android:style/TextAppearance.Medium"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

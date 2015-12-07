@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="?android:attr/activatedBackgroundIndicator"
     android:layout_centerVertical="true"
-    android:paddingTop="8sp"
-    android:paddingBottom="9sp"
-    android:paddingLeft="8sp"
-    android:paddingRight="8sp"
+    android:paddingTop="5sp"
+    android:paddingBottom="6sp"
+    android:paddingLeft="5sp"
+    android:paddingRight="5sp"
     />

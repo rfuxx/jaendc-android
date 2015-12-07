@@ -59,7 +59,7 @@
     <string name="config_alarm_tone_silent">Silent</string>
     <string name="config_alarm_tone_system">Default Alarm Tone</string>
     <string name="config_alarm_tone_select">Select alarm tone for timer:</string>
-    <string name="config_alarm_duration">Longest alarm tone duration</string>
+    <string name="config_alarm_duration">Longest tone duration</string>
     <string name="config_alarm_duration_value">%dsec</string>
     <string name="config_transparency">Transparency</string>
     <string name="config_transparency_value">%d%%</string>

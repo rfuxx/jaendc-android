@@ -6,7 +6,7 @@
     android:id="@+id/widget"
     tools:context=".AppWidget">
 
-    <Button
+    <ImageButton
         style="?android:attr/borderlessButtonStyle"
         android:id="@+id/configButton"
         android:layout_width="wrap_content"
@@ -15,10 +15,9 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:padding="8sp"
+        android:src="@drawable/ic_settings"
         android:minWidth="0dp"
         android:minHeight="0dp"
-        android:text="&#9881;"
-        android:textSize="20sp"
         />
     <TextView
         android:id="@+id/largeTime"
