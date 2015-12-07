@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
@@ -15,6 +16,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.widget.RemoteViews;
 
 public class CalculatorAlarm extends BroadcastReceiver {
@@ -50,12 +52,10 @@ public class CalculatorAlarm extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        final AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         ringerMode = audio.getRingerMode();
-        Uri sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        if(sound == null) {
-            sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        }
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final Uri sound = ConfigActivity.getConfiguredAlarmTone(context, prefs.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_USE_SYSTEM_SOUND));
         if(NDCalculatorActivity.isShowing) {
             if(ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
                 Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
@@ -67,7 +67,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
                     NotificationCanceler.schedule(context);
                 }
             }
-            if(ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
                 Ringtone r = RingtoneManager.getRingtone(context, sound);
                 if(r != null) {
                     if (Build.VERSION.SDK_INT >= 21) {
@@ -130,7 +130,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT >= 21) {
             return buildNotification_21(builder, sound);
         } else {
-            if(ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
                 builder.setSound(sound, AudioManager.STREAM_ALARM);
             }
             if (Build.VERSION.SDK_INT >= 16) {
@@ -150,7 +150,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
 
     @TargetApi(21)
     private Notification buildNotification_21(Notification.Builder builder, Uri sound) {
-        if(ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+        if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
             builder.setSound(sound, mkAudioAttributes());
         }
         return builder

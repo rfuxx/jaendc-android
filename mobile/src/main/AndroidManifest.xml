@@ -78,9 +78,10 @@
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <activity
-            android:name=".widget.ConfigActivity"
+            android:name=".ConfigActivity"
             android:label="@string/title_activity_config"
-            android:exported="false">
+            android:exported="true">
+            <!-- seems android:exported must be "true" so that older Android versions (4.1.2) can see this activity. "false" seems to work fine with Android 5.1 -->
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

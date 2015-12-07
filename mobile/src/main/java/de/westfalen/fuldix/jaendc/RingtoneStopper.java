@@ -5,8 +5,10 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 
 public class RingtoneStopper extends BroadcastReceiver {
     @Override
@@ -28,7 +30,8 @@ public class RingtoneStopper extends BroadcastReceiver {
         stopRingtone(context);
         ringtone = r;
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        long timeout = SystemClock.elapsedRealtime() + 30 * 1000;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        long timeout = SystemClock.elapsedRealtime() + (prefs.getInt(ConfigActivity.ALARM_DURATION, 29)+1) * 1000;
         am.set(AlarmManager.ELAPSED_REALTIME, timeout, mkPendingIntent(context));
     }
 

@@ -3,4 +3,6 @@
     tools:context=".NDCalcActivity">
     <item android:id="@+id/action_multiselect" android:title="@string/action_multi"
         android:icon="@drawable/ic_multiselect_old" android:checkable="true" android:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_config" android:title="@string/action_config"
+        android:icon="@android:drawable/ic_menu_preferences" android:showAsAction="ifRoom" />
 </menu>

@@ -7,6 +7,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -24,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import de.westfalen.fuldix.jaendc.ConfigActivity;
 import de.westfalen.fuldix.jaendc.R;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.model.Time;
@@ -38,7 +40,7 @@ public class AppWidget extends AppWidgetProvider{
         double ndtime;
         long timerEnding;
         int showTimer = 4;
-        Uri alarmTone;
+        String alarmToneStr;
         int alarmDuration = 29;
         int transparency = 33;
         Handler myHandler;
@@ -65,6 +67,7 @@ public class AppWidget extends AppWidgetProvider{
                 final int ndtimeMillis = (int) (data.ndtime*1000);
                 remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                 remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
                 remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
                 remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
                 // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
@@ -84,11 +87,17 @@ public class AppWidget extends AppWidgetProvider{
                 data.myHandler.postDelayed(this, delayToNext);
             } else {
                 stopTimer(context, appWidgetId);
-                if(data.alarmTone != null) {
-                    data.ringtonePlaying = RingtoneManager.getRingtone(context, data.alarmTone);
-                    data.ringtonePlaying.play();
-                    data.ringtoneStopperRunner = new RingtoneStopperRunner(appWidgetId);
-                    data.myHandler.postDelayed(data.ringtoneStopperRunner, (data.alarmDuration+1)*1000);
+                final Uri alarmTone = ConfigActivity.getConfiguredAlarmTone(context, data.alarmToneStr);
+                if(alarmTone != null) {
+                    final AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                    if(audio.getRingerMode() == AudioManager.RINGER_MODE_NORMAL) {
+                        data.ringtonePlaying = RingtoneManager.getRingtone(context, alarmTone);
+                        if(data.ringtonePlaying != null) {
+                            data.ringtonePlaying.play();
+                            data.ringtoneStopperRunner = new RingtoneStopperRunner(appWidgetId);
+                            data.myHandler.postDelayed(data.ringtoneStopperRunner, (data.alarmDuration + 1) * 1000);
+                        }
+                    }
                 }
             }
         }
@@ -197,7 +206,7 @@ public class AppWidget extends AppWidgetProvider{
             case "de.westfalen.fuldix.jaendc.config_button":
                 final Intent configIntent = new Intent(context, ConfigActivity.class);
                 configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-                configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
                 configIntent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
                 context.startActivity(configIntent);
                 break;
@@ -211,10 +220,7 @@ public class AppWidget extends AppWidgetProvider{
             data.showTimer = widgetOption.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
             data.alarmDuration = widgetOption.getInt(ConfigActivity.ALARM_DURATION, data.alarmDuration);
             data.transparency = widgetOption.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
-            final String alarmToneStr = widgetOption.getString(ConfigActivity.ALARM_TONE);
-            if (alarmToneStr != null) {
-                data.alarmTone = Uri.parse(alarmToneStr);
-            }
+            data.alarmToneStr = widgetOption.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_BE_SILENT);
         }
 
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
@@ -242,11 +248,12 @@ public class AppWidget extends AppWidgetProvider{
                     if(data.timerEnding > 0 && data.timerRunner != null) {
                         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                         remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+                        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
                     } else {
                         remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
                         remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+                        remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
                     }
-                    remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
                 } else {
                     remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                     remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
@@ -376,7 +383,7 @@ public class AppWidget extends AppWidgetProvider{
                 smallTimeText = clearTextTimeFormat.format(data.ndtime);
                 if (data.showTimer > 0 && data.ndtime >= data.showTimer) {
                     remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
                     data.myHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -420,6 +427,7 @@ public class AppWidget extends AppWidgetProvider{
         final int ndtimeMillis = (int) (data.ndtime*1000);
         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
         remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
         remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, ndtimeMillis, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
@@ -437,6 +445,7 @@ public class AppWidget extends AppWidgetProvider{
         final NDCalcData data = getWidgetData(appWidgetId);
         remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
         remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+        remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
         remoteViews.setProgressBar(R.id.progressBar, (int) (data.ndtime * 1000), 0, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", true);

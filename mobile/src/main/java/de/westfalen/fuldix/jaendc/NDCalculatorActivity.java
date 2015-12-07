@@ -1,6 +1,7 @@
 package de.westfalen.fuldix.jaendc;
 
 import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
@@ -11,6 +12,8 @@ import android.view.MenuItem;
 import de.westfalen.fuldix.jaendc.manage.NDFilterListActivity;
 
 public class NDCalculatorActivity extends Activity {
+    public static final int ACT_MANAGE = 1;
+    public static final int ACT_CONFIG = 2;
     private Calculator calculator;
 
     @Override
@@ -53,10 +56,19 @@ public class NDCalculatorActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         if(calculator.onOptionsItemSelected(item))
             return true;
-        if(item.getItemId() == R.id.action_manage) {
-            Intent intent = new Intent();
-            intent.setClass(this, NDFilterListActivity.class);
-            startActivity(intent);
+        switch(item.getItemId()) {
+            case R.id.action_manage: {
+                Intent intent = new Intent();
+                intent.setClass(this, NDFilterListActivity.class);
+                startActivityForResult(intent, ACT_MANAGE);
+                break;
+            }
+            case R.id.action_config: {
+                Intent intent = new Intent();
+                intent.setClass(this, ConfigActivity.class);
+                startActivityForResult(intent, ACT_CONFIG);
+                break;
+            }
         }
         return result;
     }
@@ -88,7 +100,10 @@ public class NDCalculatorActivity extends Activity {
 
     @TargetApi(11)
     private void setActionBarSubtitle() {
-        getActionBar().setSubtitle(R.string.app_name_long);
+        final ActionBar ab = getActionBar();
+        if(ab != null) {
+            ab.setSubtitle(R.string.app_name_long);
+        }
     }
 
     public static boolean isShowing;

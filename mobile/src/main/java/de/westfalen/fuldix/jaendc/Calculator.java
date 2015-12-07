@@ -33,7 +33,7 @@ import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
 import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 
-public class Calculator implements ListView.OnItemClickListener, CompoundButton.OnCheckedChangeListener, Runnable {
+public class Calculator implements ListView.OnItemClickListener, CompoundButton.OnCheckedChangeListener, Runnable, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PERS_TIMER_ENDING = "timer_ending";
     private static final String PERS_MULTISELECT = "multiselect";
     private static final String PERS_TIMELIST_CHECKED_INDEX = "timeList.checkedIndex";
@@ -54,12 +54,13 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private final Runnable scrollListsToSelection = new Runnable() {
         @Override
         public void run() {
-            doList(timeList);
-            doList(filterList);
+            scrollListToSelection(timeList);
+            scrollListToSelection(filterList);
         }
     };
 
     private boolean multiselect;
+    private double ndtime;
     private long timerEnding;
 
     private boolean uiIsUpdating = false;
@@ -92,6 +93,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         timeList.setSelection(16);
         timeList.setItemChecked(18, true);
         onItemClick(timeList, null, 18, 18);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -181,20 +185,22 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             largeTime.setText(R.string.text_na);
             smallTime.setText(R.string.text_na);
         } else {
-            double time = Time.times[timePos];
+            ndtime = Time.times[timePos];
             SparseBooleanArray states = filterList.getCheckedItemPositions();
             for(int f=0; f<filterAdapter.getCount(); f++) {
                 NDFilter filter = filterAdapter.getItem(f);
                 if(states.get(f)) {
-                    time *= filter.getFactor();
+                    ndtime *= filter.getFactor();
                 }
             }
-            if(time < Integer.MAX_VALUE / 1000) {
-                largeTime.setText(outputTimeFormat.format(time));
-                smallTime.setText(clearTextTimeFormat.format(time));
-                if (time >= 4.0) {
+            if(ndtime < Integer.MAX_VALUE / 1000) {
+                largeTime.setText(outputTimeFormat.format(ndtime));
+                smallTime.setText(clearTextTimeFormat.format(ndtime));
+                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                final double startTimer = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
+                if (startTimer > 0 && ndtime >= startTimer) {
                     startStopButton.setVisibility(View.VISIBLE);
-                    progressBar.setMax((int) (time * 1000));
+                    progressBar.setMax((int) (ndtime * 1000));
                 } else {
                     startStopButton.setVisibility(View.INVISIBLE);
                 }
@@ -268,6 +274,11 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         try {
             uiIsUpdating = true;
             progressBar.removeCallbacks(this);
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            final double startTimer = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
+            if (!(startTimer > 0 && ndtime >= startTimer)) {
+                stopTimer(false);
+            }
             if (timerEnding > SystemClock.elapsedRealtime()) {
                 startStopButton.setChecked(true);
                 progressBar.setVisibility(View.VISIBLE);
@@ -379,7 +390,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         }
     }
 
-    private static void doList(final ListView listView) {
+    private static void scrollListToSelection(final ListView listView) {
         final int pos = listView.getCheckedItemPosition();
         if(pos < 0 || pos >= listView.getCount())
         {
@@ -393,6 +404,22 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         } else if (pos >= last)
         {
             listView.setSelection(1 + pos - (last - first));
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(ConfigActivity.SHOW_TIMER.equals(key)) {
+            if(ndtime < Integer.MAX_VALUE / 1000) {
+                final double startTimer = sharedPreferences.getInt(ConfigActivity.SHOW_TIMER, 4);
+                if (startTimer > 0 && ndtime >= startTimer) {
+                    startStopButton.setVisibility(View.VISIBLE);
+                    progressBar.setMax((int) (ndtime * 1000));
+                } else {
+                    stopTimer(false);
+                    startStopButton.setVisibility(View.INVISIBLE);
+                }
+            }
         }
     }
 }

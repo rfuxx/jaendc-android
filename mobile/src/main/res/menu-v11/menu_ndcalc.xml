@@ -6,4 +6,6 @@
         android:icon="@drawable/ic_multiselect_old" android:checkable="true" android:showAsAction="ifRoom"/>
     <item android:id="@+id/action_manage" android:title="@string/action_manage"
         android:icon="@android:drawable/ic_menu_edit" android:showAsAction="ifRoom" />
+    <item android:id="@+id/action_config" android:title="@string/action_config"
+        android:icon="@android:drawable/ic_menu_preferences" android:showAsAction="ifRoom" />
 </menu>

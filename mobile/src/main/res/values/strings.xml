@@ -4,6 +4,7 @@
     <string name="action_multi">Multiple Filters</string>
     <string name="action_multi_single">Single Filter</string>
     <string name="action_manage">Manage ND Filters</string>
+    <string name="action_config">Settings</string>
     <string name="action_add">Add</string>
     <string name="action_delete">Delete</string>
     <string name="action_save">Save</string>
@@ -46,13 +47,17 @@
     <string name="title_ndfilter_detail_new">New ND Filter</string>
 
     <string name="widget_label">JaeNDC</string>
-    <string name="title_activity_config">JaeNDC Widget Configuration</string>
+    <string name="title_activity_config">JaeNDC Settings</string>
+    <string name="subtitle_activity_config_explain">Configure the app settings</string>
+    <string name="title_activity_config_widget">JaeNDC Widget Settings</string>
+    <string name="subtitle_activity_config_widget_explain">Configure the settings for the selected widget</string>
 
     <string name="config_show_timer">Show timer when</string>
     <string name="config_show_timer_value">at least %dsec</string>
     <string name="config_show_timer_value_never">Never</string>
     <string name="config_alarm_tone">Alarm tone</string>
     <string name="config_alarm_tone_silent">Silent</string>
+    <string name="config_alarm_tone_system">Default Alarm Tone</string>
     <string name="config_alarm_tone_select">Select alarm tone for timer:</string>
     <string name="config_alarm_duration">Longest alarm tone duration</string>
     <string name="config_alarm_duration_value">%dsec</string>

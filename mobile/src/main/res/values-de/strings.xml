@@ -4,6 +4,7 @@
     <string name="action_multi">Mehrere Filter</string>
     <string name="action_multi_single">Einzelner Filter</string>
     <string name="action_manage">ND-Filter bearbeiten</string>
+    <string name="action_config">Einstellungen</string>
     <string name="action_add">Hinzufügen</string>
     <string name="action_delete">Löschen</string>
     <string name="action_save">Speichern</string>
@@ -45,11 +46,18 @@
     <string name="title_ndfilter_detail">ND-Filter ändern</string>
     <string name="title_ndfilter_detail_new">Neuer ND-Filter</string>
 
+    <string name="widget_label">JaeNDC</string>
+    <string name="title_activity_config">JaeNDC Einstellungen</string>
+    <string name="subtitle_activity_config_explain">Konfiguration für die JaeNDC App</string>
+    <string name="title_activity_config_widget">JaeNDC Widget-Einstellungen</string>
+    <string name="subtitle_activity_config_widget_explain">Konfiguration für das ausgewählte Widget</string>
+
     <string name="config_show_timer">Timer anzeigen bei</string>
     <string name="config_show_timer_value">mind. %dsec</string>
     <string name="config_show_timer_value_never">Nie</string>
     <string name="config_alarm_tone">Timer-Ton</string>
     <string name="config_alarm_tone_silent">Stumm</string>
+    <string name="config_alarm_tone_system">Standardklingelton</string>
     <string name="config_alarm_tone_select">Timer-Ton auswählen:</string>
     <string name="config_alarm_duration">Längste Dauer für den Timer-Ton</string>
     <string name="config_alarm_duration_value">%dsec</string>
