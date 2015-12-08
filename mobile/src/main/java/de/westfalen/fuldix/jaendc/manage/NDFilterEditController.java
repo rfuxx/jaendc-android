@@ -20,6 +20,7 @@ public class NDFilterEditController {
     private final NDFilterDAO dao;
     private final NDFilterDetailFragment.Callbacks callbacks;
     private boolean isUpdating = false;
+    private boolean willDelete = false;
 
     public NDFilterEditController(View rootView, NDFilter inFilter, NDFilterDAO dao, NDFilterDetailFragment.Callbacks callbacks) {
         this.filter = inFilter;
@@ -153,9 +154,13 @@ public class NDFilterEditController {
     }
 
     public void saveIfPossible() {
-        if(NDFilter.isValidFactor(filter.getFactor())) {
+        if(!willDelete && NDFilter.isValidFactor(filter.getFactor())) {
             dao.storeNDFilter(filter);
             callbacks.onEditSaved(filter);
         }
+    }
+
+    public void willDelete() {
+        willDelete = true;
     }
 }

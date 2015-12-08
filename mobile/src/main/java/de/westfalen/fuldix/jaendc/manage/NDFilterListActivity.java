@@ -19,6 +19,7 @@ import de.westfalen.fuldix.jaendc.NDFilterAdapter;
 import de.westfalen.fuldix.jaendc.R;
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
+import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
 
 /**
@@ -41,6 +42,7 @@ import de.westfalen.fuldix.jaendc.model.NDFilter;
 public class NDFilterListActivity extends Activity
         implements NDFilterListFragment.Callbacks, NDFilterDetailFragment.Callbacks {
 
+    private static final int ACT_EDIT_DETAIL = 101;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -48,13 +50,14 @@ public class NDFilterListActivity extends Activity
     private boolean mTwoPane;
     private NDFilterDetailFragment currentFragment;
     private ActionMode actionMode;
+    private boolean itemHasBeenChanged;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ndfilter_list);
         // Show the Up button in the action bar.
-        ActionBar ab = getActionBar();
+        final ActionBar ab = getActionBar();
         if(ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
         }
@@ -77,19 +80,19 @@ public class NDFilterListActivity extends Activity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_manage, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
         switch (id) {
             case R.id.action_add:
-                NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-                ListView lv = fr.getListView();
+                final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+                final ListView lv = fr.getListView();
                 lv.setItemChecked(lv.getCheckedItemPosition(), false);
                 doDetail(null);
                 return true;
@@ -117,20 +120,20 @@ public class NDFilterListActivity extends Activity
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onItemSelected(NDFilter filter) {
+    public void onItemSelected(final NDFilter filter) {
         doDetail(filter);
     }
 
-    private void doDetail(NDFilter filter) {
+    private void doDetail(final NDFilter filter) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
-            Bundle arguments = new Bundle();
+            final Bundle arguments = new Bundle();
             if(filter != null) {
                 arguments.putLong(NDFilterDetailFragment.ARG_ITEM_ID, filter.getId());
             }
-            NDFilterDetailFragment fragment = new NDFilterDetailFragment();
+            final NDFilterDetailFragment fragment = new NDFilterDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction()
                     .replace(R.id.ndfilter_detail_container, fragment)
@@ -143,11 +146,38 @@ public class NDFilterListActivity extends Activity
             if(actionMode != null) {
                 updateActionModeSubtitle(actionMode);
             } else {
-                Intent detailIntent = new Intent(this, NDFilterDetailActivity.class);
+                final Intent detailIntent = new Intent(this, NDFilterDetailActivity.class);
                 if (filter != null) {
                     detailIntent.putExtra(NDFilterDetailFragment.ARG_ITEM_ID, filter.getId());
                 }
-                startActivity(detailIntent);
+                startActivityForResult(detailIntent, ACT_EDIT_DETAIL);
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(itemHasBeenChanged) {
+            AppWidget.notifyAppWidgetDataChange(this);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        itemHasBeenChanged = false;
+    }
+
+    @Override
+    protected void onActivityResult (final int requestCode, final int resultCode, final Intent data) {
+        if(requestCode == ACT_EDIT_DETAIL) {
+            if(data != null && data.hasExtra(NDFilterDetailFragment.RESULT_ITEM_DELETED)) {
+                final long itemDeleted = data.getLongExtra(NDFilterDetailFragment.RESULT_ITEM_DELETED, Long.MIN_VALUE);
+                // filter was deleted in child activity
+                final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+                final NDFilterAdapter la = fr.getListAdapter();
+                la.removeId(itemDeleted);
             }
         }
     }
@@ -262,6 +292,7 @@ public class NDFilterListActivity extends Activity
                                 dao.close();
                                 actionMode.finish();
                                 dialog.dismiss();
+                                itemHasBeenChanged = true;
                             }
                         });
                         builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -278,32 +309,35 @@ public class NDFilterListActivity extends Activity
         }
     }
 
-/*    private void backToListActivity() {
-        startActivity(new Intent(this, NDFilterListActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-    }
-*/
     @Override
-    public void onDetailDeleteDone() {
+    public void onDetailDeleteDone(final NDFilter filter) {
         if(currentFragment != null) {
             getFragmentManager().beginTransaction().remove(currentFragment).commit();
             currentFragment = null;
         }
-        NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-        NDFilterAdapter la = fr.getListAdapter();
-        ListView lv = fr.getListView();
-        int pos = lv.getCheckedItemPosition();
+        final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+        final NDFilterAdapter la = fr.getListAdapter();
+        final ListView lv = fr.getListView();
+        final int pos = lv.getCheckedItemPosition();
         if(pos >= 0) {
             lv.setItemChecked(pos, false);
             la.removeAtPos(pos);
         }
+        itemHasBeenChanged = true;
     }
 
     @Override
     public void onEditSaved(NDFilter filter) {
-        NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-        NDFilterAdapter la = fr.getListAdapter();
-        int pos = la.putChange(filter);
+        final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+        final NDFilterAdapter la = fr.getListAdapter();
+        final int pos = la.putChange(filter);
         fr.getListView().setSelection(pos);
+        itemHasBeenChanged = true;
+    }
+
+    @Override
+    public void onItemOrderChanged() {
+        itemHasBeenChanged = true;
     }
 
     private int getNumCheckedItems() {

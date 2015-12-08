@@ -160,6 +160,15 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
         notifyDataSetChanged();
     }
 
+    public synchronized void removeId(final long id) {
+        for(int pos=0; pos < filters.size(); pos++) {
+            if(id == filters.get(pos).getId()) {
+                removeAtPos(pos);
+                break;
+            }
+        }
+    }
+
     public int getDragPos() {
         return dragPos;
     }

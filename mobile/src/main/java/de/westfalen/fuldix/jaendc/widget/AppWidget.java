@@ -22,11 +22,13 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import de.westfalen.fuldix.jaendc.ConfigActivity;
 import de.westfalen.fuldix.jaendc.R;
+import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
@@ -384,17 +386,17 @@ public class AppWidget extends AppWidgetProvider{
                         @Override
                         public void run() {
                             // try to scroll list items back into view -- due to making the timer visible, they may have disappeared from view
-                            final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
+                            final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
                             final int restoreTimeIndex = Arrays.binarySearch(Time.times, data.time);
-                            if(restoreTimeIndex >= 0) {
+                            if (restoreTimeIndex >= 0) {
                                 remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
                             }
-                            if(!data.filters.isEmpty()) {
+                            if (!data.filters.isEmpty()) {
                                 remoteViews.setScrollPosition(R.id.filterList, data.filters.iterator().next().getOrderpos());
                             }
                             appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
                         }
-                    }, 1000);
+                    }, 100);
                 } else {
                     remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
@@ -456,6 +458,47 @@ public class AppWidget extends AppWidgetProvider{
             data.ringtonePlaying = null;
             data.myHandler.removeCallbacks(data.ringtoneStopperRunner);
             data.ringtoneStopperRunner = null;
+        }
+    }
+
+    public static void notifyAppWidgetDataChange(final Context context) {
+        final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        final int[] allWidgets = new int[widgetData.size()];
+        final Iterator<Integer> widgetDataIdIterator = widgetData.keySet().iterator();
+        for(int i=0; i<allWidgets.length; i++) {
+            if(!widgetDataIdIterator.hasNext()) {
+                break;
+            }
+            allWidgets[i] = widgetDataIdIterator.next();
+        }
+        appWidgetManager.notifyAppWidgetViewDataChanged(allWidgets, R.id.filterList);
+
+        NDFilterDAO dao = new NDFilterDAO(context);
+        for(final int appWidgetId : allWidgets) {
+            final NDCalcData data = getWidgetData(appWidgetId);
+            if(!data.filters.isEmpty()) {
+                final NDFilter filterBeforeUpdate = data.filters.iterator().next();
+                final int orderPos = filterBeforeUpdate.getOrderpos();
+                final NDFilter filterAfterUpdate = dao.getNDFilterAtOrderpos(orderPos);
+                if(filterAfterUpdate.getFactor() == filterBeforeUpdate.getFactor()) {
+                    break;
+                } else {
+                    data.myHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (data.timerEnding > 0) {
+                                stopTimer(context, appWidgetId);
+                            }
+                            if(filterAfterUpdate.getOrderpos() >= 0) {
+                                setFilter(appWidgetId, filterAfterUpdate);
+                            } else {
+                                data.filters.remove(filterBeforeUpdate);
+                            }
+                            setCalculation(context, appWidgetId);
+                        }
+                    }, 500);
+                }
+            }
         }
     }
 }

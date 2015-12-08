@@ -32,6 +32,7 @@ import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
 import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
+import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
 public class Calculator implements ListView.OnItemClickListener, CompoundButton.OnCheckedChangeListener, Runnable, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PERS_TIMER_ENDING = "timer_ending";
@@ -376,6 +377,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                     NDFilterDAO dao = new NDFilterDAO(context);
                     dao.insertDefaultFilters();
                     filterAdapter.refreshFilters();
+                    AppWidget.notifyAppWidgetDataChange(context);
                     dialog.dismiss();
                 }
             });

@@ -14,6 +14,7 @@ public class NDFilterDAO {
     private static final String[] allColumns = { NDFilterSQLiteHelper.ID, NDFilterSQLiteHelper.NDFILTERS_NAME, NDFilterSQLiteHelper.NDFILTERS_FACTOR, NDFilterSQLiteHelper.ORDERPOS };
     private static final String[] idColumn = { NDFilterSQLiteHelper.ID };
     private static final String WHERE_ID = NDFilterSQLiteHelper.ID+"=?";
+    private static final String WHERE_ORDERPOS = NDFilterSQLiteHelper.ORDERPOS+"=?";
     private SQLiteDatabase database;
     private final NDFilterSQLiteHelper dbHelper;
 
@@ -77,6 +78,25 @@ public class NDFilterDAO {
         String[] idarg = { Long.toString(id) };
         Cursor cursor = database.query(NDFilterSQLiteHelper.NDFILTERS_TABLE,
                 allColumns, WHERE_ID, idarg, null, null, null);
+        if(cursor.moveToFirst()) {
+            result = getAt(cursor);
+        } else {
+            result = new NDFilter();
+        }
+        cursor.close();
+        if(!wasWritable) {
+            database.close();
+        }
+        return result;
+    }
+
+    public NDFilter getNDFilterAtOrderpos(int orderpos) {
+        boolean wasWritable = isWritable();
+        SQLiteDatabase database = wasWritable ? this.database : dbHelper.getWritableDatabase();
+        NDFilter result;
+        String[] idarg = { Integer.toString(orderpos) };
+        Cursor cursor = database.query(NDFilterSQLiteHelper.NDFILTERS_TABLE,
+                allColumns, WHERE_ORDERPOS, idarg, null, null, null);
         if(cursor.moveToFirst()) {
             result = getAt(cursor);
         } else {

@@ -27,6 +27,7 @@ public class NDFilterDetailFragment extends Fragment {
      * represents.
      */
     public static final String ARG_ITEM_ID = "filter_id";
+    public static final String RESULT_ITEM_DELETED = "item_deleted_id";
 
     /**
      * The dummy content this fragment is presenting.
@@ -37,8 +38,8 @@ public class NDFilterDetailFragment extends Fragment {
     private NDFilterEditController controller;
 
     public interface Callbacks {
-        void onDetailDeleteDone();
-        void onEditSaved(NDFilter filter);
+        void onDetailDeleteDone(final NDFilter filter);
+        void onEditSaved(final NDFilter filter);
     }
 
     /**
@@ -92,8 +93,9 @@ public class NDFilterDetailFragment extends Fragment {
         builder.setCancelable(true);
         builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                controller.willDelete();
                 dao.deleteNDFilter(mItem);
-                callbacks.onDetailDeleteDone();
+                callbacks.onDetailDeleteDone(mItem);
                 dialog.dismiss();
             }
         });

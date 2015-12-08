@@ -48,6 +48,7 @@ public class NDFilterListFragment extends Fragment implements AdapterView.OnItem
                     listAdapter.commitDrop(dropPos);
                     break;
                 case DragEvent.ACTION_DRAG_ENDED:
+                    mCallbacks.onItemOrderChanged();
                     //listAdapter.notifyDataSetChanged();
                     break;
                 default:
@@ -84,6 +85,7 @@ public class NDFilterListFragment extends Fragment implements AdapterView.OnItem
          * Callback for when an item has been selected.
          */
         void onItemSelected(NDFilter filter);
+        void onItemOrderChanged();
     }
 
     /**
@@ -93,6 +95,9 @@ public class NDFilterListFragment extends Fragment implements AdapterView.OnItem
     private static final Callbacks sDummyCallbacks = new Callbacks() {
         @Override
         public void onItemSelected(NDFilter filter) {
+        }
+        @Override
+        public void onItemOrderChanged() {
         }
     };
 

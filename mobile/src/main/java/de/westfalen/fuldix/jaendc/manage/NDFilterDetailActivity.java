@@ -10,6 +10,7 @@ import android.view.MenuItem;
 
 import de.westfalen.fuldix.jaendc.R;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
+import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
 /**
  * An activity representing a single ND Filter detail screen. This
@@ -24,6 +25,7 @@ import de.westfalen.fuldix.jaendc.model.NDFilter;
 public class NDFilterDetailActivity extends Activity implements NDFilterDetailFragment.Callbacks {
     private NDFilterDetailFragment fragment;
     private boolean hasItemId;
+    private boolean itemHasBeenChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,23 +95,37 @@ public class NDFilterDetailActivity extends Activity implements NDFilterDetailFr
                 //
                 // http://developer.android.com/design/patterns/navigation.html#up-vs-back
                 //
-                backToListActivity();
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void backToListActivity() {
-        startActivity(new Intent(this, NDFilterListActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(itemHasBeenChanged) {
+            AppWidget.notifyAppWidgetDataChange(this);
+        }
     }
 
     @Override
-    public void onDetailDeleteDone() {
-        backToListActivity();
+    protected void onResume() {
+        super.onResume();
+        itemHasBeenChanged = false;
     }
 
     @Override
-    public void onEditSaved(NDFilter filter) {
-        // nop (editing inplace and saving on every valid keystroke)
+    public void onDetailDeleteDone(final NDFilter filter) {
+        itemHasBeenChanged = true;
+        final Intent resultValue = new Intent();
+        resultValue.putExtra(NDFilterDetailFragment.RESULT_ITEM_DELETED, filter.getId());
+        setResult(RESULT_OK, resultValue);
+        finish();
+    }
+
+    @Override
+    public void onEditSaved(final NDFilter filter) {
+        itemHasBeenChanged = true;
     }
 }

@@ -4,11 +4,11 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import de.westfalen.fuldix.jaendc.R;
-
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+
+import de.westfalen.fuldix.jaendc.R;
 
 public class NDFilter implements Parcelable {
     public static Parcelable.Creator<NDFilter> CREATOR = new Parcelable.Creator<NDFilter>() {
@@ -108,7 +108,9 @@ public class NDFilter implements Parcelable {
     }
 
     public String getDescription(final Context context) {
-        return "ND " + decimalFormat.format(getND()) + " | " + context.getString(R.string.factor) + decimalFormat.format(factor) + " | " + context.getString(R.string.fstops) + decimalFormat.format(getFstops());
+        return
+//                "pos:"+orderpos+" " +     // uncomment to help with debugging ordering problems
+                "ND " + decimalFormat.format(getND()) + " | " + context.getString(R.string.factor) + decimalFormat.format(factor) + " | " + context.getString(R.string.fstops) + decimalFormat.format(getFstops());
     }
 
     @Override

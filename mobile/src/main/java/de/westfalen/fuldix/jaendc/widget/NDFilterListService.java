@@ -47,7 +47,11 @@ public class NDFilterListService extends RemoteViewsService {
 
         @Override
         public long getItemId(int position) {
-            return adapter.getItemId(position);
+            if(position < adapter.getCount()) {
+                return adapter.getItemId(position);
+            } else {
+                return Long.MIN_VALUE;
+            }
         }
 
         @Override
@@ -58,16 +62,18 @@ public class NDFilterListService extends RemoteViewsService {
         @Override
         public RemoteViews getViewAt(final int position) {
             final RemoteViews remoteView = new RemoteViews(context.getPackageName(), R.layout.widget_list_item_filter);
-            NDFilter filter = adapter.getItem(position);
-            remoteView.setTextViewText(R.id.list_item_filter_name, filter.getName());
-            remoteView.setTextViewText(R.id.list_item_filter_data, filter.getDescription(context));
+            if(position < adapter.getCount()) {
+                NDFilter filter = adapter.getItem(position);
+                remoteView.setTextViewText(R.id.list_item_filter_name, filter.getName());
+                remoteView.setTextViewText(R.id.list_item_filter_data, filter.getDescription(context));
 
-            Bundle extras = new Bundle();
-            extras.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            extras.putParcelable("SELECTED_FILTER", filter);
-            Intent fillInIntent = new Intent();
-            fillInIntent.putExtras(extras);
-            remoteView.setOnClickFillInIntent(R.id.whole_item, fillInIntent);
+                Bundle extras = new Bundle();
+                extras.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                extras.putParcelable("SELECTED_FILTER", filter);
+                Intent fillInIntent = new Intent();
+                fillInIntent.putExtras(extras);
+                remoteView.setOnClickFillInIntent(R.id.whole_item, fillInIntent);
+            }
 
             return remoteView;
         }
