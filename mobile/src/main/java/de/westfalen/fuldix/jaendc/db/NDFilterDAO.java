@@ -100,7 +100,7 @@ public class NDFilterDAO {
         if(cursor.moveToFirst()) {
             result = getAt(cursor);
         } else {
-            result = new NDFilter();
+            result = null;
         }
         cursor.close();
         if(!wasWritable) {
