@@ -21,10 +21,8 @@ import android.widget.RemoteViews;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import de.westfalen.fuldix.jaendc.ConfigActivity;
 import de.westfalen.fuldix.jaendc.R;
@@ -38,7 +36,7 @@ import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 public class AppWidget extends AppWidgetProvider{
     private static class NDCalcData {
         double time;
-        final Set<NDFilter> filters = new HashSet<>();
+        NDFilter filter;
         double ndtime;
         long timerEnding;
         int showTimer = 4;
@@ -121,7 +119,6 @@ public class AppWidget extends AppWidgetProvider{
         }
     }
 
-    private static final boolean multiselect = false; // due to limitations that we have no influence and are not even notified about screen orientation change - and the list views do not even keep their "checked items" states then :-(
     private static final NumberFormat clearTextTimeFormat = new ClearTextTimeFormat();
     private static final NumberFormat outputTimeFormat = new OutputTimeFormat();
     private static final Map<Integer, NDCalcData> widgetData = new HashMap<>();
@@ -225,7 +222,6 @@ public class AppWidget extends AppWidgetProvider{
 
         final int transpValue = 255 - getWidgetData(appWidgetId).transparency * 255 / 100;
         remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24);
-//        remoteViews.setInt(R.id.filterList, "setChoiceMode", ListView.CHOICE_MODE_MULTIPLE);  // does not accept this - but it's not working well, anyway (checked item states on screen rotation)
 
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, "de.westfalen.fuldix.jaendc.time_list");
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.filterList, NDFilterListService.class, "de.westfalen.fuldix.jaendc.filter_list");
@@ -287,11 +283,11 @@ public class AppWidget extends AppWidgetProvider{
         final int restoreTimeIndex = index;
         remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
         final int restoreFilterIndex;
-        if(data.filters.isEmpty()) {
-            restoreFilterIndex = -1;
-        } else {
-            restoreFilterIndex = data.filters.iterator().next().getOrderpos();
+        if(data.filter != null) {
+            restoreFilterIndex = data.filter.getOrderpos();
             remoteViews.setScrollPosition(R.id.filterList, restoreFilterIndex);
+        } else {
+            restoreFilterIndex = -1;
         }
 
         // Instruct the widget manager to update the widget
@@ -347,22 +343,13 @@ public class AppWidget extends AppWidgetProvider{
     }
 
     private static void setTime(final int appWidgetId, final double time) {
-        NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(appWidgetId);
         data.time = time;
     }
 
     private static void setFilter(final int appWidgetId, final NDFilter filter) {
-        NDCalcData data = getWidgetData(appWidgetId);
-        if(multiselect) {
-            if (data.filters.contains(filter)) {
-                data.filters.remove(filter);
-            } else {
-                data.filters.add(filter);
-            }
-        } else {
-            data.filters.clear();
-            data.filters.add(filter);
-        }
+        final NDCalcData data = getWidgetData(appWidgetId);
+        data.filter = filter;
     }
 
     private static void setCalculation(final Context context, final int appWidgetId) {
@@ -370,8 +357,8 @@ public class AppWidget extends AppWidgetProvider{
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
         final NDCalcData data = getWidgetData(appWidgetId);
         data.ndtime = data.time;
-        for(final NDFilter filter : data.filters) {
-            data.ndtime *= filter.getFactor();
+        if(data.filter != null) {
+            data.ndtime *= data.filter.getFactor();
         }
         final String largeTimeText;
         final String smallTimeText;
@@ -391,8 +378,8 @@ public class AppWidget extends AppWidgetProvider{
                             if (restoreTimeIndex >= 0) {
                                 remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
                             }
-                            if (!data.filters.isEmpty()) {
-                                remoteViews.setScrollPosition(R.id.filterList, data.filters.iterator().next().getOrderpos());
+                            if (data.filter != null) {
+                                remoteViews.setScrollPosition(R.id.filterList, data.filter.getOrderpos());
                             }
                             appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
                         }
@@ -476,8 +463,8 @@ public class AppWidget extends AppWidgetProvider{
         NDFilterDAO dao = new NDFilterDAO(context);
         for(final int appWidgetId : allWidgets) {
             final NDCalcData data = getWidgetData(appWidgetId);
-            if(!data.filters.isEmpty()) {
-                final NDFilter filterBeforeUpdate = data.filters.iterator().next();
+            if(data.filter != null) {
+                final NDFilter filterBeforeUpdate = data.filter;
                 final int orderPos = filterBeforeUpdate.getOrderpos();
                 final NDFilter filterAfterUpdate = dao.getNDFilterAtOrderpos(orderPos);
                 if(filterAfterUpdate.getFactor() == filterBeforeUpdate.getFactor()) {
@@ -489,11 +476,7 @@ public class AppWidget extends AppWidgetProvider{
                             if (data.timerEnding > 0) {
                                 stopTimer(context, appWidgetId);
                             }
-                            if(filterAfterUpdate.getOrderpos() >= 0) {
-                                setFilter(appWidgetId, filterAfterUpdate);
-                            } else {
-                                data.filters.remove(filterBeforeUpdate);
-                            }
+                            setFilter(appWidgetId, filterAfterUpdate.getOrderpos() >= 0 ? filterAfterUpdate : null);
                             setCalculation(context, appWidgetId);
                         }
                     }, 500);
