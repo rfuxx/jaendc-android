@@ -7,14 +7,15 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -34,10 +35,14 @@ import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 
 @TargetApi(11)
 public class AppWidget extends AppWidgetProvider{
+    private static final String WIDGET_TIME_LIST = "de.westfalen.fuldix.jaendc.time_list";
+    private static final String WIDGET_FILTER_LIST = "de.westfalen.fuldix.jaendc.filter_list";
+    private static final String WIDGET_START_BUTTON = "de.westfalen.fuldix.jaendc.start_button";
+    private static final String WIDGET_STOP_BUTTON = "de.westfalen.fuldix.jaendc.stop_button";
+    private static final String WIDGET_CONFIG_BUTTON = "de.westfalen.fuldix.jaendc.config_button";
+    public static final String WIDGET_CONFIG_WAS_MODIFIED = "de.westfalen.fuldix.jaendc.config_result";
     private static final String TIME_SELECTION = "time";
     private static final String FILTER_SELECTION = "filter";
-    private static final String FILTER_SELECTION_ORDERPOS = "filter_orderpos";
-    private static final String CALCULATED_TIME = "calculatedTime";
 
     private static class NDCalcData {
         double time;
@@ -45,7 +50,6 @@ public class AppWidget extends AppWidgetProvider{
         int filterOrderpos = -1;
         double calculatedTime;
         long timerEnding;
-        int internallyUpdating = 0;
         int showTimer = 4;
         String alarmToneStr = ConfigActivity.ALARM_TONE_BE_SILENT;
         int alarmDuration = 29;
@@ -65,7 +69,7 @@ public class AppWidget extends AppWidgetProvider{
         }
         @Override
         public void run() {
-            final NDCalcData data = getWidgetData(appWidgetId);
+            final NDCalcData data = getWidgetData(context, appWidgetId);
             final long current = SystemClock.elapsedRealtime();
             final int remaining = (int) (data.timerEnding - current);
             if (remaining > 0) {
@@ -101,7 +105,7 @@ public class AppWidget extends AppWidgetProvider{
                         data.ringtonePlaying = RingtoneManager.getRingtone(context, alarmTone);
                         if(data.ringtonePlaying != null) {
                             data.ringtonePlaying.play();
-                            data.ringtoneStopperRunner = new RingtoneStopperRunner(appWidgetId);
+                            data.ringtoneStopperRunner = new RingtoneStopperRunner(context, appWidgetId);
                             data.myHandler.postDelayed(data.ringtoneStopperRunner, (data.alarmDuration + 1) * 1000);
                         }
                     }
@@ -111,13 +115,15 @@ public class AppWidget extends AppWidgetProvider{
     }
 
     private static class RingtoneStopperRunner implements Runnable {
+        private final Context context;
         private final int appWidgetId;
-        RingtoneStopperRunner(final int appWidgetId) {
+        RingtoneStopperRunner(final Context context ,final int appWidgetId) {
+            this.context = context;
             this.appWidgetId = appWidgetId;
         }
         @Override
         public void run() {
-            NDCalcData data = getWidgetData(appWidgetId);
+            NDCalcData data = getWidgetData(context, appWidgetId);
             if (data.ringtonePlaying != null) {
                 data.ringtonePlaying.stop();
                 data.ringtonePlaying = null;
@@ -141,10 +147,19 @@ public class AppWidget extends AppWidgetProvider{
 
     @Override
     public void onDeleted(final Context context, final int[] appWidgetIds) {
-        for(int id : appWidgetIds) {
-            NDCalcData data = getWidgetData(id);
+        for(final int id : appWidgetIds) {
+            final NDCalcData data = getWidgetData(context, id);
             stopRingtoneNow(data);
             widgetData.remove(id);
+            final String prefPrefix = getPrefPrefix(id);
+            final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+            prefsEdit.remove(prefPrefix + TIME_SELECTION);
+            prefsEdit.remove(prefPrefix + FILTER_SELECTION);
+            prefsEdit.remove(prefPrefix + ConfigActivity.SHOW_TIMER);
+            prefsEdit.remove(prefPrefix + ConfigActivity.ALARM_TONE);
+            prefsEdit.remove(prefPrefix + ConfigActivity.ALARM_DURATION);
+            prefsEdit.remove(prefPrefix + ConfigActivity.TRANSPARENCY);
+            prefsEdit.commit();
         }
         super.onDeleted(context, appWidgetIds);
     }
@@ -156,26 +171,19 @@ public class AppWidget extends AppWidgetProvider{
         super.onDisabled(context);
     }
 
+    // no need for onAppWidgetOptionsChanged()
+    // because we handle widget configuration not via AppWidgetOptions
+    // but via SharedPreferences (persistent!!)
+    // and with our own custom message between the ConfigActivity and the AppWidget
+/*
     @Override
     public void onAppWidgetOptionsChanged(final Context context, final AppWidgetManager appWidgetManager, final int appWidgetId, final Bundle newOptions) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
 
-        final NDCalcData data = getWidgetData(appWidgetId);
-        if(data.internallyUpdating > 0) {
-            // just get the callback for remembering current time, filter and calculation values.
-            // should not update the whole GUI in that case
-            // (would give strange user experience as whole-update will try to scroll selections into view)
-            data.internallyUpdating--;
-            return;
-        } else if(data.internallyUpdating < 0) {
-            // not sure whether / under what circumstances this might happen.
-            // But just in case, set to zero to avoid additional anomalies then.
-            data.internallyUpdating = 0;
-        }
-
         // the changed newOptions() data is already handled in updateAppWidget()
         updateAppWidget(context, appWidgetManager, appWidgetId);
     }
+*/
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -191,15 +199,15 @@ public class AppWidget extends AppWidgetProvider{
         if(appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             return;
         }
-        NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(context, appWidgetId);
         stopRingtoneNow(data);
         switch(intent.getAction()) {
-            case "de.westfalen.fuldix.jaendc.time_list":
+            case WIDGET_TIME_LIST:
                 final double time = intent.getDoubleExtra("SELECTED_TIME", 0);
                 setTime(context, appWidgetId, time);
                 setCalculation(context, appWidgetId);
                 break;
-            case "de.westfalen.fuldix.jaendc.filter_list":
+            case WIDGET_FILTER_LIST:
                 final Object object = intent.getParcelableExtra("SELECTED_FILTER");
                 if(object != null && object instanceof NDFilter) {
                     final NDFilter filter = (NDFilter) object;
@@ -207,19 +215,29 @@ public class AppWidget extends AppWidgetProvider{
                     setCalculation(context, appWidgetId);
                 }
                 break;
-            case "de.westfalen.fuldix.jaendc.start_button":
+            case WIDGET_START_BUTTON:
                 startTimer(context, appWidgetId);
                 break;
-            case "de.westfalen.fuldix.jaendc.stop_button":
+            case WIDGET_STOP_BUTTON:
                 stopTimer(context, appWidgetId);
                 break;
-            case "de.westfalen.fuldix.jaendc.config_button":
+            case WIDGET_CONFIG_BUTTON:
                 final Intent configIntent = new Intent(context, ConfigActivity.class);
                 configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
                 configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
                 configIntent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
                 context.startActivity(configIntent);
                 break;
+            case WIDGET_CONFIG_WAS_MODIFIED: {
+                final String prefPrefix = getPrefPrefix(appWidgetId);
+                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                data.showTimer = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, data.showTimer);
+                data.alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, data.alarmToneStr);
+                data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
+                data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
+                updateAppWidget(context, appWidgetManager, appWidgetId);
+                break;
+            }
         }
     }
 
@@ -227,40 +245,18 @@ public class AppWidget extends AppWidgetProvider{
         if (android.os.Build.VERSION.SDK_INT < 11) {
             return;
         }
-        final NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(context, appWidgetId);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
 
-        if (android.os.Build.VERSION.SDK_INT >= 16) {
-            final Bundle widgetOption = appWidgetManager.getAppWidgetOptions(appWidgetId);
-            data.showTimer = widgetOption.getInt(ConfigActivity.SHOW_TIMER, data.showTimer);
-            data.alarmDuration = widgetOption.getInt(ConfigActivity.ALARM_DURATION, data.alarmDuration);
-            data.transparency = widgetOption.getInt(ConfigActivity.TRANSPARENCY, data.transparency);
-            data.alarmToneStr = widgetOption.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_BE_SILENT);
-            data.time = widgetOption.getDouble(TIME_SELECTION, data.time);
-            long oldFilterId = data.filter != null ? data.filter.getId() : Long.MIN_VALUE;
-            long filterId = widgetOption.getLong(FILTER_SELECTION, oldFilterId);
-            if(filterId == Long.MIN_VALUE) {
-                data.filter = null;
-            } else if (data.filter != null && filterId != data.filter.getId()) {
-                NDFilterDAO dao = new NDFilterDAO(context);
-                data.filter = dao.getNDFilter(filterId);
-            }
-            data.filterOrderpos = widgetOption.getInt(FILTER_SELECTION_ORDERPOS, data.filterOrderpos);
-            data.calculatedTime = widgetOption.getDouble(CALCULATED_TIME, data.calculatedTime);
-        } else {
-            remoteViews.setViewVisibility(R.id.configButton, View.GONE);
-        }
-
-        final int transpValue = 255 - getWidgetData(appWidgetId).transparency * 255 / 100;
+        final int transpValue = 255 - getWidgetData(context, appWidgetId).transparency * 255 / 100;
         remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24);
 
-        setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, "de.westfalen.fuldix.jaendc.time_list");
-        setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.filterList, NDFilterListService.class, "de.westfalen.fuldix.jaendc.filter_list");
+        setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, WIDGET_TIME_LIST);
+        setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.filterList, NDFilterListService.class, WIDGET_FILTER_LIST);
 
-        setupButtonIntent(context, appWidgetId, remoteViews, R.id.startButton, "de.westfalen.fuldix.jaendc.start_button");
-        setupButtonIntent(context, appWidgetId, remoteViews, R.id.stopButton, "de.westfalen.fuldix.jaendc.stop_button");
-        setupButtonIntent(context, appWidgetId, remoteViews, R.id.configButton, "de.westfalen.fuldix.jaendc.config_button");
-
+        setupButtonIntent(context, appWidgetId, remoteViews, R.id.startButton, WIDGET_START_BUTTON);
+        setupButtonIntent(context, appWidgetId, remoteViews, R.id.stopButton, WIDGET_STOP_BUTTON);
+        setupButtonIntent(context, appWidgetId, remoteViews, R.id.configButton, WIDGET_CONFIG_BUTTON);
 
         // when options about showTime have changed, adjust current visibilities and stop existing timer
         final String largeTimeText;
@@ -355,51 +351,62 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setOnClickPendingIntent(remoteViewId, clickPendingIntent);
     }
 
-    private static NDCalcData getWidgetData(final int appWidgetId) {
+    private static NDCalcData getWidgetData(final Context context, final int appWidgetId) {
         NDCalcData data = widgetData.get(appWidgetId);
         if(data == null) {
             data = new NDCalcData();
             data.myHandler = new Handler();
             widgetData.put(appWidgetId, data);
+            final String prefPrefix = getPrefPrefix(appWidgetId);
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            int oldTimeIndex = Arrays.binarySearch(Time.times, data.time);
+            int newTimeIndex = prefs.getInt(prefPrefix + TIME_SELECTION, oldTimeIndex);
+            data.time = newTimeIndex >= 0 && newTimeIndex < Time.times.length ? Time.times[newTimeIndex] : 0.0;
+            long filterId = prefs.getLong(prefPrefix + FILTER_SELECTION, data.filter != null ? data.filter.getId() : Long.MIN_VALUE);
+            NDFilterDAO dao = new NDFilterDAO(context);
+            data.filter = dao.getNDFilter(filterId);
+            data.filterOrderpos = data.filter.getOrderpos();
+            setCalculationOnly(data);
+            data.showTimer = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, data.showTimer);
+            data.alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, data.alarmToneStr);
+            data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
+            data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
         }
         return data;
     }
 
     private static void setTime(final Context context, final int appWidgetId, final double time) {
-        final NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(context, appWidgetId);
         data.time = time;
-        if (android.os.Build.VERSION.SDK_INT >= 16) {
-            final Bundle bundle = new Bundle();
-            bundle.putDouble(TIME_SELECTION, time);
-            updateAppWidgetOptionsInternal(AppWidgetManager.getInstance(context), appWidgetId, bundle);
-        }
+        final String prefPrefix = getPrefPrefix(appWidgetId);
+        final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        int timeIndex = Arrays.binarySearch(Time.times, data.time);
+        prefsEdit.putInt(prefPrefix + TIME_SELECTION, timeIndex);
+        prefsEdit.commit();
     }
 
     private static void setFilter(final Context context, final int appWidgetId, final NDFilter filter) {
-        final NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(context, appWidgetId);
         data.filter = filter;
         data.filterOrderpos = filter != null ? filter.getOrderpos() : -1;
-        if (android.os.Build.VERSION.SDK_INT >= 16) {
-            final Bundle bundle = new Bundle();
-            bundle.putLong(FILTER_SELECTION, filter != null ? filter.getId() : Long.MIN_VALUE);
-            bundle.putInt(FILTER_SELECTION_ORDERPOS, data.filterOrderpos);
-            updateAppWidgetOptionsInternal(AppWidgetManager.getInstance(context), appWidgetId, bundle);
+        final String prefPrefix = getPrefPrefix(appWidgetId);
+        final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        prefsEdit.putLong(prefPrefix + FILTER_SELECTION, filter != null ? filter.getId() : Long.MIN_VALUE);
+        prefsEdit.commit();
+    }
+
+    private static void setCalculationOnly(final NDCalcData data) {
+        data.calculatedTime = data.time;
+        if (data.filter != null) {
+            data.calculatedTime *= data.filter.getFactor();
         }
     }
 
     private static void setCalculation(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
-        final NDCalcData data = getWidgetData(appWidgetId);
-        data.calculatedTime = data.time;
-        if (data.filter != null) {
-            data.calculatedTime *= data.filter.getFactor();
-        }
-        if (android.os.Build.VERSION.SDK_INT >= 16) {
-            final Bundle bundle = new Bundle();
-            bundle.putDouble(CALCULATED_TIME, data.calculatedTime);
-            updateAppWidgetOptionsInternal(appWidgetManager, appWidgetId, bundle);
-        }
+        final NDCalcData data = getWidgetData(context, appWidgetId);
+        setCalculationOnly(data);
         showCalculation(context, appWidgetId, remoteViews, data);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
     }
@@ -452,7 +459,7 @@ public class AppWidget extends AppWidgetProvider{
     private static void startTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
-        final NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(context, appWidgetId);
         final int ndtimeMillis = (int) (data.calculatedTime *1000);
         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
         remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
@@ -471,7 +478,7 @@ public class AppWidget extends AppWidgetProvider{
     private static void stopTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
-        final NDCalcData data = getWidgetData(appWidgetId);
+        final NDCalcData data = getWidgetData(context, appWidgetId);
         remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
         remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
         remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
@@ -506,7 +513,7 @@ public class AppWidget extends AppWidgetProvider{
 
         NDFilterDAO dao = new NDFilterDAO(context);
         for(final int appWidgetId : allWidgets) {
-            final NDCalcData data = getWidgetData(appWidgetId);
+            final NDCalcData data = getWidgetData(context, appWidgetId);
             final NDFilter filterBeforeUpdate = data.filter;
             final int factorBeforeUpdate = filterBeforeUpdate != null ? filterBeforeUpdate.getFactor() : 1;
             final NDFilter filterAfterUpdate = dao.getNDFilterAtOrderpos(data.filterOrderpos);
@@ -529,11 +536,6 @@ public class AppWidget extends AppWidgetProvider{
                             stopTimer(context, appWidgetId);
                         }
                         data.filter = filterAfterUpdate;
-                        if (android.os.Build.VERSION.SDK_INT >= 16) {
-                            final Bundle bundle = new Bundle();
-                            bundle.putLong(FILTER_SELECTION, filterAfterUpdate != null ? filterAfterUpdate.getId() : Long.MIN_VALUE);
-                            updateAppWidgetOptionsInternal(AppWidgetManager.getInstance(context), appWidgetId, bundle);
-                        }
                         setCalculation(context, appWidgetId);
                     }
                 }, 500);
@@ -541,10 +543,7 @@ public class AppWidget extends AppWidgetProvider{
         }
     }
 
-    @TargetApi(16)
-    private static void updateAppWidgetOptionsInternal(final AppWidgetManager appWidgetManager, final int appWidgetId, final Bundle bundle) {
-        NDCalcData data = getWidgetData(appWidgetId);
-        data.internallyUpdating++;
-        appWidgetManager.updateAppWidgetOptions(appWidgetId, bundle);
+    public static String getPrefPrefix(final int appWidgetId) {
+        return "widget0x" + Integer.toHexString(appWidgetId) + ":";
     }
 }

@@ -17,6 +17,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import de.westfalen.fuldix.jaendc.widget.AppWidget;
+
 public class ConfigActivity extends Activity {
     public static final String SHOW_TIMER = "showTimer";
     public static final String ALARM_TONE = "alarmTone";
@@ -55,17 +57,13 @@ public class ConfigActivity extends Activity {
             appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
         if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            if (android.os.Build.VERSION.SDK_INT < 11) {
-                Toast.makeText(this, R.string.widget_not_for_2x, Toast.LENGTH_LONG).show();
-                finish();
-                return;
-            }
-            if (android.os.Build.VERSION.SDK_INT >= 16) {
-                final Bundle options = AppWidgetManager.getInstance(this).getAppWidgetOptions(appWidgetId);
-                showTimerValue = options.getInt(SHOW_TIMER, showTimerValue);
-                alarmToneStr = options.getString(ALARM_TONE, ALARM_TONE_BE_SILENT);
-                alarmDurationValue = options.getInt(ALARM_DURATION, alarmDurationValue);
-                transparencyValue = options.getInt(TRANSPARENCY, transparencyValue);
+            if (android.os.Build.VERSION.SDK_INT >= 11) {
+                final String prefPrefix = AppWidget.getPrefPrefix(appWidgetId);
+                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this);
+                showTimerValue = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
+                alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, ALARM_TONE_BE_SILENT);
+                alarmDurationValue = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
+                transparencyValue = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, transparencyValue);
                 setTitle(R.string.title_activity_config_widget);
                 final ActionBar ab = getActionBar();
                 if (ab != null) {
@@ -75,11 +73,7 @@ public class ConfigActivity extends Activity {
                 transparencyBar.setVisibility(View.VISIBLE);
                 transparencyText.setVisibility(View.VISIBLE);
             } else {
-                // This is for Android 3.x: The getAppWidgetOptions does not exist,
-                // so we decide we are not really configurable
-                // and so we just bypass this activity.
-                final Intent resultValue = new Intent();
-                setResult(RESULT_OK, resultValue);
+                Toast.makeText(this, R.string.widget_not_for_2x, Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }
@@ -196,18 +190,21 @@ public class ConfigActivity extends Activity {
             @Override
             public void onClick(final View v) {
                 if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    if (android.os.Build.VERSION.SDK_INT >= 16) {
-                        final Bundle bundle = new Bundle();
-                        bundle.putInt(SHOW_TIMER, showTimerValue);
-                        if (alarmToneStr != null) {
-                            bundle.putString(ALARM_TONE, alarmToneStr);
-                        } else {
-                            bundle.putString(ALARM_TONE, ALARM_TONE_BE_SILENT);
-                        }
-                        bundle.putInt(ALARM_DURATION, alarmDurationValue);
-                        bundle.putInt(TRANSPARENCY, transparencyValue);
-                        AppWidgetManager.getInstance(ConfigActivity.this).updateAppWidgetOptions(appWidgetId, bundle);
+                    if (alarmToneStr == null) {
+                        alarmToneStr = ALARM_TONE_BE_SILENT;
                     }
+                    final String prefPrefix = AppWidget.getPrefPrefix(appWidgetId);
+                    final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this).edit();
+                    prefsEdit.putInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
+                    prefsEdit.putString(prefPrefix + ConfigActivity.ALARM_TONE, alarmToneStr);
+                    prefsEdit.putInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
+                    prefsEdit.putInt(prefPrefix + ConfigActivity.TRANSPARENCY, transparencyValue);
+                    prefsEdit.commit();
+                    final Intent widgetNotify = new Intent(ConfigActivity.this, AppWidget.class);
+                    widgetNotify.setAction(AppWidget.WIDGET_CONFIG_WAS_MODIFIED);
+                    widgetNotify.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                    sendBroadcast(widgetNotify);
+                    // following intent still needed to ensure that initial widget creation succeeds
                     final Intent resultValue = new Intent();
                     resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
                     setResult(RESULT_OK, resultValue);
