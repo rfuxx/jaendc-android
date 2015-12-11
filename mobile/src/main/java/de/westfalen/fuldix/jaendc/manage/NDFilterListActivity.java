@@ -39,8 +39,120 @@ import de.westfalen.fuldix.jaendc.widget.AppWidget;
  * to listen for item selections.
  */
 @TargetApi(11)
-public class NDFilterListActivity extends Activity
-        implements NDFilterListFragment.Callbacks, NDFilterDetailFragment.Callbacks {
+public class NDFilterListActivity extends Activity implements NDFilterListFragment.Callbacks, NDFilterDetailFragment.Callbacks {
+    private class ActionModeForDelete implements ActionMode.Callback {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.menu_mode_delete, menu);
+            final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+            fr.getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+            fr.getListAdapter().setIndicateDragable(false);
+            mode.setTitle(R.string.action_mode_title);
+            updateActionModeSubtitle(mode);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_select_all: {
+                    final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+                    final ListView lv = fr.getListView();
+                    int numCheckedItems = getNumCheckedItems();
+                    boolean newState = numCheckedItems != lv.getCount();
+                    for (int i = lv.getCount() - 1; i >= 0; i--) {
+                        lv.setItemChecked(i, newState);
+                    }
+                    updateActionModeSubtitle(mode);
+                    break;
+                }
+                case R.id.action_mode_delete: {
+                    confirmDelete();
+                    break;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+            final ListView lv = fr.getListView();
+            final NDFilterAdapter la = fr.getListAdapter();
+            // quirks starting...
+            int p = lv.getFirstVisiblePosition();
+            lv.setAdapter(la);
+            lv.setSelection(p);
+            // quirks above because on changing choicemode the list does not visually clear the choices
+            lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
+            la.setIndicateDragable(true);
+            actionMode = null;
+        }
+
+        private void confirmDelete() {
+            final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
+            final ListView lv = fr.getListView();
+            final NDFilterAdapter la = fr.getListAdapter();
+            final SparseBooleanArray states = lv.getCheckedItemPositions();
+            final int numFiltersToDelete = getNumCheckedItems();
+            if (numFiltersToDelete > 0) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(NDFilterListActivity.this);
+                builder.setTitle(R.string.confirm_delete_title);
+                builder.setIcon(android.R.drawable.ic_dialog_alert);
+                final String msg;
+                if (numFiltersToDelete > 1) {
+                    msg = getResources().getQuantityString(R.plurals.confirm_delete_multiple_filter, numFiltersToDelete, numFiltersToDelete);
+                } else {
+                    int pos = -1;
+                    for (int i = la.getCount() - 1; i >= 0; i--) {
+                        if (states.get(i)) {
+                            pos = i;
+                            break;
+                        }
+                    }
+                    String filterName = la.getItem(pos).getName().trim();
+                    if (filterName.equals("")) {
+                        filterName = getString(R.string.confirm_delete_this_filter);
+                    }
+                    msg = String.format(getString(R.string.confirm_delete), filterName);
+                }
+                builder.setMessage(msg);
+                builder.setCancelable(true);
+                builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        NDFilterDAO dao = new NDFilterDAO(NDFilterListActivity.this);
+                        dao.openWritable();
+                        SparseBooleanArray states = lv.getCheckedItemPositions();
+                        for (int i = la.getCount() - 1; i >= 0; i--) {
+                            if (states.get(i)) {
+                                NDFilter filter = la.getItem(i);
+                                dao.deleteNDFilter(filter);
+                                la.removeAtPos(i);
+                            }
+                        }
+                        dao.close();
+                        actionMode.finish();
+                        dialog.dismiss();
+                        itemHasBeenChanged = true;
+                    }
+                });
+                builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.setCanceledOnTouchOutside(true);
+                dialog.show();
+            }
+        }
+    }
 
     private static final int ACT_EDIT_DETAIL = 101;
     /**
@@ -125,27 +237,29 @@ public class NDFilterListActivity extends Activity
     }
 
     private void doDetail(final NDFilter filter) {
-        if (mTwoPane) {
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
-            final Bundle arguments = new Bundle();
-            if(filter != null) {
-                arguments.putLong(NDFilterDetailFragment.ARG_ITEM_ID, filter.getId());
-            }
-            final NDFilterDetailFragment fragment = new NDFilterDetailFragment();
-            fragment.setArguments(arguments);
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.ndfilter_detail_container, fragment)
-                    .commit();
-            currentFragment = fragment;
-
+        if(actionMode != null) {
+            // regardless if twoPane or not,
+            // if action mode is active, then handle the selection for the action mode
+            updateActionModeSubtitle(actionMode);
         } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
-            if(actionMode != null) {
-                updateActionModeSubtitle(actionMode);
+            if (mTwoPane) {
+                // In two-pane mode, show the detail view in this activity by
+                // adding or replacing the detail fragment using a
+                // fragment transaction.
+                final Bundle arguments = new Bundle();
+                if (filter != null) {
+                    arguments.putLong(NDFilterDetailFragment.ARG_ITEM_ID, filter.getId());
+                }
+                final NDFilterDetailFragment fragment = new NDFilterDetailFragment();
+                fragment.setArguments(arguments);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.ndfilter_detail_container, fragment)
+                        .commit();
+                currentFragment = fragment;
+
             } else {
+                // In single-pane mode, simply start the detail activity
+                // for the selected item ID.
                 final Intent detailIntent = new Intent(this, NDFilterDetailActivity.class);
                 if (filter != null) {
                     detailIntent.putExtra(NDFilterDetailFragment.ARG_ITEM_ID, filter.getId());
@@ -188,124 +302,16 @@ public class NDFilterListActivity extends Activity
             // which is displayed in the detail pane
             final NDFilterDetailFragment fr = (NDFilterDetailFragment) getFragmentManager().findFragmentById(R.id.ndfilter_detail_container);
             if(fr != null) {
+                // an item is selected - delete it
                 fr.actionDelete(); // this will call onDetailDeleteDone when done.
+            } else {
+                // no item is selected - go to action mode to select filters for delete
+                actionMode = startActionMode(new ActionModeForDelete());
             }
         } else {
-            // in single-pane mode... use ActionMode
+            // in single-pane mode, alway* use ActionMode
             // to allow selection of filters for deletion
-            actionMode = startActionMode(new ActionMode.Callback() {
-                @Override
-                public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                    MenuInflater inflater = mode.getMenuInflater();
-                    inflater.inflate(R.menu.menu_mode_delete, menu);
-                    final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-                    fr.getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-                    fr.getListAdapter().setIndicateDragable(false);
-                    return true;
-                }
-
-                @Override
-                public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                    mode.setTitle(R.string.action_mode_title);
-                    updateActionModeSubtitle(mode);
-                    return false;
-                }
-
-                @Override
-                public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                    switch(item.getItemId()) {
-                        case R.id.action_select_all: {
-                            final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-                            final ListView lv = fr.getListView();
-                            int numCheckedItems = getNumCheckedItems();
-                            boolean newState = numCheckedItems != lv.getCount();
-                            for(int i=lv.getCount()-1; i>=0; i--) {
-                                lv.setItemChecked(i, newState);
-                            }
-                            updateActionModeSubtitle(mode);
-                            break;
-                        }
-                        case R.id.action_mode_delete: {
-                            confirmDelete();
-                            break;
-                        }
-                    }
-                    return false;
-                }
-
-                @Override
-                public void onDestroyActionMode(ActionMode mode) {
-                    final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-                    final ListView lv = fr.getListView();
-                    final NDFilterAdapter la = fr.getListAdapter();
-                    // quirks starting...
-                    int p = lv.getFirstVisiblePosition();
-                    lv.setAdapter(la);
-                    lv.setSelection(p);
-                    // quirks above because on changing choicemode the list does not visually clear the choices
-                    lv.setChoiceMode(ListView.CHOICE_MODE_NONE);
-                    la.setIndicateDragable(true);
-                    actionMode = null;
-                }
-
-                private void confirmDelete() {
-                    final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
-                    final ListView lv = fr.getListView();
-                    final NDFilterAdapter la = fr.getListAdapter();
-                    final SparseBooleanArray states = lv.getCheckedItemPositions();
-                    int numFiltersToDelete = getNumCheckedItems();
-                    if(numFiltersToDelete > 0) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(NDFilterListActivity.this);
-                        builder.setTitle(R.string.confirm_delete_title);
-                        builder.setIcon(android.R.drawable.ic_dialog_alert);
-                        final String msg;
-                        if(numFiltersToDelete > 1) {
-                            msg = getResources().getQuantityString(R.plurals.confirm_delete_multiple_filter, numFiltersToDelete, numFiltersToDelete);
-                        } else {
-                            int pos=-1;
-                            for(int i = la.getCount()-1; i>=0; i--) {
-                                if(states.get(i)) {
-                                    pos = i;
-                                    break;
-                                }
-                            }
-                            String filterName = la.getItem(pos).getName().trim();
-                            if (filterName.equals("")) {
-                                filterName = getString(R.string.confirm_delete_this_filter);
-                            }
-                            msg = String.format(getString(R.string.confirm_delete), filterName);
-                        }
-                        builder.setMessage(msg);
-                        builder.setCancelable(true);
-                        builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                NDFilterDAO dao = new NDFilterDAO(NDFilterListActivity.this);
-                                dao.openWritable();
-                                SparseBooleanArray states = lv.getCheckedItemPositions();
-                                for(int i=la.getCount()-1; i >= 0; i--) {
-                                    if(states.get(i)) {
-                                        NDFilter filter = la.getItem(i);
-                                        dao.deleteNDFilter(filter);
-                                        la.removeAtPos(i);
-                                    }
-                                }
-                                dao.close();
-                                actionMode.finish();
-                                dialog.dismiss();
-                                itemHasBeenChanged = true;
-                            }
-                        });
-                        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.dismiss();
-                            }
-                        });
-                        AlertDialog dialog = builder.create();
-                        dialog.setCanceledOnTouchOutside(true);
-                        dialog.show();
-                    }
-                }
-            });
+            actionMode = startActionMode(new ActionModeForDelete());
         }
     }
 
