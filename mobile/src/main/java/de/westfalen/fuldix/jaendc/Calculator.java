@@ -109,9 +109,12 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             if(multiselectItem != null) {
                 multiselectItem.setChecked(true);
                 if (Build.VERSION.SDK_INT >= 11) {
+                    // v11 the icon is always visible -> show what we *have*
                     multiselectItem.setIcon(R.drawable.ic_multiselect);
                 } else {
-                    multiselectItem.setIcon(R.drawable.ic_singleselect_old);
+                    // older the icon is only visible when the menu pops up
+                    // -> show what it *will* switch *to*
+                    multiselectItem.setIcon(R.drawable.ic_singleselect);
                     multiselectItem.setTitle(R.string.action_multi_single);
                 }
             }
@@ -122,7 +125,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 if (Build.VERSION.SDK_INT >= 11) {
                     multiselectItem.setIcon(R.drawable.ic_singleselect);
                 } else {
-                    multiselectItem.setIcon(R.drawable.ic_multiselect_old);
+                    multiselectItem.setIcon(R.drawable.ic_multiselect);
                     multiselectItem.setTitle(R.string.action_multi);
                 }
             }
