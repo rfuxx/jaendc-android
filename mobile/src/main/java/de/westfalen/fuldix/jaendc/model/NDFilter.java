@@ -5,7 +5,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 
 import de.westfalen.fuldix.jaendc.R;
@@ -36,13 +35,11 @@ public class NDFilter implements Parcelable {
     private int orderpos;
 
     public NDFilter() {
-        textEnterFormatQuirk();
         this.orderpos = -1;
         this.id = Long.MIN_VALUE;
     }
 
     private NDFilter(long id, String name, int factor) {
-        textEnterFormatQuirk();
         this.id = id;
         this.name = name;
         this.factor = factor;
@@ -50,19 +47,10 @@ public class NDFilter implements Parcelable {
     }
 
     public NDFilter(long id, String name, int factor, int orderpos) {
-        textEnterFormatQuirk();
         this.id = id;
         this.name = name;
         this.factor = factor;
         this.orderpos = orderpos;
-    }
-
-    private void textEnterFormatQuirk() {
-        // quirk for Android numberDecimal screenkeyboards
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        symbols.setDecimalSeparator('.');
-        symbols.setGroupingSeparator(',');
-        textEnterFormat.setDecimalFormatSymbols(symbols);
     }
 
     public long getId() {

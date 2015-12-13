@@ -52,11 +52,11 @@ public class NDFilterEditController {
                 if (!isUpdating) {
                     isUpdating = true;
                     try {
-                        double nd = filter.textEnterFormat.parse(s.toString().replace(',', '.')).doubleValue();
+                        double nd = filter.textEnterFormat.parse(s.toString()).doubleValue();
                         if(NDFilter.isValidND(nd)){
                             filter.setND(nd);
-                            factorBox.setText(filter.decimalFormat.format(filter.getFactor()));
-                            fstopsBox.setText(filter.decimalFormat.format(filter.getFstops()));
+                            factorBox.setText((factorBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getFactor()));
+                            fstopsBox.setText((fstopsBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getFstops()));
                         } else {
                             factorBox.setText("");
                             fstopsBox.setText("");
@@ -81,12 +81,12 @@ public class NDFilterEditController {
                 if (!isUpdating) {
                     isUpdating = true;
                     try {
-                        Number factorNumber = filter.textEnterFormat.parse(s.toString().replace(',', '.'));
+                        Number factorNumber = filter.textEnterFormat.parse(s.toString());
                         int factor = factorNumber.intValue();
                         if(factorNumber.doubleValue() <= Integer.MAX_VALUE && NDFilter.isValidFactor(factor)) {
                             filter.setFactor(factor);
-                            ndBox.setText(filter.decimalFormat.format(filter.getND()));
-                            fstopsBox.setText(filter.decimalFormat.format(filter.getFstops()));
+                            ndBox.setText((ndBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getND()));
+                            fstopsBox.setText((fstopsBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getFstops()));
                         } else {
                             ndBox.setText("");
                             fstopsBox.setText("");
@@ -111,11 +111,11 @@ public class NDFilterEditController {
                 if (!isUpdating) {
                     isUpdating = true;
                     try {
-                        double fstops = filter.textEnterFormat.parse(s.toString().replace(',', '.')).doubleValue();
+                        double fstops = filter.textEnterFormat.parse(s.toString()).doubleValue();
                         if(NDFilter.isValidFstops(fstops)) {
                             filter.setFStops(fstops);
-                            ndBox.setText(filter.decimalFormat.format(filter.getND()));
-                            factorBox.setText(filter.decimalFormat.format(filter.getFactor()));
+                            ndBox.setText((ndBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getND()));
+                            factorBox.setText((factorBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getFactor()));
                         } else {
                             ndBox.setText("");
                             factorBox.setText("");
@@ -146,9 +146,9 @@ public class NDFilterEditController {
         isUpdating = true;
         nameBox.setText(filter.getName());
         if(NDFilter.isValidFactor(filter.getFactor())) {
-            ndBox.setText(filter.decimalFormat.format(filter.getND()));
-            factorBox.setText(filter.decimalFormat.format(filter.getFactor()));
-            fstopsBox.setText(filter.decimalFormat.format(filter.getFstops()));
+            ndBox.setText((ndBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getND()));
+            factorBox.setText((factorBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getFactor()));
+            fstopsBox.setText((fstopsBox.hasFocus() ? filter.textEnterFormat : filter.decimalFormat).format(filter.getFstops()));
         }
         isUpdating = false;
     }
