@@ -14,7 +14,7 @@ public class Time {
             1d/30, 1d/25, 1d/20,
             1d/15, 1d/12, 1d/10,
             1d/8, 1d/6, 1d/5,
-            1d/4, 0.3d, 0.4d,
+            1d/4, 0.3d, 0,4d,
             0.5d, 0.6d, 0.8d,
             1, 1.3d, 1.6d,
             2, 2.5d, 3.2d,
@@ -31,5 +31,31 @@ public class Time {
             timeTexts[i] = cameraTimeFormat.format(times[i]);
         }
         return timeTexts;
+    }
+
+    public static double roundTimeToCameraTime(double time, double roundLimit) {
+        if(time >= roundLimit) {
+            return time;
+        }
+        double returnTime = time;
+        double delta = Double.MAX_VALUE;
+        for(final double ct : times) {
+            if(ct == time) {
+                return time;
+            } else if (ct < time) {
+                double tDelta = time-ct;
+                if(tDelta < delta) {
+                    returnTime = ct;
+                    delta = tDelta;
+                }
+            } else { // ct > time
+                double tDelta = ct-time;
+                if(tDelta < delta) {
+                    returnTime = ct;
+                    break; // can break here because next ones will be even bigger (more delta)
+                }
+            }
+        }
+        return returnTime;
     }
 }

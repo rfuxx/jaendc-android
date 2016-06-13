@@ -5,6 +5,8 @@ import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 
+import de.westfalen.fuldix.jaendc.model.Time;
+
 public class ClearTextTimeFormat extends DecimalFormat {
     private static final char HOURS = 'h';
     private static final char MINUTES = 'm';
@@ -13,6 +15,7 @@ public class ClearTextTimeFormat extends DecimalFormat {
 
     @Override
     public StringBuffer format(double value, StringBuffer buffer, FieldPosition field) {
+        value = Time.roundTimeToCameraTime(value, 0.25);
         if(value > 3600) {
             int hours = (int) (value/3600);
             int minutes = (int) (value/60%60);
@@ -41,7 +44,7 @@ public class ClearTextTimeFormat extends DecimalFormat {
         } else if(value > 0.25) {
             return buffer.append(decimal.format(value)).append(SECONDS);
         } else {
-            return buffer.append("1/").append((int) (1 / value)).append(SECONDS);
+            return buffer.append("1/").append(Math.round(1 / value)).append(SECONDS);
         }
     }
 

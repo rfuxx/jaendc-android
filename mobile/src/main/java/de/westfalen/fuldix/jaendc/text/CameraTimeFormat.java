@@ -18,8 +18,9 @@ public class CameraTimeFormat extends NumberFormat{
                 return buffer.append(minutes).append(SINGLE_PRIME);
             }
         } else if(value > 0.25) {
-            int seconds = (int) value;
-            int decimal = (int) ((value - seconds) * 10);
+            int timesTen = (int) Math.round(value * 10);
+            int seconds = timesTen / 10;
+            int decimal = timesTen % 10;
             if(decimal > 0) {
                 return buffer.append(seconds).append(DOUBLE_PRIME).append(decimal);
             } else {
