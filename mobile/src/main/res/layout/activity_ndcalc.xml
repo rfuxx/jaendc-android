@@ -1,13 +1,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_ndcalc_horizontal_margin"
     android:paddingRight="@dimen/activity_ndcalc_horizontal_margin"
     android:paddingTop="@dimen/activity_ndcalc_vertical_margin"
     android:paddingBottom="@dimen/activity_ndcalc_vertical_margin"
-    android:id="@+id/screen"
-    tools:context=".NDCalcActivity">
+    android:id="@+id/screen">
 
     <TextView
         android:id="@+id/largeTime"
@@ -66,6 +64,8 @@
         android:layout_weight="9"
         android:id="@+id/timeList"
         android:choiceMode="singleChoice"
+        android:paddingStart="0dp"
+        android:paddingLeft="0dp"
         android:paddingEnd="2dp"
         android:paddingRight="2dp"
     /><!--90sp-->
@@ -78,6 +78,8 @@
         android:choiceMode="singleChoice"
         android:paddingStart="2dp"
         android:paddingLeft="2dp"
+        android:paddingEnd="0dp"
+        android:paddingRight="0dp"
     />
     </LinearLayout>
 </RelativeLayout>

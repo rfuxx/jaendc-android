@@ -9,150 +9,148 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     tools:context=".ConfigActivity">
-<ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_weight="1">
-<RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/config_time_style"
-        android:id="@+id/timeStyleLabel"
-        android:labelFor="@+id/timeStylePOV"
-        />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/config_time_style"
+                android:id="@+id/timeStyleLabel"
+                android:labelFor="@+id/timeStylePOV"
+                />
 
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/timeStyleButton"
+                android:layout_below="@id/timeStyleLabel"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_below="@id/timeStyleButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/config_show_timer"
+                android:id="@+id/showTimerLabel"
+                android:labelFor="@+id/showTimerSeek"
+                android:paddingTop="12sp"
+                />
+
+            <SeekBar
+                android:layout_below="@id/showTimerLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/showTimerSeek"
+                android:paddingTop="4dp"
+                android:max="60"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBaseline="@id/showTimerLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:id="@+id/showTimerValue"
+                android:paddingTop="4dp"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_below="@id/showTimerSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/config_alarm_tone"
+                android:id="@+id/alarmToneLabel"
+                android:labelFor="@+id/alarmToneButton"
+                android:paddingTop="12sp"
+                />
+
+            <Button
+                android:layout_below="@id/alarmToneLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/alarmToneButton"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_below="@id/alarmToneButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/config_alarm_duration"
+                android:id="@+id/alarmDurationLabel"
+                android:labelFor="@+id/alarmDurationSeek"
+                android:paddingTop="12sp"
+                />
+
+            <SeekBar
+                android:layout_below="@id/alarmDurationLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/alarmDurationSeek"
+                android:paddingTop="4dp"
+                android:max="299"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBaseline="@id/alarmDurationLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:id="@+id/alarmDurationValue"
+                android:paddingTop="4dp"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_below="@id/alarmDurationSeek"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/config_transparency"
+                android:id="@+id/transparencyLabel"
+                android:labelFor="@+id/transparencySeek"
+                android:paddingTop="12sp"
+                />
+
+            <SeekBar
+                android:layout_below="@id/transparencyLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/transparencySeek"
+                android:paddingTop="4dp"
+                android:max="100"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBaseline="@id/transparencyLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:id="@+id/transparencyValue"
+                android:paddingTop="4dp"
+                />
+        </RelativeLayout>
+    </ScrollView>
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/timeStyleButton"
-        android:layout_below="@id/timeStyleLabel"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_below="@id/timeStyleButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/config_show_timer"
-        android:id="@+id/showTimerLabel"
-        android:labelFor="@+id/showTimerSeek"
-        android:paddingTop="12sp"
-        />
-
-    <SeekBar
-        android:layout_below="@id/showTimerLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/showTimerSeek"
-        android:paddingTop="4dp"
-        android:max="60"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignBaseline="@id/showTimerLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:id="@+id/showTimerValue"
-        android:paddingTop="4dp"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_below="@id/showTimerSeek"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/config_alarm_tone"
-        android:id="@+id/alarmToneLabel"
-        android:labelFor="@+id/alarmToneButton"
-        android:paddingTop="12sp"
-        />
-
-    <Button
-        android:layout_below="@id/alarmToneLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/alarmToneButton"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_below="@id/alarmToneButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/config_alarm_duration"
-        android:id="@+id/alarmDurationLabel"
-        android:labelFor="@+id/alarmDurationSeek"
-        android:paddingTop="12sp"
-        />
-
-    <SeekBar
-        android:layout_below="@id/alarmDurationLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/alarmDurationSeek"
-        android:paddingTop="4dp"
-        android:max="299"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignBaseline="@id/alarmDurationLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:id="@+id/alarmDurationValue"
-        android:paddingTop="4dp"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_below="@id/alarmDurationSeek"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/config_transparency"
-        android:id="@+id/transparencyLabel"
-        android:labelFor="@+id/transparencySeek"
-        android:paddingTop="12sp"
-        />
-
-    <SeekBar
-        android:layout_below="@id/transparencyLabel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/transparencySeek"
-        android:paddingTop="4dp"
-        android:max="100"
-        />
-
-    <TextView
-        style="@android:style/TextAppearance.Medium"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignBaseline="@id/transparencyLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:id="@+id/transparencyValue"
-        android:paddingTop="4dp"
-        />
-</RelativeLayout>
-</ScrollView>
-    <Button
-        android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/applyButton"
         android:text="@string/config_apply"
         />
-
 </LinearLayout>
