@@ -1,5 +1,4 @@
 <resources>
-
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme">
         <!-- Customize your theme here. -->
@@ -10,5 +9,13 @@
     <style name="NotificationText" parent="@android:style/TextAppearance.Inverse">
         <!-- Customize your theme here. -->
     </style>
-
+    <style name="ResultTextNormal" parent="@android:style/TextAppearance.Large">
+        <item name="android:textSize">48sp</item>
+    </style>
+    <style name="ResultTextBulbLength" parent="ResultTextNormal">
+    </style>
+    <style name="ResultTextMaxExceeded" parent="ResultTextNormal">
+        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+    </style>
+    <color name="ResultTextMaxExceededColor">#ff8888</color>
 </resources>

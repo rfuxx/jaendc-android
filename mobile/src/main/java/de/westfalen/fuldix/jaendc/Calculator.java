@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.text.SpannableString;
+import android.text.style.RelativeSizeSpan;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,9 +42,6 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private static final String PERS_TIMELIST_CHECKED_INDEX = "timeList.checkedIndex";
     private static final String PERS_FILTERLIST_CHECKED_IDS = "filterList.checkedIds";
 
-    private final NumberFormat clearTextTimeFormat = new ClearTextTimeFormat();
-    private final NumberFormat outputTimeFormat = new OutputTimeFormat();
-
     private final NDFilterAdapter filterAdapter;
     private final ListView timeList;
     private final ListView filterList;
@@ -60,6 +59,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         }
     };
 
+    private NumberFormat clearTextTimeFormat;
+    private NumberFormat outputTimeFormat;
+    private int timeStyle;
+
     private boolean multiselect;
     private double ndtime;
     private long timerEnding;
@@ -69,13 +72,20 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     public Calculator(final Activity activity)
     {
         context = activity;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.registerOnSharedPreferenceChangeListener(this);
+        timeStyle = prefs.getInt(ConfigActivity.TIME_STYLE, 0);
+        clearTextTimeFormat = new ClearTextTimeFormat(timeStyle);
+        outputTimeFormat = new OutputTimeFormat(timeStyle);
+
         filterList = (ListView) activity.findViewById(R.id.filterList);
         filterAdapter = new NDFilterAdapter(activity);
         final ArrayAdapter<String> timeAdapter;
         if (Build.VERSION.SDK_INT >= 11) {
-            timeAdapter = new ArrayAdapter<>(activity, R.layout.list_item_single, Time.getTimeTexts());
+            timeAdapter = new ArrayAdapter<>(activity, R.layout.list_item_single, Time.getTimeTexts(timeStyle));
         } else {
-            timeAdapter = new HighlightSelectionArrayAdapter<>(activity, Time.getTimeTexts());
+            timeAdapter = new HighlightSelectionArrayAdapter<>(activity, Time.getTimeTexts(timeStyle));
         }
         timeList = (ListView) activity.findViewById(R.id.timeList);
         timeList.setAdapter(timeAdapter);
@@ -94,9 +104,6 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         timeList.setSelection(16);
         timeList.setItemChecked(18, true);
         onItemClick(timeList, null, 18, 18);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -185,11 +192,16 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     private void calculate() {
         final int timePos = timeList.getCheckedItemPosition();
-        if(timePos == ListView.INVALID_POSITION) {
+        if(timePos == ListView.INVALID_POSITION || timePos >= Time.times[timeStyle].length) {
             largeTime.setText(R.string.text_na);
+            if (Build.VERSION.SDK_INT >= 23) {
+                largeTime.setTextAppearance(R.style.ResultTextNormal);
+            } else {
+                largeTime.setTextAppearance(context, R.style.ResultTextNormal);
+            }
             smallTime.setText(R.string.text_na);
         } else {
-            ndtime = Time.times[timePos];
+            ndtime = Time.times[timeStyle][timePos];
             SparseBooleanArray states = filterList.getCheckedItemPositions();
             for(int f=0; f<filterAdapter.getCount(); f++) {
                 NDFilter filter = filterAdapter.getItem(f);
@@ -198,7 +210,23 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 }
             }
             if(ndtime < Integer.MAX_VALUE / 1000) {
-                largeTime.setText(outputTimeFormat.format(ndtime));
+                final String formattedOutputText = outputTimeFormat.format(ndtime);
+                final int textAppearanceResource;
+                if(ndtime > Time.times[timeStyle][Time.times[timeStyle].length-1]) {
+                    final int pos = formattedOutputText.length();
+                    final SpannableString spanString = new SpannableString(formattedOutputText + "BULB");   // don't translate? Because "BULB" is used by cameras regardless of their language settings?
+                    spanString.setSpan(new RelativeSizeSpan(0.333f), pos, pos+4, 0);
+                    largeTime.setText(spanString);
+                    textAppearanceResource = R.style.ResultTextBulbLength;
+                } else {
+                    largeTime.setText(formattedOutputText);
+                    textAppearanceResource = R.style.ResultTextNormal;
+                }
+                if (Build.VERSION.SDK_INT >= 23) {
+                    largeTime.setTextAppearance(textAppearanceResource);
+                } else {
+                    largeTime.setTextAppearance(context, textAppearanceResource);
+                }
                 smallTime.setText(clearTextTimeFormat.format(ndtime));
                 final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 final double startTimer = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
@@ -210,6 +238,11 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 }
             }  else {
                 largeTime.setText(String.format(context.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000)));
+                if (Build.VERSION.SDK_INT >= 23) {
+                    largeTime.setTextAppearance(R.style.ResultTextMaxExceeded);
+                } else {
+                    largeTime.setTextAppearance(context, R.style.ResultTextMaxExceeded);
+                }
                 smallTime.setText(String.format(context.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000)));
                 startStopButton.setVisibility(View.INVISIBLE);
             }
@@ -425,6 +458,18 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                     startStopButton.setVisibility(View.INVISIBLE);
                 }
             }
+        } else if(ConfigActivity.TIME_STYLE.equals(key)) {
+            timeStyle = sharedPreferences.getInt(ConfigActivity.TIME_STYLE, 0);
+            clearTextTimeFormat = new ClearTextTimeFormat(timeStyle);
+            outputTimeFormat = new OutputTimeFormat(timeStyle);
+            final ArrayAdapter<String> timeAdapter;
+            if (Build.VERSION.SDK_INT >= 11) {
+                timeAdapter = new ArrayAdapter<>(context, R.layout.list_item_single, Time.getTimeTexts(timeStyle));
+            } else {
+                timeAdapter = new HighlightSelectionArrayAdapter<>(context, Time.getTimeTexts(timeStyle));
+            }
+            timeList.setAdapter(timeAdapter);
+            calculate();
         }
     }
 }

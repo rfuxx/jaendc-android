@@ -2,13 +2,16 @@ package de.westfalen.fuldix.jaendc;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
 public class ConfigActivity extends Activity {
+    public static final String TIME_STYLE = "timeStyle";
     public static final String SHOW_TIMER = "showTimer";
     public static final String ALARM_TONE = "alarmTone";
     public static final String ALARM_DURATION = "alarmDuration";
@@ -27,7 +31,9 @@ public class ConfigActivity extends Activity {
     public static final String ALARM_TONE_USE_SYSTEM_SOUND = "use_system_sound";
     public static final String ALARM_TONE_BE_SILENT = "silent";
     private static final int PICK_RINGTONE = 201;
+    private Button timeStyleButton;
     private Button alarmToneButton;
+    private int timeStyleValue = 0;
     private int showTimerValue = 4;
     private int transparencyValue = 33;
     private String alarmToneStr = ALARM_TONE_BE_SILENT;
@@ -41,6 +47,7 @@ public class ConfigActivity extends Activity {
 
         setResult(RESULT_CANCELED);
 
+        timeStyleButton = (Button) findViewById(R.id.timeStyleButton);
         alarmToneButton = (Button) findViewById(R.id.alarmToneButton);
         final SeekBar showTimerBar = (SeekBar) findViewById(R.id.showTimerSeek);
         final TextView showTimerText = (TextView) findViewById(R.id.showTimerValue);
@@ -57,9 +64,10 @@ public class ConfigActivity extends Activity {
             appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
         if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-            if (android.os.Build.VERSION.SDK_INT >= 11) {
+            if (Build.VERSION.SDK_INT >= 11) {
                 final String prefPrefix = AppWidget.getPrefPrefix(appWidgetId);
                 final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this);
+                timeStyleValue = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
                 showTimerValue = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
                 alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, ALARM_TONE_BE_SILENT);
                 alarmDurationValue = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
@@ -79,13 +87,14 @@ public class ConfigActivity extends Activity {
             }
         } else {
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            timeStyleValue = prefs.getInt(TIME_STYLE, timeStyleValue);
             showTimerValue = prefs.getInt(SHOW_TIMER, showTimerValue);
             alarmToneStr = prefs.getString(ALARM_TONE, ALARM_TONE_USE_SYSTEM_SOUND);
             alarmDurationValue = prefs.getInt(ALARM_DURATION, alarmDurationValue);
             setTitle(R.string.title_activity_config);
-            if (android.os.Build.VERSION.SDK_INT >= 11) {
+            if (Build.VERSION.SDK_INT >= 11) {
                 final ActionBar ab = getActionBar();
-                if(ab != null) {
+                if (ab != null) {
                     getActionBar().setSubtitle(R.string.subtitle_activity_config_explain);
                 }
             }
@@ -115,6 +124,24 @@ public class ConfigActivity extends Activity {
             public void onStopTrackingTouch(final SeekBar seekBar) {
             }
         };
+        timeStyleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                final String[] timeStylesArr = getApplicationContext().getResources().getStringArray(R.array.config_time_style_options);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ConfigActivity.this);
+
+                builder.setTitle(getString(R.string.config_time_style));
+                builder.setItems(timeStylesArr, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        timeStyleValue = which;
+                        setTimeStyleButtonText();
+                    }
+                });
+                builder.create().show();
+            }
+        });
         alarmToneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -131,7 +158,7 @@ public class ConfigActivity extends Activity {
         final SeekBar.OnSeekBarChangeListener alarmDurationSeekBarListener = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
-                alarmDurationText.setText(String.format(getString(R.string.config_alarm_duration_value), progress+1));
+                alarmDurationText.setText(String.format(getString(R.string.config_alarm_duration_value), progress + 1));
                 alarmDurationValue = progress;
             }
 
@@ -149,14 +176,17 @@ public class ConfigActivity extends Activity {
                 transparencyText.setText(String.format(getString(R.string.config_transparency_value), progress));
                 transparencyValue = progress;
             }
+
             @Override
             public void onStartTrackingTouch(final SeekBar seekBar) {
             }
+
             @Override
             public void onStopTrackingTouch(final SeekBar seekBar) {
             }
         };
 
+        setTimeStyleButtonText();
         showTimerBar.setProgress(showTimerValue);
         showTimerSeekBarListener.onProgressChanged(showTimerBar, showTimerValue, false);
         showTimerBar.setOnSeekBarChangeListener(showTimerSeekBarListener);
@@ -195,6 +225,7 @@ public class ConfigActivity extends Activity {
                     }
                     final String prefPrefix = AppWidget.getPrefPrefix(appWidgetId);
                     final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this).edit();
+                    prefsEdit.putInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
                     prefsEdit.putInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
                     prefsEdit.putString(prefPrefix + ConfigActivity.ALARM_TONE, alarmToneStr);
                     prefsEdit.putInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
@@ -212,6 +243,7 @@ public class ConfigActivity extends Activity {
                 } else {
                     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this);
                     final SharedPreferences.Editor edit = prefs.edit();
+                    edit.putInt(TIME_STYLE, timeStyleValue);
                     edit.putInt(SHOW_TIMER, showTimerValue);
                     if (alarmToneStr != null) {
                         edit.putString(ALARM_TONE, alarmToneStr);
@@ -239,7 +271,7 @@ public class ConfigActivity extends Activity {
         if (requestCode == PICK_RINGTONE) {
             if (resultCode == RESULT_OK) {
                 Uri uriFromPicker = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-                if(uriFromPicker != null) {
+                if (uriFromPicker != null) {
                     Ringtone ringtone = RingtoneManager.getRingtone(this, uriFromPicker);
                     if (ringtone != null) {
                         alarmToneStr = uriFromPicker.toString();
@@ -257,7 +289,7 @@ public class ConfigActivity extends Activity {
     }
 
     private void doFinish() {
-        if (android.os.Build.VERSION.SDK_INT >= 21) {
+        if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask();
         } else {
             finish();
@@ -265,7 +297,7 @@ public class ConfigActivity extends Activity {
     }
 
     public static Uri getConfiguredAlarmTone(final Context context, final String alarmToneStr) {
-        if(alarmToneStr != null) {
+        if (alarmToneStr != null) {
             switch (alarmToneStr) {
                 case ALARM_TONE_USE_SYSTEM_SOUND: {
                     Uri alarmTone = RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM);
@@ -285,5 +317,26 @@ public class ConfigActivity extends Activity {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    private void setTimeStyleButtonText() {
+        String[] timeStylesArr = getApplicationContext().getResources().getStringArray(R.array.config_time_style_options);
+        if(timeStyleValue < 0) {
+            timeStyleValue = 0;
+        }
+        if(timeStyleValue >= timeStylesArr.length) {
+            timeStyleValue = timeStylesArr.length -1;
+        }
+        timeStyleButton.setText(timeStylesArr[timeStyleValue]);
     }
 }

@@ -16,6 +16,9 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -58,6 +61,9 @@ public class AppWidget extends AppWidgetProvider{
         Runnable timerRunner;
         Ringtone ringtonePlaying;
         Runnable ringtoneStopperRunner;
+        int timeStyle;
+        NumberFormat clearTextTimeFormat;
+        NumberFormat outputTimeFormat;
     }
 
     private static class TimerRunner implements Runnable {
@@ -132,8 +138,6 @@ public class AppWidget extends AppWidgetProvider{
         }
     }
 
-    private static final NumberFormat clearTextTimeFormat = new ClearTextTimeFormat();
-    private static final NumberFormat outputTimeFormat = new OutputTimeFormat();
     private static final Map<Integer, NDCalcData> widgetData = new HashMap<>();
 
     @Override
@@ -155,6 +159,7 @@ public class AppWidget extends AppWidgetProvider{
             final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(context).edit();
             prefsEdit.remove(prefPrefix + TIME_SELECTION);
             prefsEdit.remove(prefPrefix + FILTER_SELECTION);
+            prefsEdit.remove(prefPrefix + ConfigActivity.TIME_STYLE);
             prefsEdit.remove(prefPrefix + ConfigActivity.SHOW_TIMER);
             prefsEdit.remove(prefPrefix + ConfigActivity.ALARM_TONE);
             prefsEdit.remove(prefPrefix + ConfigActivity.ALARM_DURATION);
@@ -246,6 +251,12 @@ public class AppWidget extends AppWidgetProvider{
             return;
         }
         final NDCalcData data = getWidgetData(context, appWidgetId);
+        final String prefPrefix = getPrefPrefix(appWidgetId);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, 0);
+        data.clearTextTimeFormat = new ClearTextTimeFormat(data.timeStyle);
+        data.outputTimeFormat = new OutputTimeFormat(data.timeStyle);
+
         final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
 
         final int transpValue = 255 - getWidgetData(context, appWidgetId).transparency * 255 / 100;
@@ -259,12 +270,20 @@ public class AppWidget extends AppWidgetProvider{
         setupButtonIntent(context, appWidgetId, remoteViews, R.id.configButton, WIDGET_CONFIG_BUTTON);
 
         // when options about showTime have changed, adjust current visibilities and stop existing timer
-        final String largeTimeText;
-        final String smallTimeText;
+        final CharSequence largeTimeText;
+        final CharSequence smallTimeText;
         if(data.calculatedTime < Integer.MAX_VALUE / 1000) {
             if (data.calculatedTime > 0.0) {
-                largeTimeText = outputTimeFormat.format(data.calculatedTime);
-                smallTimeText = clearTextTimeFormat.format(data.calculatedTime);
+                if(data.calculatedTime > Time.times[data.timeStyle][Time.times[data.timeStyle].length-1]) {
+                    final String normalText = data.outputTimeFormat.format(data.calculatedTime);
+                    final int pos = normalText.length();
+                    final SpannableString spanString = new SpannableString(normalText + "BULB");
+                    spanString.setSpan(new RelativeSizeSpan(0.333f), pos, pos+4, 0);
+                    largeTimeText = spanString;
+                } else {
+                    largeTimeText = data.outputTimeFormat.format(data.calculatedTime);
+                }
+                smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                 if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
                     if(data.timerEnding > 0 && data.timerRunner != null) {
                         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
@@ -294,8 +313,11 @@ public class AppWidget extends AppWidgetProvider{
                 remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
             }
         } else {
-            largeTimeText = String.format(context.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000));
-            smallTimeText = String.format(context.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
+            final String normalLargeText = String.format(context.getString(R.string.text_longer_than_symbol), data.outputTimeFormat.format(Integer.MAX_VALUE / 1000));
+            final SpannableString spanString = new SpannableString(normalLargeText);
+            spanString.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.ResultTextMaxExceededColor)), 0, normalLargeText.length(), 0);
+            largeTimeText = spanString;
+            smallTimeText = String.format(context.getString(R.string.text_longer_than), data.clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
             remoteViews.setViewVisibility(R.id.startButton, View.GONE);
             remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
         }
@@ -310,7 +332,7 @@ public class AppWidget extends AppWidgetProvider{
             public void run() {
                 final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
                 // try to restore list indexes -- can only scroll to them but not set them as checked?!?
-                int restoreTimeIndex = Arrays.binarySearch(Time.times, data.time);
+                int restoreTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
                 if (restoreTimeIndex < 0) {
                     restoreTimeIndex = 16;
                 }
@@ -359,9 +381,9 @@ public class AppWidget extends AppWidgetProvider{
             widgetData.put(appWidgetId, data);
             final String prefPrefix = getPrefPrefix(appWidgetId);
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            int oldTimeIndex = Arrays.binarySearch(Time.times, data.time);
+            int oldTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
             int newTimeIndex = prefs.getInt(prefPrefix + TIME_SELECTION, oldTimeIndex);
-            data.time = newTimeIndex >= 0 && newTimeIndex < Time.times.length ? Time.times[newTimeIndex] : 0.0;
+            data.time = newTimeIndex >= 0 && newTimeIndex < Time.times[data.timeStyle].length ? Time.times[data.timeStyle][newTimeIndex] : 0.0;
             long filterId = prefs.getLong(prefPrefix + FILTER_SELECTION, data.filter != null ? data.filter.getId() : Long.MIN_VALUE);
             NDFilterDAO dao = new NDFilterDAO(context);
             data.filter = dao.getNDFilter(filterId);
@@ -371,6 +393,9 @@ public class AppWidget extends AppWidgetProvider{
             data.alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, data.alarmToneStr);
             data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
             data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
+            data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, 0);
+            data.clearTextTimeFormat = new ClearTextTimeFormat(data.timeStyle);
+            data.outputTimeFormat = new OutputTimeFormat(data.timeStyle);
         }
         return data;
     }
@@ -380,7 +405,7 @@ public class AppWidget extends AppWidgetProvider{
         data.time = time;
         final String prefPrefix = getPrefPrefix(appWidgetId);
         final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(context).edit();
-        int timeIndex = Arrays.binarySearch(Time.times, data.time);
+        int timeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
         prefsEdit.putInt(prefPrefix + TIME_SELECTION, timeIndex);
         prefsEdit.commit();
     }
@@ -412,12 +437,20 @@ public class AppWidget extends AppWidgetProvider{
     }
 
     private static void showCalculation(final Context context, final int appWidgetId, final RemoteViews remoteViews, final NDCalcData data) {
-        final String largeTimeText;
-        final String smallTimeText;
+        final CharSequence largeTimeText;
+        final CharSequence smallTimeText;
         if(data.calculatedTime < Integer.MAX_VALUE / 1000) {
             if (data.calculatedTime > 0.0) {
-                largeTimeText = outputTimeFormat.format(data.calculatedTime);
-                smallTimeText = clearTextTimeFormat.format(data.calculatedTime);
+                if(data.calculatedTime > Time.times[data.timeStyle][Time.times[data.timeStyle].length-1]) {
+                    final String normalText = data.outputTimeFormat.format(data.calculatedTime);
+                    final int pos = normalText.length();
+                    final SpannableString spanString = new SpannableString(normalText + "BULB");
+                    spanString.setSpan(new RelativeSizeSpan(0.333f), pos, pos+4, 0);
+                    largeTimeText = spanString;
+                } else {
+                    largeTimeText = data.outputTimeFormat.format(data.calculatedTime);
+                }
+                smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                 if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
                     remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
@@ -426,7 +459,7 @@ public class AppWidget extends AppWidgetProvider{
                         public void run() {
                             // try to scroll list items back into view -- due to making the timer visible, they may have disappeared from view
                             final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
-                            final int restoreTimeIndex = Arrays.binarySearch(Time.times, data.time);
+                            final int restoreTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
                             if (restoreTimeIndex >= 0) {
                                 remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
                             }
@@ -447,8 +480,11 @@ public class AppWidget extends AppWidgetProvider{
                 remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
             }
         } else {
-            largeTimeText = String.format(context.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000));
-            smallTimeText = String.format(context.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
+            final String normalLargeText = String.format(context.getString(R.string.text_longer_than_symbol), data.outputTimeFormat.format(Integer.MAX_VALUE / 1000));
+            final SpannableString spanString = new SpannableString(normalLargeText);
+            spanString.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.ResultTextMaxExceededColor)), 0, normalLargeText.length(), 0);
+            largeTimeText = spanString;
+            smallTimeText = String.format(context.getString(R.string.text_longer_than), data.clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
             remoteViews.setViewVisibility(R.id.startButton, View.GONE);
             remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
         }
