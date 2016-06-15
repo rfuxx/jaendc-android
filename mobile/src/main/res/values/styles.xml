@@ -3,6 +3,14 @@
     <style name="AppTheme" parent="android:Theme">
         <!-- Customize your theme here. -->
     </style>
+    <style name="TimerProgressBarStyle" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:indeterminate">false</item>
+        <item name="android:progressDrawable">@drawable/progress_bar_old</item>
+        <item name="android:minHeight">4dp</item>
+        <item name="android:maxHeight">6dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+    </style>
     <style name="NotificationTitle" parent="@android:style/TextAppearance.Medium.Inverse">
         <!-- Customize your theme here. -->
     </style>

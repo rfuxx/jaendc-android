@@ -41,7 +41,7 @@
      />
 
     <ProgressBar
-        style="?android:attr/progressBarStyleHorizontal"
+        style="@style/TimerProgressBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/progressBar"

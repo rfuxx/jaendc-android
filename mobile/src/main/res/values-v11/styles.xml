@@ -4,5 +4,6 @@
     <style name="AppTheme" parent="android:Theme.Holo">
         <!-- Customize your theme here. -->
     </style>
-
+    <style name="TimerProgressBarStyle" parent="android:Widget.Holo.ProgressBar.Horizontal">
+    </style>
 </resources>
