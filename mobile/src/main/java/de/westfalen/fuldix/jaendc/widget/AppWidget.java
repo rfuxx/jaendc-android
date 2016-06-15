@@ -269,60 +269,8 @@ public class AppWidget extends AppWidgetProvider{
         setupButtonIntent(context, appWidgetId, remoteViews, R.id.stopButton, WIDGET_STOP_BUTTON);
         setupButtonIntent(context, appWidgetId, remoteViews, R.id.configButton, WIDGET_CONFIG_BUTTON);
 
-        // when options about showTime have changed, adjust current visibilities and stop existing timer
-        final CharSequence largeTimeText;
-        final CharSequence smallTimeText;
-        if(data.calculatedTime < Integer.MAX_VALUE / 1000) {
-            if (data.calculatedTime > 0.0) {
-                if(data.calculatedTime > Time.times[data.timeStyle][Time.times[data.timeStyle].length-1]) {
-                    final String normalText = data.outputTimeFormat.format(data.calculatedTime);
-                    final int pos = normalText.length();
-                    final SpannableString spanString = new SpannableString(normalText + "BULB");
-                    spanString.setSpan(new RelativeSizeSpan(0.333f), pos, pos+4, 0);
-                    largeTimeText = spanString;
-                } else {
-                    largeTimeText = data.outputTimeFormat.format(data.calculatedTime);
-                }
-                smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
-                if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
-                    if(data.timerEnding > 0 && data.timerRunner != null) {
-                        remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                        remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
-                        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
-                    } else {
-                        remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
-                        remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
-                        remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
-                    }
-                } else {
-                    remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                    remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
-                    remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
-                    remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
-                    remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
-                    remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
-                    if(data.timerEnding > 0 && data.timerRunner != null) {
-                        data.myHandler.removeCallbacks(data.timerRunner);
-                        data.timerEnding = 0;
-                    }
-                }
-            } else {
-                largeTimeText = context.getString(R.string.text_na);
-                smallTimeText = context.getString(R.string.text_na);
-                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
-            }
-        } else {
-            final String normalLargeText = String.format(context.getString(R.string.text_longer_than_symbol), data.outputTimeFormat.format(Integer.MAX_VALUE / 1000));
-            final SpannableString spanString = new SpannableString(normalLargeText);
-            spanString.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.ResultTextMaxExceededColor)), 0, normalLargeText.length(), 0);
-            largeTimeText = spanString;
-            smallTimeText = String.format(context.getString(R.string.text_longer_than), data.clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
-            remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-            remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
-        }
-        remoteViews.setTextViewText(R.id.largeTime, largeTimeText);
-        remoteViews.setTextViewText(R.id.smallTime, smallTimeText);
+        // takes care also of adjusting/sanitizing the timer button/progressbar states
+        showCalculation(context, appWidgetId, remoteViews, data);
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
@@ -452,8 +400,16 @@ public class AppWidget extends AppWidgetProvider{
                 }
                 smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                 if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
-                    remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
+                    // we need to handle here also the rebuilding of start/top/bar if the timer is running or not (if updating from externally)
+                    if(data.timerEnding > 0 && data.timerRunner != null) {
+                        remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                        remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+                        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+                    } else {
+                        remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
+                        remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
+                        remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
+                    }
                     data.myHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -470,8 +426,18 @@ public class AppWidget extends AppWidgetProvider{
                         }
                     }, 100);
                 } else {
+                    // we need to handle here also the rebuilding of start/top/bar
+                    // (if updating from externally and settings may have been changed)
                     remoteViews.setViewVisibility(R.id.startButton, View.GONE);
+                    remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
                     remoteViews.setViewVisibility(R.id.progressBar, View.GONE);
+                    remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
+                    remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
+                    remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
+                    if(data.timerEnding > 0 && data.timerRunner != null) {
+                        data.myHandler.removeCallbacks(data.timerRunner);
+                        data.timerEnding = 0;
+                    }
                 }
             } else {
                 largeTimeText = context.getString(R.string.text_na);
