@@ -8,7 +8,10 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
+    android:background="?android:attr/windowBackground"
+    android:id="@+id/screen"
     tools:context=".ConfigActivity">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -16,10 +19,29 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
                 style="@android:style/TextAppearance.Medium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/config_theme"
+                android:id="@+id/themeLabel"
+                android:labelFor="@+id/themeButton"
+                android:paddingTop="12sp"
+                />
+
+            <Button
+                android:layout_below="@id/themeLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/themeButton"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/themeButton"
                 android:text="@string/config_time_style"
                 android:id="@+id/timeStyleLabel"
                 android:labelFor="@+id/timeStylePOV"
@@ -67,6 +89,28 @@
             <TextView
                 style="@android:style/TextAppearance.Medium"
                 android:layout_below="@id/showTimerSeek"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/config_show_timer_countdown"
+                android:id="@+id/showCountdownLabel"
+                android:labelFor="@+id/showCountdownSwitch"
+                android:paddingTop="12sp"
+                />
+
+            <CheckBox
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBaseline="@id/showCountdownLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:id="@+id/showCountdownSwitch"
+                android:paddingTop="12sp"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_below="@id/showCountdownLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/config_alarm_tone"

@@ -6,6 +6,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -17,6 +21,7 @@ import android.widget.ListView;
 import de.westfalen.fuldix.jaendc.NDCalculatorActivity;
 import de.westfalen.fuldix.jaendc.NDFilterAdapter;
 import de.westfalen.fuldix.jaendc.R;
+import de.westfalen.fuldix.jaendc.ThemeHandler;
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
@@ -104,7 +109,7 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
             if (numFiltersToDelete > 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(NDFilterListActivity.this);
                 builder.setTitle(R.string.confirm_delete_title);
-                builder.setIcon(android.R.drawable.ic_dialog_alert);
+                builder.setIcon(R.drawable.ic_dialog_alert_tinted);
                 final String msg;
                 if (numFiltersToDelete > 1) {
                     msg = getResources().getQuantityString(R.plurals.confirm_delete_multiple_filter, numFiltersToDelete, numFiltersToDelete);
@@ -155,6 +160,7 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
     }
 
     private static final int ACT_EDIT_DETAIL = 101;
+    private final ThemeHandler themeHandler = new ThemeHandler(this);
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -167,7 +173,9 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        themeHandler.onActivityCreate();
         setContentView(R.layout.activity_ndfilter_list);
+        themeHandler.handleSystemUiVisibility(findViewById(R.id.ndfilter_list));
         // Show the Up button in the action bar.
         final ActionBar ab = getActionBar();
         if(ab != null) {
@@ -187,14 +195,13 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
                     .findFragmentById(R.id.ndfilter_list))
                     .setActivateOnItemClick();
         }
-
-        // TODO: If exposing deep links into your app, handle intents here.
     }
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_manage, menu);
+        themeHandler.onCreateOptionsMenu(menu);
         return super.onCreateOptionsMenu(menu);
     }
 

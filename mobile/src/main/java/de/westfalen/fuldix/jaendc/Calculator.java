@@ -5,6 +5,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -24,7 +28,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.StringTokenizer;
@@ -33,6 +36,7 @@ import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
+import de.westfalen.fuldix.jaendc.text.CountdownTextTimeFormat;
 import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
@@ -42,6 +46,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private static final String PERS_TIMELIST_CHECKED_INDEX = "timeList.checkedIndex";
     private static final String PERS_FILTERLIST_CHECKED_IDS = "filterList.checkedIds";
 
+    private final ThemeHandler themeHandler;
     private final NDFilterAdapter filterAdapter;
     private final ListView timeList;
     private final ListView filterList;
@@ -49,6 +54,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private final TextView smallTime;
     private final ToggleButton startStopButton;
     private final ProgressBar progressBar;
+    private final View screen;
     private MenuItem multiselectItem;
     private final Context context;
     private final Runnable scrollListsToSelection = new Runnable() {
@@ -59,9 +65,11 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         }
     };
 
-    private NumberFormat clearTextTimeFormat;
-    private NumberFormat outputTimeFormat;
+    private ClearTextTimeFormat clearTextTimeFormat;
+    private OutputTimeFormat outputTimeFormat;
+    private CountdownTextTimeFormat countdownTextFormat;
     private int timeStyle;
+    private boolean showCountdown;
 
     private boolean multiselect;
     private double ndtime;
@@ -69,15 +77,18 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     private boolean uiIsUpdating = false;
 
-    public Calculator(final Activity activity)
+    public Calculator(final Activity activity, final ThemeHandler themeHandler)
     {
         context = activity;
+        this.themeHandler = themeHandler;
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.registerOnSharedPreferenceChangeListener(this);
         timeStyle = prefs.getInt(ConfigActivity.TIME_STYLE, 0);
+        showCountdown = prefs.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
         clearTextTimeFormat = new ClearTextTimeFormat(timeStyle);
         outputTimeFormat = new OutputTimeFormat(timeStyle);
+        countdownTextFormat = new CountdownTextTimeFormat();
 
         filterList = (ListView) activity.findViewById(R.id.filterList);
         filterAdapter = new NDFilterAdapter(activity);
@@ -96,10 +107,12 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         largeTime = (TextView) activity.findViewById(R.id.largeTime);
         smallTime = (TextView) activity.findViewById(R.id.smallTime);
         startStopButton = (ToggleButton) activity.findViewById(R.id.startStopButton);
+        themeHandler.setStartStopButtonStyle(startStopButton);
         startStopButton.setVisibility(View.INVISIBLE);
         startStopButton.setOnCheckedChangeListener(this);
         progressBar = (ProgressBar) activity.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
+        screen = (View) activity.findViewById(R.id.screen);
 
         timeList.setSelection(16);
         timeList.setItemChecked(18, true);
@@ -117,11 +130,11 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 multiselectItem.setChecked(true);
                 if (Build.VERSION.SDK_INT >= 11) {
                     // v11 the icon is always visible -> show what we *have*
-                    multiselectItem.setIcon(R.drawable.ic_multiselect);
+                    multiselectItem.setIcon(themeHandler.getTintedDrawableForActionBar(R.drawable.ic_multiselect_tinted));
                 } else {
                     // older the icon is only visible when the menu pops up
                     // -> show what it *will* switch *to*
-                    multiselectItem.setIcon(R.drawable.ic_singleselect);
+                    multiselectItem.setIcon(themeHandler.getTintedDrawableForActionBar(R.drawable.ic_singleselect_tinted));
                     multiselectItem.setTitle(R.string.action_multi_single);
                 }
             }
@@ -130,9 +143,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             if(multiselectItem != null) {
                 multiselectItem.setChecked(false);
                 if (Build.VERSION.SDK_INT >= 11) {
-                    multiselectItem.setIcon(R.drawable.ic_singleselect);
+                    multiselectItem.setIcon(themeHandler.getTintedDrawableForActionBar(R.drawable.ic_singleselect_tinted));
                 } else {
-                    multiselectItem.setIcon(R.drawable.ic_multiselect);
+                    multiselectItem.setIcon(themeHandler.getTintedDrawableForActionBar(R.drawable.ic_multiselect_tinted));
                     multiselectItem.setTitle(R.string.action_multi);
                 }
             }
@@ -182,6 +195,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 uiIsUpdating = false;
             }
         }
+        themeHandler.setStartStopButtonStyle(buttonView);
     }
 
     public boolean setUiIsUpdating(final boolean uiIsUpdating) {
@@ -238,11 +252,14 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 }
             }  else {
                 largeTime.setText(String.format(context.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000)));
+                final Resources.Theme theme = context.getTheme();
+                final TypedArray styled = theme.obtainStyledAttributes(new int[]{R.attr.resultTextMaxExceeded});
                 if (Build.VERSION.SDK_INT >= 23) {
-                    largeTime.setTextAppearance(R.style.ResultTextMaxExceeded);
+                    largeTime.setTextAppearance(styled.getResourceId(0, R.style.ResultTextMaxExceeded));
                 } else {
-                    largeTime.setTextAppearance(context, R.style.ResultTextMaxExceeded);
+                    largeTime.setTextAppearance(context, styled.getResourceId(0, R.style.ResultTextMaxExceeded));
                 }
+                styled.recycle();
                 smallTime.setText(String.format(context.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000)));
                 startStopButton.setVisibility(View.INVISIBLE);
             }
@@ -256,7 +273,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             multiselectItem.setEnabled(false);
         }
         progressBar.setVisibility(View.VISIBLE);
-        timerEnding = SystemClock.elapsedRealtime() + progressBar.getMax();
+        timerEnding = SystemClock.elapsedRealtime() + (int) (ndtime * 1000);
         CalculatorAlarm.schedule(context, timerEnding);
         run();
     }
@@ -269,8 +286,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         final boolean oldUiIsUpdating = uiIsUpdating;
         try {
             uiIsUpdating = true;
+            smallTime.setText(clearTextTimeFormat.format(ndtime));
             startStopButton.setChecked(false);
-            progressBar.removeCallbacks(this);
+            screen.removeCallbacks(this);
             progressBar.setVisibility(View.INVISIBLE);
             timeList.setEnabled(true);
             filterList.setEnabled(true);
@@ -284,22 +302,31 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     @Override
     public void run() {
-        final int milliseconds = progressBar.getMax();
         final long current = SystemClock.elapsedRealtime();
         final int remaining = (int) (timerEnding - current);
+        if(showCountdown) {
+            smallTime.setText(countdownTextFormat.format(remaining));
+        }
         if(remaining > 0) {
             progressBar.setProgress(remaining);
             final int width = progressBar.getWidth();
             int delayToNext;
-            if(width > 0) {
-                delayToNext = milliseconds / width; // milliseconds/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
-                if (delayToNext < 20) {
-                    delayToNext = 20;
+            if (width > 0) {
+                final int milliseconds = (int) (ndtime * 1000);
+                final int delayToNextProgressBar = milliseconds / width; // milliseconds/width is the time until next progress bar pixel might hit (avoid unneccesary updates)
+                if(showCountdown) {
+                    final int delayToNextCountdownText = countdownTextFormat.delayToNext(remaining);
+                    delayToNext = Math.min(delayToNextCountdownText, delayToNextProgressBar);
+                } else {
+                    delayToNext = delayToNextProgressBar;
                 }
             } else {
                 delayToNext = remaining;
             }
-            progressBar.postDelayed(this, delayToNext);
+            if (delayToNext < 20) {
+                delayToNext = 20;
+            }
+            screen.postDelayed(this, delayToNext);
         } else {
             // alarm is played through scheduled alarm
             stopTimer(true);
@@ -310,7 +337,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         final boolean oldUiIsUpdating = uiIsUpdating;
         try {
             uiIsUpdating = true;
-            progressBar.removeCallbacks(this);
+            screen.removeCallbacks(this);
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             final double startTimer = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
             if (!(startTimer > 0 && ndtime >= startTimer)) {
@@ -383,7 +410,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     }
 
     void savePersistentState() {
-        progressBar.removeCallbacks(this);
+        screen.removeCallbacks(this);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(PERS_TIMER_ENDING, timerEnding);
@@ -405,7 +432,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         if(filterAdapter.getCount() == 0) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setTitle(R.string.dialog_create_filters_title);
-            builder.setIcon(android.R.drawable.ic_dialog_alert);
+            builder.setIcon(R.drawable.ic_dialog_alert_tinted);
             builder.setMessage(R.string.dialog_create_filters_text);
             builder.setCancelable(true);
             builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -470,6 +497,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             }
             timeList.setAdapter(timeAdapter);
             calculate();
+        } else if(ConfigActivity.SHOW_COUNTDOWN.equals(key)) {
+            showCountdown = sharedPreferences.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
         }
     }
 }

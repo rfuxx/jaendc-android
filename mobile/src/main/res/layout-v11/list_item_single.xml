@@ -3,7 +3,7 @@
     style="?android:attr/textAppearanceLarge"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/activatedBackgroundIndicator"
+    android:background="?attr/listActivatedBackgroundIndicator"
     android:layout_centerVertical="true"
     android:paddingTop="8sp"
     android:paddingBottom="9sp"

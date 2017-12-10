@@ -8,6 +8,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -34,6 +36,7 @@ import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.model.Time;
 import de.westfalen.fuldix.jaendc.text.ClearTextTimeFormat;
+import de.westfalen.fuldix.jaendc.text.CountdownTextTimeFormat;
 import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 
 @TargetApi(11)
@@ -46,6 +49,10 @@ public class AppWidget extends AppWidgetProvider{
     public static final String WIDGET_CONFIG_WAS_MODIFIED = "de.westfalen.fuldix.jaendc.config_result";
     private static final String TIME_SELECTION = "time";
     private static final String FILTER_SELECTION = "filter";
+
+    private static int[] LAYOUT = { R.layout.app_widget_theme_dark,
+                                    R.layout.app_widget_theme_light,
+                                    R.layout.app_widget_theme_nightmode };
 
     private static class NDCalcData {
         double time;
@@ -62,8 +69,11 @@ public class AppWidget extends AppWidgetProvider{
         Ringtone ringtonePlaying;
         Runnable ringtoneStopperRunner;
         int timeStyle;
+        int theme;
+        boolean showCountdown;
         NumberFormat clearTextTimeFormat;
         NumberFormat outputTimeFormat;
+        CountdownTextTimeFormat countdownTextFormat = new CountdownTextTimeFormat();
     }
 
     private static class TimerRunner implements Runnable {
@@ -80,7 +90,7 @@ public class AppWidget extends AppWidgetProvider{
             final int remaining = (int) (data.timerEnding - current);
             if (remaining > 0) {
                 final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-                final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
+                final RemoteViews remoteViews = createRemoteViews(context, data);
                 final int ndtimeMillis = (int) (data.calculatedTime *1000);
                 remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                 remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
@@ -89,6 +99,9 @@ public class AppWidget extends AppWidgetProvider{
                 remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
                 // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
                 // strictly need onthe the below
+                if(data.showCountdown) {
+                    remoteViews.setTextViewText(R.id.smallTime, data.countdownTextFormat.format(remaining));
+                }
                 remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, remaining, false);
                 appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
                 final int width = 600; // should actually be something like progressBar.getWidth(); -- if only we could query the remoteview about its size...
@@ -164,6 +177,8 @@ public class AppWidget extends AppWidgetProvider{
             prefsEdit.remove(prefPrefix + ConfigActivity.ALARM_TONE);
             prefsEdit.remove(prefPrefix + ConfigActivity.ALARM_DURATION);
             prefsEdit.remove(prefPrefix + ConfigActivity.TRANSPARENCY);
+            prefsEdit.remove(prefPrefix + ConfigActivity.THEME);
+            prefsEdit.remove(prefPrefix + ConfigActivity.SHOW_COUNTDOWN);
             prefsEdit.commit();
         }
         super.onDeleted(context, appWidgetIds);
@@ -240,6 +255,8 @@ public class AppWidget extends AppWidgetProvider{
                 data.alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, data.alarmToneStr);
                 data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
                 data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
+                data.theme = prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme);
+                data.showCountdown = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, data.showCountdown);
                 updateAppWidget(context, appWidgetManager, appWidgetId);
                 break;
             }
@@ -257,10 +274,16 @@ public class AppWidget extends AppWidgetProvider{
         data.clearTextTimeFormat = new ClearTextTimeFormat(data.timeStyle);
         data.outputTimeFormat = new OutputTimeFormat(data.timeStyle);
 
-        final RemoteViews remoteViews = new RemoteViews(context.getPackageName(),R.layout.app_widget);
+        final RemoteViews remoteViews = createRemoteViews(context, data);
+
+        final Resources.Theme theme = context.getResources().newTheme();
+        theme.applyStyle(ConfigActivity.THEMES[data.theme], true);
+        final TypedArray styled = theme.obtainStyledAttributes(new int[]{android.R.attr.colorBackground});
+        int bgColor = styled.getColor(0, 0x000000);
+        styled.recycle();
 
         final int transpValue = 255 - getWidgetData(context, appWidgetId).transparency * 255 / 100;
-        remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24);
+        remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24 | (bgColor & 0xffffff));
 
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, WIDGET_TIME_LIST);
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.filterList, NDFilterListService.class, WIDGET_FILTER_LIST);
@@ -278,7 +301,7 @@ public class AppWidget extends AppWidgetProvider{
         data.myHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
+                final RemoteViews remoteViews = createRemoteViews(context, data);
                 // try to restore list indexes -- can only scroll to them but not set them as checked?!?
                 int restoreTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
                 if (restoreTimeIndex < 0) {
@@ -341,7 +364,9 @@ public class AppWidget extends AppWidgetProvider{
             data.alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, data.alarmToneStr);
             data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
             data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
-            data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, 0);
+            data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, data.timeStyle);
+            data.theme = prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme);
+            data.showCountdown = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, data.showCountdown);
             data.clearTextTimeFormat = new ClearTextTimeFormat(data.timeStyle);
             data.outputTimeFormat = new OutputTimeFormat(data.timeStyle);
         }
@@ -377,12 +402,12 @@ public class AppWidget extends AppWidgetProvider{
 
     private static void setCalculation(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(context, appWidgetId);
+        final RemoteViews remoteViews = createRemoteViews(context, data);
         setCalculationOnly(data);
         showCalculation(context, appWidgetId, remoteViews, data);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
-    }
+     }
 
     private static void showCalculation(final Context context, final int appWidgetId, final RemoteViews remoteViews, final NDCalcData data) {
         final CharSequence largeTimeText;
@@ -398,23 +423,30 @@ public class AppWidget extends AppWidgetProvider{
                 } else {
                     largeTimeText = data.outputTimeFormat.format(data.calculatedTime);
                 }
-                smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                 if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
                     // we need to handle here also the rebuilding of start/top/bar if the timer is running or not (if updating from externally)
                     if(data.timerEnding > 0 && data.timerRunner != null) {
                         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
                         remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
                         remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+                        if(data.showCountdown) {
+                            final long current = SystemClock.elapsedRealtime();
+                            final int remaining = (int) (data.timerEnding - current);
+                            smallTimeText = data.countdownTextFormat.format(remaining);
+                        } else {
+                            smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
+                        }
                     } else {
                         remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
                         remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
                         remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
+                        smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                     }
                     data.myHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             // try to scroll list items back into view -- due to making the timer visible, they may have disappeared from view
-                            final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
+                            final RemoteViews remoteViews = createRemoteViews(context, data);
                             final int restoreTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
                             if (restoreTimeIndex >= 0) {
                                 remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
@@ -438,6 +470,7 @@ public class AppWidget extends AppWidgetProvider{
                         data.myHandler.removeCallbacks(data.timerRunner);
                         data.timerEnding = 0;
                     }
+                    smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                 }
             } else {
                 largeTimeText = context.getString(R.string.text_na);
@@ -460,8 +493,8 @@ public class AppWidget extends AppWidgetProvider{
 
     private static void startTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(context, appWidgetId);
+        final RemoteViews remoteViews = createRemoteViews(context, data);
         final int ndtimeMillis = (int) (data.calculatedTime *1000);
         remoteViews.setViewVisibility(R.id.startButton, View.GONE);
         remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
@@ -469,6 +502,9 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, ndtimeMillis, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
+        if(data.showCountdown) {
+            remoteViews.setTextViewText(R.id.smallTime, data.countdownTextFormat.format(ndtimeMillis));
+        }
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
         data.timerEnding = SystemClock.elapsedRealtime() + ndtimeMillis;
         if(data.timerRunner == null) {
@@ -479,14 +515,15 @@ public class AppWidget extends AppWidgetProvider{
 
     private static void stopTimer(final Context context, final int appWidgetId) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        final RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.app_widget);
         final NDCalcData data = getWidgetData(context, appWidgetId);
+        final RemoteViews remoteViews = createRemoteViews(context, data);
         remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
         remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
         remoteViews.setViewVisibility(R.id.progressBar, View.INVISIBLE);
         remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
+        remoteViews.setTextViewText(R.id.smallTime, data.clearTextTimeFormat.format(data.calculatedTime));
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
         data.timerEnding = 0;
         data.myHandler.removeCallbacks(data.timerRunner);
@@ -513,7 +550,7 @@ public class AppWidget extends AppWidgetProvider{
         }
         appWidgetManager.notifyAppWidgetViewDataChanged(allWidgets, R.id.filterList);
 
-        NDFilterDAO dao = new NDFilterDAO(context);
+        final NDFilterDAO dao = new NDFilterDAO(context);
         for(final int appWidgetId : allWidgets) {
             final NDCalcData data = getWidgetData(context, appWidgetId);
             final NDFilter filterBeforeUpdate = data.filter;
@@ -543,6 +580,10 @@ public class AppWidget extends AppWidgetProvider{
                 }, 500);
             }
         }
+    }
+
+    private static RemoteViews createRemoteViews(final Context context, final NDCalcData data) {
+        return new RemoteViews(context.getPackageName(), Build.VERSION.SDK_INT >= 23 ? LAYOUT[data.theme] : R.layout.app_widget);
     }
 
     public static String getPrefPrefix(final int appWidgetId) {

@@ -4,6 +4,10 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -12,20 +16,23 @@ import android.view.MenuItem;
 import de.westfalen.fuldix.jaendc.manage.NDFilterListActivity;
 
 public class NDCalculatorActivity extends Activity {
+    private final ThemeHandler themeHandler = new ThemeHandler(this);
     private Calculator calculator;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        themeHandler.onActivityCreate();
         if (Build.VERSION.SDK_INT >= 11) {
             setActionBarSubtitle();
         }
         setContentView(R.layout.activity_ndcalc);
-        calculator = new Calculator(this);
+        themeHandler.handleSystemUiVisibility(findViewById(R.id.screen));
+        calculator = new Calculator(this, themeHandler);
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(final Bundle savedInstanceState) {
         boolean uiWasUpdating = calculator.setUiIsUpdating(true);
         super.onRestoreInstanceState(savedInstanceState);
         calculator.setUiIsUpdating(uiWasUpdating);
@@ -33,21 +40,22 @@ public class NDCalculatorActivity extends Activity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle savedInstanceState) {
+    protected void onSaveInstanceState(final Bundle savedInstanceState) {
         calculator.saveState(savedInstanceState);
         super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_ndcalc, menu);
         calculator.onCreateOptionsMenu(menu);
+        themeHandler.onCreateOptionsMenu(menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(final MenuItem item) {
         boolean result = super.onOptionsItemSelected(item);
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long

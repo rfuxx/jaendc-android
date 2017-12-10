@@ -83,7 +83,7 @@ public class NDFilterDetailFragment extends Fragment {
         Activity activity = getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(R.string.confirm_delete_title);
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setIcon(R.drawable.ic_dialog_alert_tinted);
         String filterName = mItem.getName().trim();
         if(filterName.equals("")) {
             filterName = activity.getString(R.string.confirm_delete_this_filter);

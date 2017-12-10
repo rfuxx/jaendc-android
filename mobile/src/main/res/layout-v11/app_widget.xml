@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:layout_margin="@dimen/widget_margin"
     android:id="@+id/widget"
-    tools:context=".AppWidget">
+    tools:context=".widget.AppWidget">
 
     <ImageButton
         style="?android:attr/borderlessButtonStyle"

@@ -3,8 +3,7 @@
     android:shape="rectangle" >
 
     <corners android:radius="16sp" />
-
-    <solid android:color="#ffaa0000" />
+    <solid android:color="@color/buttonStartRed" />
 
     <padding
         android:bottom="5sp"

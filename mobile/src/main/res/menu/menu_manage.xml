@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".NDFilterListActivity">
     <item android:id="@+id/action_add" android:title="@string/action_add"
-        android:icon="@android:drawable/ic_menu_add" android:showAsAction="ifRoom"/>
+        android:icon="@drawable/ic_menu_add_tinted" android:showAsAction="ifRoom"/>
     <item android:id="@+id/action_list_delete" android:title="@string/action_delete"
-        android:icon="@android:drawable/ic_menu_delete" android:showAsAction="ifRoom"/>
+        android:icon="@drawable/ic_menu_delete_tinted" android:showAsAction="ifRoom"/>
 </menu>

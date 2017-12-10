@@ -1,16 +1,108 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme">
-        <!-- Customize your theme here. -->
+    <style name="AppThemeDark" parent="android:Theme">
+        <item name="colorListItemActivated">@color/listActivatedBackground</item>
+        <item name="actionBarIconTint">@android:color/transparent</item>
+        <item name="handleIconTint">?android:attr/textColorPrimary</item>
+        <item name="timerButtonStart">@color/buttonStartGreen</item>
+        <item name="timerButtonStop">@color/buttonStartRed</item>
+        <item name="timerButtonTextColor">@android:color/white</item>
+        <item name="timerProgressBarStyle">@style/TimerProgressBarStyle</item>
+        <item name="notificationTitle">@style/NotificationTitle</item>
+        <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextNormal">@style/ResultTextNormal</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded</item>
     </style>
+
+    <style name="AppThemeLight" parent="android:Theme.Light">
+        <item name="colorListItemActivated">@color/listActivatedBackground.Light</item>
+        <item name="actionBarIconTint">@android:color/transparent</item>
+        <item name="handleIconTint">?android:attr/textColorPrimary</item>
+        <item name="timerButtonStart">@color/buttonStartGreen.Light</item>
+        <item name="timerButtonStop">@color/buttonStartRed.Light</item>
+        <item name="timerButtonTextColor">@android:color/black</item>
+        <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.Light</item>
+        <item name="notificationTitle">@style/NotificationTitle</item>
+        <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextNormal">@style/ResultTextNormal</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.Light</item>
+    </style>
+
+    <style name="AppThemeNightMode" parent="android:Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@color/nightModeBlack</item>
+        <item name="android:windowTitleStyle">@style/WindowTitleStyleNightMode</item>
+        <item name="android:windowTitleBackgroundStyle">@style/WindowTitleStyleNightMode</item>
+        <item name="android:textColorPrimary">@color/nightModeRed</item>
+        <item name="android:textColorSecondary">@color/nightModeLightRed</item>
+        <item name="android:textColorTertiary">@color/nightModeLightRed</item>
+        <item name="android:textColorHighlight">@color/nightModeLightRed</item>
+        <item name="android:textColorHint">@color/nightModeLightRed</item>
+        <item name="android:colorForeground">@color/nightModeRed</item>
+        <item name="android:childDivider">@drawable/list_divider_night_mode</item>
+        <item name="android:panelFullBackground">@color/nightModeLightRed</item>
+        <item name="android:listViewStyle">@style/ListViewStyleNightMode</item>
+        <item name="android:buttonStyle">@style/ButtonStyleNightMode</item>
+        <item name="colorListItemActivated">@color/nightModeDarkRed</item>
+        <item name="actionBarIconTint">@color/nightModeDarkRed</item>
+        <item name="handleIconTint">@color/nightModeRed</item>
+        <item name="timerButtonStart">@color/nightModeDarkGreen</item>
+        <item name="timerButtonStop">@color/nightModeDarkRed</item>
+        <item name="timerButtonTextColor">@color/nightModeLightRed</item>
+        <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
+        <item name="notificationTitle">@style/NotificationTitle</item>
+        <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextNormal">@style/ResultTextNormal</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>
+    </style>
+
+    <style name="WindowTitleStyleNightMode">
+        <item name="android:textColor">@color/nightModeLightRed</item>
+        <item name="android:background">@color/nightModeBlack</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.WindowTitle</item>
+    </style>
+
+    <style name="ListViewStyleNightMode" parent="android:style/Widget.ListView">
+        <item name="android:listSelector">@android:drawable/list_selector_background</item>
+        <item name="android:cacheColorHint">?android:attr/colorBackgroundCacheHint</item>
+        <item name="android:divider">@drawable/list_divider_night_mode</item>
+    </style>
+
+    <style name="ButtonStyleNightMode" parent="android:style/Widget.Button">
+        <item name="android:background">@drawable/button_night_mode</item>
+        <item name="android:textColor">@color/nightModeLightRed</item>
+    </style>
+
     <style name="TimerProgressBarStyle" parent="android:Widget.ProgressBar.Horizontal">
         <item name="android:indeterminate">false</item>
-        <item name="android:progressDrawable">@drawable/progress_bar_old</item>
+        <item name="android:progressDrawable">@drawable/timer_progress_bar</item>
         <item name="android:minHeight">4dp</item>
         <item name="android:maxHeight">6dp</item>
         <item name="android:layout_marginTop">4dp</item>
         <item name="android:layout_marginBottom">2dp</item>
     </style>
+
+    <style name="TimerProgressBarStyle.Light" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:indeterminate">false</item>
+        <item name="android:progressDrawable">@drawable/timer_progress_bar_light</item>
+        <item name="android:minHeight">4dp</item>
+        <item name="android:maxHeight">6dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+    </style>
+
+    <style name="TimerProgressBarStyle.NightMode" parent="android:Widget.ProgressBar.Horizontal">
+        <item name="android:indeterminate">false</item>
+        <item name="android:progressDrawable">@drawable/timer_progress_bar_night_mode</item>
+        <item name="android:minHeight">4dp</item>
+        <item name="android:maxHeight">6dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+    </style>
+
     <style name="NotificationTitle" parent="@android:style/TextAppearance.Medium.Inverse">
         <!-- Customize your theme here. -->
     </style>
@@ -25,5 +117,42 @@
     <style name="ResultTextMaxExceeded" parent="ResultTextNormal">
         <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
     </style>
+    <style name="ResultTextMaxExceeded.Light" parent="ResultTextNormal">
+        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+    </style>
+    <style name="ResultTextMaxExceeded.NightNode" parent="ResultTextNormal">
+        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+    </style>
+
+    <attr name="timerProgressBarStyle" format="reference" />
+    <attr name="notificationTitle" format="reference" />
+    <attr name="notificationText" format="reference" />
+    <attr name="resultTextNormal" format="reference" />
+    <attr name="resultTextBulbLength" format="reference" />
+    <attr name="resultTextMaxExceeded" format="reference" />
+    <attr name="listActivatedBackgroundIndicator" format="reference" />
+    <attr name="handleIconTint" format="color" />
+    <attr name="actionBarIconTint" format="color" />
+    <attr name="colorListItemActivated" format="color" />
+    <attr name="timerButtonStart" format="color" />
+    <attr name="timerButtonStop" format="color" />
+    <attr name="timerButtonTextColor" format="color" />
+
+    <color name="listActivatedBackground">#ff047ea8</color>
+    <color name="listActivatedBackground.Light">#ff33b5e5</color>
+    <color name="buttonStartGreen">#ff00aa00</color>
+    <color name="buttonStartRed">#ffaa0000</color>
+    <color name="buttonStartGreen.Light">#ff44ff44</color>
+    <color name="buttonStartRed.Light">#ffff8080</color>
+
     <color name="ResultTextMaxExceededColor">#ff8888</color>
+    <color name="ResultTextMaxExceededColor.Light">#800000</color>
+    <color name="ResultTextMaxExceededColor.NightMode">#a00000</color>
+
+    <color name="nightModeRed">#800000</color>
+    <color name="nightModeDarkRed">#300000</color>
+    <color name="nightModeDarkGreen">#281800</color>
+    <color name="nightModeLightRed">#a00000</color>
+    <color name="nightModeBlack">#000000</color>
+
 </resources>

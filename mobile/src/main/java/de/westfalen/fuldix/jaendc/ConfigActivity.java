@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,12 +28,17 @@ public class ConfigActivity extends Activity {
     public static final String SHOW_TIMER = "showTimer";
     public static final String ALARM_TONE = "alarmTone";
     public static final String ALARM_DURATION = "alarmDuration";
+    public static final String SHOW_COUNTDOWN = "showCountdown";
+    public static final String THEME = "theme";
     public static final String TRANSPARENCY = "transparency";
     public static final String ALARM_TONE_USE_SYSTEM_SOUND = "use_system_sound";
     public static final String ALARM_TONE_BE_SILENT = "silent";
+    public static final int[] THEMES = {R.style.AppThemeDark, R.style.AppThemeLight, R.style.AppThemeNightMode};
     private static final int PICK_RINGTONE = 201;
+    private Button themeButton;
     private Button timeStyleButton;
     private Button alarmToneButton;
+    private int themeValue = 0;
     private int timeStyleValue = 0;
     private int showTimerValue = 4;
     private int transparencyValue = 33;
@@ -43,14 +49,35 @@ public class ConfigActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_config);
 
         setResult(RESULT_CANCELED);
+        final Intent intent = getIntent();
+        final Bundle extras = intent.getExtras();
+        if (extras != null) {
+            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
 
+        final String prefPrefix = (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID)
+                                    ? AppWidget.getPrefPrefix(appWidgetId) : "";
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        themeValue = prefs.getInt(prefPrefix + ConfigActivity.THEME, themeValue);
+        timeStyleValue = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
+        showTimerValue = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
+        boolean showCountdownValue = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, false);
+        alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, ALARM_TONE_BE_SILENT);
+        alarmDurationValue = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
+
+        final ThemeHandler themeHandler = new ThemeHandler(this, false);
+        themeHandler.onActivityCreate(prefPrefix);
+
+        setContentView(R.layout.activity_config);
+        themeHandler.handleSystemUiVisibility(findViewById(R.id.screen), prefPrefix);
+        themeButton = (Button) findViewById(R.id.themeButton);
         timeStyleButton = (Button) findViewById(R.id.timeStyleButton);
         alarmToneButton = (Button) findViewById(R.id.alarmToneButton);
         final SeekBar showTimerBar = (SeekBar) findViewById(R.id.showTimerSeek);
         final TextView showTimerText = (TextView) findViewById(R.id.showTimerValue);
+        final CheckBox showCountdownSwitch = (CheckBox) findViewById(R.id.showCountdownSwitch);
         final SeekBar transparencyBar = (SeekBar) findViewById(R.id.transparencySeek);
         final TextView transparencyText = (TextView) findViewById(R.id.transparencyValue);
         final TextView transparencyLabel = (TextView) findViewById(R.id.transparencyLabel);
@@ -58,19 +85,8 @@ public class ConfigActivity extends Activity {
         final SeekBar alarmDurationBar = (SeekBar) findViewById(R.id.alarmDurationSeek);
         final TextView alarmDurationText = (TextView) findViewById(R.id.alarmDurationValue);
 
-        final Intent intent = getIntent();
-        final Bundle extras = intent.getExtras();
-        if (extras != null) {
-            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-        }
         if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             if (Build.VERSION.SDK_INT >= 11) {
-                final String prefPrefix = AppWidget.getPrefPrefix(appWidgetId);
-                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this);
-                timeStyleValue = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
-                showTimerValue = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
-                alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, ALARM_TONE_BE_SILENT);
-                alarmDurationValue = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
                 transparencyValue = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, transparencyValue);
                 setTitle(R.string.title_activity_config_widget);
                 final ActionBar ab = getActionBar();
@@ -80,17 +96,15 @@ public class ConfigActivity extends Activity {
                 transparencyLabel.setVisibility(View.VISIBLE);
                 transparencyBar.setVisibility(View.VISIBLE);
                 transparencyText.setVisibility(View.VISIBLE);
+                final TextView themeLabel = (TextView) findViewById(R.id.themeLabel);
+                themeLabel.setVisibility(Build.VERSION.SDK_INT >= 23 ? View.VISIBLE : View.GONE);
+                themeButton.setVisibility(Build.VERSION.SDK_INT >= 23 ? View.VISIBLE : View.GONE);
             } else {
                 Toast.makeText(this, R.string.widget_not_for_2x, Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }
         } else {
-            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            timeStyleValue = prefs.getInt(TIME_STYLE, timeStyleValue);
-            showTimerValue = prefs.getInt(SHOW_TIMER, showTimerValue);
-            alarmToneStr = prefs.getString(ALARM_TONE, ALARM_TONE_USE_SYSTEM_SOUND);
-            alarmDurationValue = prefs.getInt(ALARM_DURATION, alarmDurationValue);
             setTitle(R.string.title_activity_config);
             if (Build.VERSION.SDK_INT >= 11) {
                 final ActionBar ab = getActionBar();
@@ -124,6 +138,24 @@ public class ConfigActivity extends Activity {
             public void onStopTrackingTouch(final SeekBar seekBar) {
             }
         };
+        themeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                final String[] timeStylesArr = getApplicationContext().getResources().getStringArray(R.array.config_theme_options);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(ConfigActivity.this);
+
+                builder.setTitle(getString(R.string.config_theme));
+                builder.setItems(timeStylesArr, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        themeValue = which;
+                        setThemeButtonText();
+                    }
+                });
+                builder.create().show();
+            }
+        });
         timeStyleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
@@ -186,10 +218,12 @@ public class ConfigActivity extends Activity {
             }
         };
 
+        setThemeButtonText();
         setTimeStyleButtonText();
         showTimerBar.setProgress(showTimerValue);
         showTimerSeekBarListener.onProgressChanged(showTimerBar, showTimerValue, false);
         showTimerBar.setOnSeekBarChangeListener(showTimerSeekBarListener);
+        showCountdownSwitch.setChecked(showCountdownValue);
         switch (alarmToneStr) {
             case ALARM_TONE_BE_SILENT: {
                 alarmToneButton.setText(getString(R.string.config_alarm_tone_silent));
@@ -225,11 +259,15 @@ public class ConfigActivity extends Activity {
                     }
                     final String prefPrefix = AppWidget.getPrefPrefix(appWidgetId);
                     final SharedPreferences.Editor prefsEdit = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this).edit();
-                    prefsEdit.putInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
-                    prefsEdit.putInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
-                    prefsEdit.putString(prefPrefix + ConfigActivity.ALARM_TONE, alarmToneStr);
-                    prefsEdit.putInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
-                    prefsEdit.putInt(prefPrefix + ConfigActivity.TRANSPARENCY, transparencyValue);
+                    if(Build.VERSION.SDK_INT >= 23) {
+                        prefsEdit.putInt(prefPrefix + THEME, themeValue);
+                    }
+                    prefsEdit.putInt(prefPrefix + TIME_STYLE, timeStyleValue);
+                    prefsEdit.putInt(prefPrefix + SHOW_TIMER, showTimerValue);
+                    prefsEdit.putBoolean(prefPrefix + SHOW_COUNTDOWN, showCountdownSwitch.isChecked());
+                    prefsEdit.putString(prefPrefix + ALARM_TONE, alarmToneStr);
+                    prefsEdit.putInt(prefPrefix + ALARM_DURATION, alarmDurationValue);
+                    prefsEdit.putInt(prefPrefix + TRANSPARENCY, transparencyValue);
                     prefsEdit.commit();
                     final Intent widgetNotify = new Intent(ConfigActivity.this, AppWidget.class);
                     widgetNotify.setAction(AppWidget.WIDGET_CONFIG_WAS_MODIFIED);
@@ -243,8 +281,10 @@ public class ConfigActivity extends Activity {
                 } else {
                     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ConfigActivity.this);
                     final SharedPreferences.Editor edit = prefs.edit();
+                    edit.putInt(THEME, themeValue);
                     edit.putInt(TIME_STYLE, timeStyleValue);
                     edit.putInt(SHOW_TIMER, showTimerValue);
+                    edit.putBoolean(SHOW_COUNTDOWN, showCountdownSwitch.isChecked());
                     if (alarmToneStr != null) {
                         edit.putString(ALARM_TONE, alarmToneStr);
                     } else {
@@ -327,6 +367,17 @@ public class ConfigActivity extends Activity {
     @Override
     public void onStop() {
         super.onStop();
+    }
+
+    private void setThemeButtonText() {
+        String[] themesArr = getApplicationContext().getResources().getStringArray(R.array.config_theme_options);
+        if(themeValue < 0) {
+            themeValue = 0;
+        }
+        if(themeValue >= themesArr.length) {
+            themeValue = themesArr.length -1;
+        }
+        themeButton.setText(themesArr[themeValue]);
     }
 
     private void setTimeStyleButtonText() {

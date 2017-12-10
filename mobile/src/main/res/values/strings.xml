@@ -58,6 +58,7 @@
         <item>1/2-stops with decimal places fractions (from 1/3 to 1/1.3)</item>
     </array>
     <string name="config_show_timer">Show timer when</string>
+    <string name="config_show_timer_countdown">With Countdown</string>
     <string name="config_show_timer_value">at least %dsec</string>
     <string name="config_show_timer_value_never">Never</string>
     <string name="config_alarm_tone">Alarm tone</string>
@@ -66,6 +67,12 @@
     <string name="config_alarm_tone_select">Select alarm tone for timer:</string>
     <string name="config_alarm_duration">Longest tone duration</string>
     <string name="config_alarm_duration_value">%dsec</string>
+    <string name="config_theme">Theme</string>
+    <array name="config_theme_options">
+        <item>Dark</item>
+        <item>Light</item>
+        <item>Night Mode</item>
+    </array>
     <string name="config_transparency">Transparency</string>
     <string name="config_transparency_value">%d%%</string>
     <string name="config_apply">Apply</string>

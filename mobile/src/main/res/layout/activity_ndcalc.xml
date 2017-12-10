@@ -5,7 +5,8 @@
     android:paddingRight="@dimen/activity_ndcalc_horizontal_margin"
     android:paddingTop="@dimen/activity_ndcalc_vertical_margin"
     android:paddingBottom="@dimen/activity_ndcalc_vertical_margin"
-    android:id="@+id/screen">
+    android:id="@+id/screen"
+    android:background="?android:attr/windowBackground">
 
     <TextView
         android:id="@+id/largeTime"
@@ -15,7 +16,7 @@
         android:singleLine="true"
         android:ellipsize="start"
         android:text="@string/text_na"
-        android:textAppearance="@style/ResultTextNormal"
+        android:textAppearance="?attr/resultTextNormal"
     />
     <TextView
         android:id="@+id/smallTime"
@@ -24,6 +25,7 @@
         android:layout_centerHorizontal="true"
         android:text="@string/text_na"
         android:textSize="18sp"
+        android:singleLine="true"
         android:layout_below="@id/largeTime"
     />
 
@@ -36,12 +38,13 @@
         android:layout_centerHorizontal="true"
         android:layout_marginLeft="20sp"
         android:layout_marginRight="20sp"
+        android:textColor="?attr/timerButtonTextColor"
         android:background="@drawable/bg_start_stop_button"
         android:layout_below="@id/smallTime"
      />
 
     <ProgressBar
-        style="@style/TimerProgressBarStyle"
+        style="?attr/timerProgressBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/progressBar"

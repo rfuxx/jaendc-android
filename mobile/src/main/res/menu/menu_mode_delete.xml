@@ -7,5 +7,5 @@
         android:checkable="true" android:showAsAction="ifRoom"/>
     <item android:id="@+id/action_mode_delete" android:title="@string/action_delete"
         android:enabled="false"
-        android:icon="@android:drawable/ic_menu_delete" android:showAsAction="always|withText"/>
+        android:icon="@drawable/ic_menu_delete_tinted" android:showAsAction="always|withText"/>
 </menu>

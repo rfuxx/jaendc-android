@@ -3,7 +3,8 @@
     android:layout_height="match_parent" android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp" android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal" android:orientation="horizontal"
-    android:showDividers="middle" tools:context="de.westfalen.fuldix.jaendc.manage.NDFilterListActivity">
+    android:showDividers="middle"
+    tools:context="de.westfalen.fuldix.jaendc.manage.NDFilterListActivity">
 
     <!--
     This layout is a two-pane layout for the ND Filters

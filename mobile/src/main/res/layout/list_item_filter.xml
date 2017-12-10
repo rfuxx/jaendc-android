@@ -9,6 +9,7 @@
         android:id="@+id/list_item_filter_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
     />
     <TextView
         style="?android:attr/textAppearanceSmall"
@@ -16,5 +17,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/list_item_filter_name"
+        android:background="@android:color/transparent"
     />
 </RelativeLayout>

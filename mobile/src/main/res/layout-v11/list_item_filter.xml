@@ -2,16 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/activatedBackgroundIndicator"
+    android:background="?attr/listActivatedBackgroundIndicator"
     android:paddingLeft="8sp"
     android:paddingRight="8sp"
     >
     <ImageView
+        android:background="?attr/listActivatedBackgroundIndicator"
         android:id="@+id/list_item_drag_handle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:src="@drawable/ic_drag_handle"
+        android:src="@drawable/ic_drag_handle_tinted"
+        android:tint="?attr/handleIconTint"
         android:contentDescription="@string/list_drag"
         android:visibility="gone" />
     <TextView
@@ -21,6 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/list_item_drag_handle"
         android:layout_toEndOf="@id/list_item_drag_handle"
+        android:background="@android:color/transparent"
         />
     <TextView
         style="?android:attr/textAppearanceSmall"
@@ -30,5 +33,6 @@
         android:layout_below="@id/list_item_filter_name"
         android:layout_toRightOf="@id/list_item_drag_handle"
         android:layout_toEndOf="@id/list_item_drag_handle"
+        android:background="@android:color/transparent"
         />
 </RelativeLayout>

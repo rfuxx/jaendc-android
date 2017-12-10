@@ -3,6 +3,8 @@ package de.westfalen.fuldix.jaendc;
 import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.SparseBooleanArray;
@@ -43,6 +45,7 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
         }
     }
     private final Context context;
+    private final int backgroundColorSelection;
     private List<NDFilter> filters;
     private boolean indicateDragable;
     private int dragPos;
@@ -51,6 +54,11 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
         this.context = context;
         this.filters = new ArrayList<>();
         this.indicateDragable = indicateDragable;
+
+        final Resources.Theme theme = context.getTheme();
+        final TypedArray styled = theme.obtainStyledAttributes(new int[]{R.attr.colorListItemActivated});
+        backgroundColorSelection = styled.getColor(0, 0x808080);
+        styled.recycle();
     }
 
     public NDFilterAdapter(final Context context) {
@@ -89,6 +97,7 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
 
         if (convertView == null) {
             final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            assert inflater != null;
             twoLineListItem = inflater.inflate(R.layout.list_item_filter, null);
         } else {
             twoLineListItem = convertView;
@@ -111,8 +120,11 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
                 final ListView listView = (ListView) parent;
                 final SparseBooleanArray states = listView.getCheckedItemPositions();
                 final boolean selected = states != null && states.get(position);
-                twoLineListItem.setBackgroundResource(selected ? R.drawable.background_selection : R.drawable.background_normal);
-                dataView.setTextColor(selected ? Color.WHITE : Color.LTGRAY);
+                if(selected) {
+                    twoLineListItem.setBackgroundColor(backgroundColorSelection);
+                } else {
+                    twoLineListItem.setBackgroundResource(android.R.color.transparent);
+                }
             }
         }
 
