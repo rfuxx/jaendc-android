@@ -7,6 +7,7 @@ import java.text.ParsePosition;
 import de.westfalen.fuldix.jaendc.model.Time;
 
 public class ClearTextTimeFormat extends DecimalFormat {
+    private static final char DAYS = 'd';
     private static final char HOURS = 'h';
     private static final char MINUTES = 'm';
     private static final char SECONDS = 's';
@@ -21,7 +22,22 @@ public class ClearTextTimeFormat extends DecimalFormat {
     @Override
     public StringBuffer format(final double formatValue, final StringBuffer buffer, final FieldPosition field) {
         final double value = Time.roundTimeToCameraTime(formatValue, 0.25, timeStyle);
-        if(value > 3600) {
+        if(value > 3600 * 24) {
+            final int days = (int) (value / (3600*24));
+            final int hours = (int) (value / 3600 % 24);
+            final int minutes = (int) (value / 60 % 60);
+            final int seconds = (int) (value % 60);
+            buffer.append(days).append(DAYS);
+            if (hours > 0 && minutes > 0 && seconds > 0) {
+                buffer.append(' ').append(hours).append(HOURS);
+            }
+            if (minutes > 0 && seconds > 0) {
+                buffer.append(' ').append(minutes).append(MINUTES);
+            }
+            if (seconds > 0) {
+                buffer.append(' ').append(seconds).append(SECONDS);
+            }
+        } else if(value > 3600) {
             final int hours = (int) (value/3600);
             final int minutes = (int) (value/60%60);
             final int seconds = (int) (value%60);

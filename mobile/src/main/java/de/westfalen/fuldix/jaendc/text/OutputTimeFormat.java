@@ -20,18 +20,42 @@ public class OutputTimeFormat extends NumberFormat{
         final double maxCameraTime = Time.times[timeStyle][Time.times[timeStyle].length-1];
         final double value = Time.roundTimeToCameraTime(formatValue, maxCameraTime, timeStyle);
         if(value > maxCameraTime) {
-            if(value > 300) {
-                final long roundedValue = Math.round(value);
-                final long minutes = roundedValue / 60;
-                final int seconds = (int) (roundedValue % 60);
-                if (minutes > 0) {
+            final long roundedValue = Math.round(value);
+            if(value > 3600 * 24) {
+                final int days = (int) (roundedValue/(3600*24));
+                final int hours = (int) (roundedValue/3600%24);
+                final int minutes = (int) (roundedValue/60%60);
+                final int seconds = (int) (roundedValue%60);
+                buffer.append(days).append('d');
+                if(hours > 0 && minutes > 0 && seconds > 0) {
+                    buffer.append(hours).append('h');
+                }
+                if (minutes > 0 && seconds > 0) {
                     buffer.append(minutes).append(SINGLE_PRIME);
                 }
                 if (seconds > 0) {
                     buffer.append(seconds).append(DOUBLE_PRIME);
                 }
+            } else if(value > 3600) {
+                final int hours = (int) (roundedValue/3600);
+                final int minutes = (int) (roundedValue/60%60);
+                final int seconds = (int) (roundedValue%60);
+                buffer.append(hours).append('h');
+                if (minutes > 0 && seconds > 0) {
+                    buffer.append(minutes).append(SINGLE_PRIME);
+                }
+                if (seconds > 0) {
+                    buffer.append(seconds).append(DOUBLE_PRIME);
+                }
+            } else if(value > 60) {
+                final long minutes = roundedValue / 60;
+                final int seconds = (int) (roundedValue % 60);
+                buffer.append(minutes).append(SINGLE_PRIME);
+                if (seconds > 0) {
+                    buffer.append(seconds).append(DOUBLE_PRIME);
+                }
             } else {
-                buffer.append(Math.round(value)).append(DOUBLE_PRIME);
+                buffer.append(roundedValue).append(DOUBLE_PRIME);
             }
         } else if(value > 0.25) {
             if(value < 1 && Time.isTimeStyleWithDecimalPlacesFractions(timeStyle)) {
