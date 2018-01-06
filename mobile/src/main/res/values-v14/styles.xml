@@ -32,7 +32,8 @@
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.Light</item>
     </style>
 
-    <style name="AppThemeNightMode" parent="android:Theme.DeviceDefault">
+    <style name="AppThemeNightMode" parent="android:Theme.Holo">
+        <item name="android:textColor">@color/nightModeLightRed</item>
         <item name="android:textColorPrimary">@color/nightModeRed</item>
         <item name="android:textColorPrimaryDisableOnly">@color/nightModeRed</item>
         <item name="android:textColorPrimaryNoDisable">@color/nightModeRed</item>
@@ -60,12 +61,12 @@
         <item name="android:panelFullBackground">@color/nightModeDarkRed</item>
         <item name="android:panelColorForeground">@color/nightModeLightRed</item>
         <item name="android:textColorAlertDialogListItem">@color/nightModeRed</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:listDivider">@drawable/list_divider_night_mode</item>
         <item name="android:dividerHorizontal">@drawable/list_divider_night_mode</item>
         <item name="android:dividerVertical">@drawable/list_divider_night_mode</item>
         <item name="android:actionBarDivider">@drawable/list_divider_night_mode</item>
         <item name="android:buttonStyle">@style/ButtonStyleNightMode</item>
+        <item name="android:windowFullscreen">true</item>
         <item name="listActivatedBackgroundIndicator">@drawable/list_activated_background_night_mode</item>
         <item name="colorListItemActivated">@color/nightModeDarkRed</item>
         <item name="actionBarIconTint">@color/nightModeLightRed</item>
@@ -81,7 +82,7 @@
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>
     </style>
 
-    <style name="TimerProgressBarStyle" parent="android:Widget.DeviceDefault.ProgressBar.Horizontal" />
-    <style name="TimerProgressBarStyle.Light" parent="android:Widget.DeviceDefault.Light.ProgressBar.Horizontal" />
+    <style name="TimerProgressBarStyle" parent="android:Widget.Holo.ProgressBar.Horizontal" />
+    <style name="TimerProgressBarStyle.Light" parent="android:Widget.Holo.Light.ProgressBar.Horizontal" />
 
 </resources>
