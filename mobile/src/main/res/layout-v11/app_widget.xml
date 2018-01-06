@@ -28,7 +28,7 @@
         android:singleLine="true"
         android:ellipsize="start"
         android:text="@string/text_na"
-        android:textSize="28sp"
+        android:textSize="@dimen/widget_result_large_fontsize"
         />
     <TextView
         android:id="@+id/smallTime"
@@ -37,7 +37,7 @@
         android:layout_centerHorizontal="true"
         android:text="@string/text_na"
         android:layout_below="@id/largeTime"
-        android:textSize="16sp"
+        android:textSize="@dimen/widget_result_small_fontsize"
         />
 
     <Button

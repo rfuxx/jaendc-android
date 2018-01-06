@@ -10,6 +10,7 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded</item>
@@ -25,6 +26,7 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.Light</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.Light</item>
@@ -53,6 +55,7 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>
@@ -109,8 +112,11 @@
     <style name="NotificationText" parent="@android:style/TextAppearance.Inverse">
         <!-- Customize your theme here. -->
     </style>
+    <style name="ResultTextSmall" parent="@android:style/TextAppearance">
+        <item name="android:textSize">@dimen/result_small_fontsize</item>
+    </style>
     <style name="ResultTextNormal" parent="@android:style/TextAppearance.Large">
-        <item name="android:textSize">48sp</item>
+        <item name="android:textSize">@dimen/result_large_fontsize</item>
     </style>
     <style name="ResultTextBulbLength" parent="ResultTextNormal">
     </style>
@@ -127,6 +133,7 @@
     <attr name="timerProgressBarStyle" format="reference" />
     <attr name="notificationTitle" format="reference" />
     <attr name="notificationText" format="reference" />
+    <attr name="resultTextSmall" format="reference" />
     <attr name="resultTextNormal" format="reference" />
     <attr name="resultTextBulbLength" format="reference" />
     <attr name="resultTextMaxExceeded" format="reference" />

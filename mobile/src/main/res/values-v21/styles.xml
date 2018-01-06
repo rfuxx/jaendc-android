@@ -11,6 +11,7 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded</item>
@@ -27,6 +28,7 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.Light</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.Light</item>
@@ -76,6 +78,7 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>

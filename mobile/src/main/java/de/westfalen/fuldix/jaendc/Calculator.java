@@ -16,6 +16,7 @@ import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.util.SparseBooleanArray;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -273,6 +274,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             multiselectItem.setEnabled(false);
         }
         progressBar.setVisibility(View.VISIBLE);
+        final int largePixels = context.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
+        final int smallPixels = context.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
+        smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? largePixels : smallPixels);
+        largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? smallPixels : largePixels);
         timerEnding = SystemClock.elapsedRealtime() + (int) (ndtime * 1000);
         CalculatorAlarm.schedule(context, timerEnding);
         run();
@@ -290,6 +295,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             startStopButton.setChecked(false);
             screen.removeCallbacks(this);
             progressBar.setVisibility(View.INVISIBLE);
+            final int largePixels = context.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
+            final int smallPixels = context.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
+            smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallPixels);
+            largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, largePixels);
             timeList.setEnabled(true);
             filterList.setEnabled(true);
             if (multiselectItem != null) {
@@ -343,9 +352,13 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             if (!(startTimer > 0 && ndtime >= startTimer)) {
                 stopTimer(false);
             }
+            final int largePixels = context.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
+            final int smallPixels = context.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
             if (timerEnding > SystemClock.elapsedRealtime()) {
                 startStopButton.setChecked(true);
                 progressBar.setVisibility(View.VISIBLE);
+                smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? largePixels : smallPixels);
+                largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? smallPixels : largePixels);
                 timeList.setEnabled(false);
                 filterList.setEnabled(false);
                 if (multiselectItem != null) {
@@ -355,6 +368,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             } else {
                 startStopButton.setChecked(false);
                 progressBar.setVisibility(View.INVISIBLE);
+                smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallPixels);
+                largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, largePixels);
                 timeList.setEnabled(true);
                 filterList.setEnabled(true);
                 if (multiselectItem != null) {
@@ -499,6 +514,17 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             calculate();
         } else if(ConfigActivity.SHOW_COUNTDOWN.equals(key)) {
             showCountdown = sharedPreferences.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
+        }
+
+        if (timerEnding > SystemClock.elapsedRealtime()) {
+            final int largePixels = context.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
+            final int smallPixels = context.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
+            smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? largePixels : smallPixels);
+            largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? smallPixels : largePixels);
+            if(showCountdown) {
+                screen.removeCallbacks(this);
+                run();
+            }
         }
     }
 }
