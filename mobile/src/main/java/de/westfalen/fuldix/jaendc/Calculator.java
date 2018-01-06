@@ -86,9 +86,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         prefs.registerOnSharedPreferenceChangeListener(this);
         timeStyle = prefs.getInt(ConfigActivity.TIME_STYLE, 0);
         showCountdown = prefs.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
-        clearTextTimeFormat = new ClearTextTimeFormat(timeStyle);
-        outputTimeFormat = new OutputTimeFormat(timeStyle);
-        countdownTextFormat = new CountdownTextTimeFormat();
+        clearTextTimeFormat = new ClearTextTimeFormat(context, timeStyle);
+        outputTimeFormat = new OutputTimeFormat(context, timeStyle);
+        countdownTextFormat = new CountdownTextTimeFormat(context);
 
         filterList = (ListView) activity.findViewById(R.id.filterList);
         filterAdapter = new NDFilterAdapter(activity);
@@ -487,8 +487,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             }
         } else if(ConfigActivity.TIME_STYLE.equals(key)) {
             timeStyle = sharedPreferences.getInt(ConfigActivity.TIME_STYLE, 0);
-            clearTextTimeFormat = new ClearTextTimeFormat(timeStyle);
-            outputTimeFormat = new OutputTimeFormat(timeStyle);
+            clearTextTimeFormat = new ClearTextTimeFormat(context, timeStyle);
+            outputTimeFormat = new OutputTimeFormat(context, timeStyle);
             final ArrayAdapter<String> timeAdapter;
             if (Build.VERSION.SDK_INT >= 11) {
                 timeAdapter = new ArrayAdapter<>(context, R.layout.list_item_single, Time.getTimeTexts(timeStyle));

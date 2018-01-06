@@ -1,9 +1,12 @@
 package de.westfalen.fuldix.jaendc.text;
 
+import android.content.Context;
+
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 
+import de.westfalen.fuldix.jaendc.R;
 import de.westfalen.fuldix.jaendc.model.Time;
 
 public class OutputTimeFormat extends NumberFormat{
@@ -11,9 +14,13 @@ public class OutputTimeFormat extends NumberFormat{
     private static final char SINGLE_PRIME = '\u2032';
 
     private final int timeStyle;
+    private final String daysSymbol;
+    private final String hoursSymbol;
 
-    public OutputTimeFormat(final int timeStyle) {
+    public OutputTimeFormat(final Context context, final int timeStyle) {
         this.timeStyle = timeStyle;
+        this.daysSymbol = context.getResources().getString(R.string.text_days);
+        this.hoursSymbol = context.getResources().getString(R.string.text_hours);
     }
 
     public StringBuffer format(final double formatValue, final StringBuffer buffer, final FieldPosition field) {
@@ -26,9 +33,9 @@ public class OutputTimeFormat extends NumberFormat{
                 final int hours = (int) (roundedValue/3600%24);
                 final int minutes = (int) (roundedValue/60%60);
                 final int seconds = (int) (roundedValue%60);
-                buffer.append(days).append('d');
+                buffer.append(days).append(daysSymbol);
                 if(hours > 0 && minutes > 0 && seconds > 0) {
-                    buffer.append(hours).append('h');
+                    buffer.append(hours).append(hoursSymbol);
                 }
                 if (minutes > 0 && seconds > 0) {
                     buffer.append(minutes).append(SINGLE_PRIME);
@@ -40,7 +47,7 @@ public class OutputTimeFormat extends NumberFormat{
                 final int hours = (int) (roundedValue/3600);
                 final int minutes = (int) (roundedValue/60%60);
                 final int seconds = (int) (roundedValue%60);
-                buffer.append(hours).append('h');
+                buffer.append(hours).append(hoursSymbol);
                 if (minutes > 0 && seconds > 0) {
                     buffer.append(minutes).append(SINGLE_PRIME);
                 }

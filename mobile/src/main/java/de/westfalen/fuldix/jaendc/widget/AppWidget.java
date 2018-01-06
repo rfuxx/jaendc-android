@@ -73,7 +73,7 @@ public class AppWidget extends AppWidgetProvider{
         boolean showCountdown;
         NumberFormat clearTextTimeFormat;
         NumberFormat outputTimeFormat;
-        CountdownTextTimeFormat countdownTextFormat = new CountdownTextTimeFormat();
+        CountdownTextTimeFormat countdownTextFormat;
     }
 
     private static class TimerRunner implements Runnable {
@@ -271,8 +271,8 @@ public class AppWidget extends AppWidgetProvider{
         final String prefPrefix = getPrefPrefix(appWidgetId);
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, 0);
-        data.clearTextTimeFormat = new ClearTextTimeFormat(data.timeStyle);
-        data.outputTimeFormat = new OutputTimeFormat(data.timeStyle);
+        data.clearTextTimeFormat = new ClearTextTimeFormat(context, data.timeStyle);
+        data.outputTimeFormat = new OutputTimeFormat(context, data.timeStyle);
 
         final RemoteViews remoteViews = createRemoteViews(context, data);
 
@@ -367,8 +367,9 @@ public class AppWidget extends AppWidgetProvider{
             data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, data.timeStyle);
             data.theme = prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme);
             data.showCountdown = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, data.showCountdown);
-            data.clearTextTimeFormat = new ClearTextTimeFormat(data.timeStyle);
-            data.outputTimeFormat = new OutputTimeFormat(data.timeStyle);
+            data.clearTextTimeFormat = new ClearTextTimeFormat(context, data.timeStyle);
+            data.outputTimeFormat = new OutputTimeFormat(context, data.timeStyle);
+            data.countdownTextFormat = new CountdownTextTimeFormat(context);
         }
         return data;
     }

@@ -31,6 +31,10 @@
     <string name="dialog_create_filters_text">All ND Filters have been deleted. Restore the default set of ND Filters?</string>
 
     <string name="text_na">n/a</string>
+    <string name="text_days">d</string>
+    <string name="text_hours">h</string>
+    <string name="text_minutes">m</string>
+    <string name="text_seconds">s</string>
     <string name="text_longer_than">longer than %s</string>
     <string name="text_longer_than_symbol">&gt; %s</string>
     <string name="start">Start</string>

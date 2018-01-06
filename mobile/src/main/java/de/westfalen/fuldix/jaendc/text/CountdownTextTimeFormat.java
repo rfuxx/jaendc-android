@@ -1,10 +1,20 @@
 package de.westfalen.fuldix.jaendc.text;
 
+import android.content.Context;
+
 import java.text.DecimalFormat;
+
+import de.westfalen.fuldix.jaendc.R;
 
 public class CountdownTextTimeFormat {
     private final DecimalFormat flex = new DecimalFormat("#0");
     private final DecimalFormat whole = new DecimalFormat("00");
+
+    private final String daysSymbol;
+
+    public CountdownTextTimeFormat(final Context context) {
+        this.daysSymbol = context.getResources().getString(R.string.text_days);
+    }
 
     public StringBuffer format(final double formatValue, final StringBuffer buffer) {
         final double value = formatValue / 1000;
@@ -13,7 +23,7 @@ public class CountdownTextTimeFormat {
             final int hours = (int) (value/3600%24);
             final int minutes = (int) (value/60%60);
             final int seconds = (int) (value%60);
-            buffer.append(days).append("d ");
+            buffer.append(days).append(daysSymbol).append(" ");
             buffer.append(flex.format(hours)).append(':');
             buffer.append(whole.format(minutes)).append(':');
             buffer.append(whole.format(seconds));
