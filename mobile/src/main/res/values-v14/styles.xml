@@ -79,13 +79,35 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
-        <item name="resultTextSmall">@style/ResultTextSmall</item>
-        <item name="resultTextNormal">@style/ResultTextNormal</item>
-        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextSmall">@style/ResultTextSmall.NightMode</item>
+        <item name="resultTextNormal">@style/ResultTextNormal.NightMode</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength.NightMode</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>
     </style>
 
     <style name="TimerProgressBarStyle" parent="android:Widget.Holo.ProgressBar.Horizontal" />
     <style name="TimerProgressBarStyle.Light" parent="android:Widget.Holo.Light.ProgressBar.Horizontal" />
+
+    <style name="ResultTextSmall" parent="@android:style/TextAppearance.DeviceDefault">
+        <item name="android:textSize">@dimen/result_small_fontsize</item>
+    </style>
+    <style name="ResultTextNormal" parent="@android:style/TextAppearance.DeviceDefault.Large">
+        <item name="android:textSize">@dimen/result_large_fontsize</item>
+    </style>
+
+    <style name="ResultTextSmall.NightMode" parent="@android:style/TextAppearance.Holo">
+        <item name="android:textSize">@dimen/result_small_fontsize</item>
+    </style>
+    <style name="ResultTextNormal.NightMode" parent="@android:style/TextAppearance.Holo.Large">
+        <item name="android:textSize">@dimen/result_large_fontsize</item>
+    </style>
+    <style name="ResultTextBulbLength.NightMode" parent="ResultTextNormal.NightMode">
+    </style>
+    <style name="ResultTextMaxExceeded.Light" parent="ResultTextNormal.NightMode">
+        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+    </style>
+    <style name="ResultTextMaxExceeded.NightNode" parent="ResultTextNormal.NightMode">
+        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+    </style>
 
 </resources>

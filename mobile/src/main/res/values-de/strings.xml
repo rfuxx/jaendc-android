@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">JaeNDC</string>
-    <string name="app_name_long">Just An Essential ND Calculator</string>
+    <string name="app_name_long">Just an essential ND Calculator</string>
     <string name="action_multi">Mehrere Filter</string>
     <string name="action_multi_single">Einzelner Filter</string>
     <string name="action_manage">ND-Filter bearbeiten</string>
