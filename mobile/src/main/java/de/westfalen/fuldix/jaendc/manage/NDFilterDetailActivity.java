@@ -2,18 +2,13 @@ package de.westfalen.fuldix.jaendc.manage;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import de.westfalen.fuldix.jaendc.R;
-import de.westfalen.fuldix.jaendc.ThemeHandler;
+import de.westfalen.fuldix.jaendc.ThemedActivityWithActionBarSqueezer;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
@@ -27,18 +22,20 @@ import de.westfalen.fuldix.jaendc.widget.AppWidget;
  * more than a {@link NDFilterDetailFragment}.
  */
 @TargetApi(11)
-public class NDFilterDetailActivity extends Activity implements NDFilterDetailFragment.Callbacks {
-    private final ThemeHandler themeHandler = new ThemeHandler(this);
+public class NDFilterDetailActivity extends ThemedActivityWithActionBarSqueezer implements NDFilterDetailFragment.Callbacks {
     private NDFilterDetailFragment fragment;
     private boolean hasItemId;
     private boolean itemHasBeenChanged;
 
+    public NDFilterDetailActivity() {
+        super(R.id.ndfilter_detail_container);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        themeHandler.onActivityCreate();
         setContentView(R.layout.activity_ndfilter_detail);
-        themeHandler.handleSystemUiVisibility(findViewById(R.id.ndfilter_detail_container));
+        handleSystemUiVisibility(findViewById(R.id.ndfilter_detail_container));
 
         // Show the Up button in the action bar.
         ActionBar ab = getActionBar();
@@ -82,7 +79,6 @@ public class NDFilterDetailActivity extends Activity implements NDFilterDetailFr
         if(!hasItemId) {
             menu.removeItem(R.id.action_delete);
         }
-        themeHandler.onCreateOptionsMenu(menu);
         return super.onCreateOptionsMenu(menu);
     }
 

@@ -1,13 +1,13 @@
 package de.westfalen.fuldix.jaendc;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
-public class ConfigActivity extends Activity {
+public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
     public static final String TIME_STYLE = "timeStyle";
     public static final String SHOW_TIMER = "showTimer";
     public static final String ALARM_TONE = "alarmTone";
@@ -35,6 +35,8 @@ public class ConfigActivity extends Activity {
     public static final String ALARM_TONE_BE_SILENT = "silent";
     public static final int[] THEMES = {R.style.AppThemeDark, R.style.AppThemeLight, R.style.AppThemeNightMode};
     private static final int PICK_RINGTONE = 201;
+    private final TextViewDynamicSqueezer titleSqueezer = new TextViewDynamicSqueezer(this);
+    private final TextViewDynamicSqueezer subTitleSqueezer = new TextViewDynamicSqueezer(this);
     private Button themeButton;
     private Button timeStyleButton;
     private Button alarmToneButton;
@@ -46,10 +48,12 @@ public class ConfigActivity extends Activity {
     private int alarmDurationValue = 29;
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
+    public ConfigActivity() {
+        super(R.id.screen, false);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
         setResult(RESULT_CANCELED);
         final Intent intent = getIntent();
         final Bundle extras = intent.getExtras();
@@ -59,6 +63,8 @@ public class ConfigActivity extends Activity {
 
         final String prefPrefix = (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID)
                                     ? AppWidget.getPrefPrefix(appWidgetId) : "";
+        setPrefPrefix(prefPrefix);
+        super.onCreate(savedInstanceState);
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         themeValue = prefs.getInt(prefPrefix + ConfigActivity.THEME, themeValue);
         timeStyleValue = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
@@ -67,11 +73,8 @@ public class ConfigActivity extends Activity {
         alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, ALARM_TONE_BE_SILENT);
         alarmDurationValue = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
 
-        final ThemeHandler themeHandler = new ThemeHandler(this, false);
-        themeHandler.onActivityCreate(prefPrefix);
-
         setContentView(R.layout.activity_config);
-        themeHandler.handleSystemUiVisibility(findViewById(R.id.screen), prefPrefix);
+        handleSystemUiVisibility(findViewById(R.id.screen), prefPrefix);
         themeButton = (Button) findViewById(R.id.themeButton);
         timeStyleButton = (Button) findViewById(R.id.timeStyleButton);
         alarmToneButton = (Button) findViewById(R.id.alarmToneButton);
@@ -84,6 +87,7 @@ public class ConfigActivity extends Activity {
         final Button applyButton = (Button) findViewById(R.id.applyButton);
         final SeekBar alarmDurationBar = (SeekBar) findViewById(R.id.alarmDurationSeek);
         final TextView alarmDurationText = (TextView) findViewById(R.id.alarmDurationValue);
+        final Resources resources = getResources();
 
         if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
             if (Build.VERSION.SDK_INT >= 11) {
@@ -104,6 +108,8 @@ public class ConfigActivity extends Activity {
                 finish();
                 return;
             }
+            titleSqueezer.onViewCreate(resources.getString(R.string.title_activity_config_widget), R.id.screen);
+            titleSqueezer.onViewCreate(resources.getString(R.string.subtitle_activity_config_widget_explain), R.id.screen);
         } else {
             setTitle(R.string.title_activity_config);
             if (Build.VERSION.SDK_INT >= 11) {
@@ -115,6 +121,8 @@ public class ConfigActivity extends Activity {
             transparencyLabel.setVisibility(View.GONE);
             transparencyBar.setVisibility(View.GONE);
             transparencyText.setVisibility(View.GONE);
+            titleSqueezer.onViewCreate(resources.getString(R.string.title_activity_config), R.id.screen);
+            titleSqueezer.onViewCreate(resources.getString(R.string.subtitle_activity_config_explain), R.id.screen);
         }
 
         final SeekBar.OnSeekBarChangeListener showTimerSeekBarListener = new SeekBar.OnSeekBarChangeListener() {
@@ -299,6 +307,17 @@ public class ConfigActivity extends Activity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        if(titleSqueezer != null) {
+            titleSqueezer.onViewDestroy();
+        }
+        if(subTitleSqueezer != null) {
+            subTitleSqueezer.onViewDestroy();
+        }
+        super.onDestroy();
     }
 
     @Override

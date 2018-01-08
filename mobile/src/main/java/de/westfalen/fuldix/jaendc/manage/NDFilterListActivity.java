@@ -2,14 +2,9 @@ package de.westfalen.fuldix.jaendc.manage;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -21,7 +16,8 @@ import android.widget.ListView;
 import de.westfalen.fuldix.jaendc.NDCalculatorActivity;
 import de.westfalen.fuldix.jaendc.NDFilterAdapter;
 import de.westfalen.fuldix.jaendc.R;
-import de.westfalen.fuldix.jaendc.ThemeHandler;
+import de.westfalen.fuldix.jaendc.TextViewDynamicSqueezer;
+import de.westfalen.fuldix.jaendc.ThemedActivityWithActionBarSqueezer;
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
@@ -44,8 +40,11 @@ import de.westfalen.fuldix.jaendc.widget.AppWidget;
  * to listen for item selections.
  */
 @TargetApi(11)
-public class NDFilterListActivity extends Activity implements NDFilterListFragment.Callbacks, NDFilterDetailFragment.Callbacks {
+public class NDFilterListActivity extends ThemedActivityWithActionBarSqueezer implements NDFilterListFragment.Callbacks, NDFilterDetailFragment.Callbacks {
     private class ActionModeForDelete implements ActionMode.Callback {
+        private final TextViewDynamicSqueezer titleSqueezer = new TextViewDynamicSqueezer(NDFilterListActivity.this);
+        private final TextViewDynamicSqueezer subTitleSqueezer = new TextViewDynamicSqueezer(NDFilterListActivity.this);
+
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             MenuInflater inflater = mode.getMenuInflater();
@@ -55,6 +54,12 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
             fr.getListAdapter().setIndicateDragable(false);
             mode.setTitle(R.string.action_mode_title);
             updateActionModeSubtitle(mode);
+
+            final CharSequence title = mode.getTitle();
+            titleSqueezer.onViewCreate(title, R.id.ndfilter_list);
+            final CharSequence subTitle = mode.getSubtitle();
+            subTitleSqueezer.onViewCreate(subTitle, R.id.ndfilter_list);
+
             return true;
         }
 
@@ -87,6 +92,9 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
+            titleSqueezer.onViewDestroy();
+            subTitleSqueezer.onViewDestroy();
+
             final NDFilterListFragment fr = (NDFilterListFragment) getFragmentManager().findFragmentById(R.id.ndfilter_list);
             final ListView lv = fr.getListView();
             final NDFilterAdapter la = fr.getListAdapter();
@@ -160,7 +168,6 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
     }
 
     private static final int ACT_EDIT_DETAIL = 101;
-    private final ThemeHandler themeHandler = new ThemeHandler(this);
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -170,12 +177,16 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
     private ActionMode actionMode;
     private boolean itemHasBeenChanged;
 
+    public NDFilterListActivity() {
+        super(R.id.ndfilter_list);
+    }
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        themeHandler.onActivityCreate();
         setContentView(R.layout.activity_ndfilter_list);
-        themeHandler.handleSystemUiVisibility(findViewById(R.id.ndfilter_list));
+        handleSystemUiVisibility(findViewById(R.id.ndfilter_list));
+
         // Show the Up button in the action bar.
         final ActionBar ab = getActionBar();
         if(ab != null) {
@@ -201,7 +212,6 @@ public class NDFilterListActivity extends Activity implements NDFilterListFragme
     public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_manage, menu);
-        themeHandler.onCreateOptionsMenu(menu);
         return super.onCreateOptionsMenu(menu);
     }
 

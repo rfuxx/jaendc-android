@@ -1,13 +1,7 @@
 package de.westfalen.fuldix.jaendc;
 
-import android.annotation.TargetApi;
 import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,20 +9,25 @@ import android.view.MenuItem;
 
 import de.westfalen.fuldix.jaendc.manage.NDFilterListActivity;
 
-public class NDCalculatorActivity extends Activity {
-    private final ThemeHandler themeHandler = new ThemeHandler(this);
+public class NDCalculatorActivity extends ThemedActivityWithActionBarSqueezer {
     private Calculator calculator;
+
+    public NDCalculatorActivity() {
+        super(R.id.screen);
+    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        themeHandler.onActivityCreate();
-        if (Build.VERSION.SDK_INT >= 11) {
-            setActionBarSubtitle();
-        }
         setContentView(R.layout.activity_ndcalc);
-        themeHandler.handleSystemUiVisibility(findViewById(R.id.screen));
-        calculator = new Calculator(this, themeHandler);
+        handleSystemUiVisibility(findViewById(R.id.screen));
+        calculator = new Calculator(this);
+        if (Build.VERSION.SDK_INT >= 11) {
+            final ActionBar ab = getActionBar();
+            if(ab != null) {
+                ab.setSubtitle(R.string.app_name_long);
+            }
+        }
     }
 
     @Override
@@ -50,7 +49,6 @@ public class NDCalculatorActivity extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_ndcalc, menu);
         calculator.onCreateOptionsMenu(menu);
-        themeHandler.onCreateOptionsMenu(menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -102,14 +100,6 @@ public class NDCalculatorActivity extends Activity {
         super.onResume();
         calculator.loadPersistentState();
         isShowing = true;
-    }
-
-    @TargetApi(11)
-    private void setActionBarSubtitle() {
-        final ActionBar ab = getActionBar();
-        if(ab != null) {
-            ab.setSubtitle(R.string.app_name_long);
-        }
     }
 
     public static boolean isShowing;
