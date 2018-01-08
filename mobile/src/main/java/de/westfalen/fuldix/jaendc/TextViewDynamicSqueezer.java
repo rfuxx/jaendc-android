@@ -14,7 +14,8 @@ public class TextViewDynamicSqueezer {
         private TextView textView;
         private CharSequence content;
         private float adjustedForWidth;
-        private TextPaint textPaint = new TextPaint();
+        private float adjustedForHeight;
+        private float origTextScaleX;
 
         @TargetApi(11)
         @Override
@@ -22,16 +23,20 @@ public class TextViewDynamicSqueezer {
             final Layout l = textView.getLayout();
             if (l != null) {
                 final float allowedWidth = textView.getWidth() - textView.getTotalPaddingLeft() - textView.getTotalPaddingRight();
+                final float allowedHeight = textView.getHeight() - textView.getTotalPaddingTop() - textView.getTotalPaddingBottom();
                 final CharSequence currentContent = textView.getText();
-                if (adjustedForWidth != allowedWidth || !currentContent.equals(content)) {
+                if (adjustedForHeight != allowedHeight || adjustedForWidth != allowedWidth || !currentContent.equals(content)) {
+                    final TextPaint textPaint = textView.getPaint();
+                    textPaint.setTextScaleX(origTextScaleX);
                     final float desiredWidth = Layout.getDesiredWidth(currentContent, textPaint);
-// System.out.println("#####"+currentContent + "|  " + allowedWidth+"/"+desiredWidth + " and parent=" + parent + ",w=" + parent.getWidth());
-                    final float scaleX = allowedWidth < desiredWidth ? allowedWidth / desiredWidth : 1;
+// System.out.println("#####"+currentContent + "|  " + allowedWidth+"/"+desiredWidth + " and height " + allowedHeight+"/");
+                    final float scaleX = allowedWidth < desiredWidth ? allowedWidth / desiredWidth : origTextScaleX;
                     if(scaleX != textView.getTextScaleX()) {
                         textView.setTextScaleX(scaleX);
                     }
                     content = currentContent;
                     adjustedForWidth = allowedWidth;
+                    adjustedForHeight = allowedHeight;
                 }
             }
         }
@@ -43,12 +48,12 @@ public class TextViewDynamicSqueezer {
                 final CharSequence textWithEnd = text + "\u00a0";   // append protected space so that there is enough "visual buffer"
                 textView.setText(textWithEnd);
             }
-            textPaint.set(textView.getPaint());
+            origTextScaleX = textView.getTextScaleX();
             textView.setEllipsize(null);
         }
 
         public void restoreTextView() {
-            textView.setTextScaleX(textPaint.getTextScaleX());
+            textView.setTextScaleX(origTextScaleX);
         }
     }
 
@@ -80,15 +85,19 @@ public class TextViewDynamicSqueezer {
         this.activity = activity;
     }
 
+    public void onViewCreate(final TextView textView) {
+        this.textView = textView;
+        if(textView != null) {
+            adjustTextScalexListener.setTextView(textView);
+            textView.getViewTreeObserver().addOnGlobalLayoutListener(adjustTextScalexListener);
+        }
+    }
+
     public void onViewCreate(final CharSequence textContent, final int idInView) {
         if (android.os.Build.VERSION.SDK_INT >= 11) {
             final View viewWithId = activity.findViewById(idInView);
             if(viewWithId != null) {
-                textView = getTextViewWithText(viewWithId.getRootView(), textContent);
-                if (textView != null) {
-                    adjustTextScalexListener.setTextView(textView);
-                    textView.getViewTreeObserver().addOnGlobalLayoutListener(adjustTextScalexListener);
-                }
+                onViewCreate(getTextViewWithText(viewWithId.getRootView(), textContent));
             }
         }
     }

@@ -47,7 +47,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private final ListView timeList;
     private final ListView filterList;
     private final TextView largeTime;
+    private final TextViewDynamicSqueezer largeTimeSqueezer;
     private final TextView smallTime;
+    private final TextViewDynamicSqueezer smallTimeSqueezer;
     private final ToggleButton startStopButton;
     private final ProgressBar progressBar;
     private final View screen;
@@ -101,6 +103,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
         largeTime = (TextView) themedActivity.findViewById(R.id.largeTime);
         smallTime = (TextView) themedActivity.findViewById(R.id.smallTime);
+        largeTimeSqueezer = new TextViewDynamicSqueezer(themedActivity);
+        largeTimeSqueezer.onViewCreate(largeTime);
+        smallTimeSqueezer = new TextViewDynamicSqueezer(themedActivity);
+        smallTimeSqueezer.onViewCreate(smallTime);
         startStopButton = (ToggleButton) themedActivity.findViewById(R.id.startStopButton);
         themedActivity.applyStartStopButtonStyle(startStopButton);
         startStopButton.setVisibility(View.INVISIBLE);
@@ -520,5 +526,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 run();
             }
         }
+    }
+
+    public void onDestroy() {
+        largeTimeSqueezer.onViewDestroy();
+        smallTimeSqueezer.onViewDestroy();
     }
 }

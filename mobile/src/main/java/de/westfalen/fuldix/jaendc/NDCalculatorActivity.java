@@ -102,5 +102,11 @@ public class NDCalculatorActivity extends ThemedActivityWithActionBarSqueezer {
         isShowing = true;
     }
 
+    @Override
+    public void onDestroy() {
+        calculator.onDestroy();
+        super.onDestroy();
+    }
+
     public static boolean isShowing;
 }
