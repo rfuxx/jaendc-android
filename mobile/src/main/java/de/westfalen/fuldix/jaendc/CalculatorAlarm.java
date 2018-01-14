@@ -57,7 +57,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final Uri sound = ConfigActivity.getConfiguredAlarmTone(context, prefs.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_USE_SYSTEM_SOUND));
         if(NDCalculatorActivity.isShowing) {
-            if(ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            if(ringerMode == AudioManager.RINGER_MODE_VIBRATE && sound != null) {
                 Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 try {
                     vibrator.vibrate(vibratePattern, -1);
