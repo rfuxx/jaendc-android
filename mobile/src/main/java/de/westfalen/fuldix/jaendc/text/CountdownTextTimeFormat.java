@@ -17,7 +17,7 @@ public class CountdownTextTimeFormat {
     }
 
     public StringBuffer format(final double formatValue, final StringBuffer buffer) {
-        final double value = formatValue / 1000;
+        final double value = Math.ceil(formatValue / 1000);
         if(value > 3600 * 24) {
             final int days = (int) (value/(3600*24));
             final int hours = (int) (value/3600%24);
