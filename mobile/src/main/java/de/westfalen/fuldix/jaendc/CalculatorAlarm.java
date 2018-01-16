@@ -15,12 +15,16 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.widget.RemoteViews;
 
+import static android.os.VibrationEffect.DEFAULT_AMPLITUDE;
+
 public class CalculatorAlarm extends BroadcastReceiver {
-    private static final long[] vibratePattern = { 3000, 500, 3000 };
+    private static final long vibrateLength = 500;
+    private static final long[] vibratePattern = { 0, vibrateLength };
 
     public static void schedule(Context context, long timeout) {
         NotificationCanceler.cancelNotification(context);
@@ -57,10 +61,14 @@ public class CalculatorAlarm extends BroadcastReceiver {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final Uri sound = ConfigActivity.getConfiguredAlarmTone(context, prefs.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_USE_SYSTEM_SOUND));
         if(NDCalculatorActivity.isShowing) {
-            if(ringerMode == AudioManager.RINGER_MODE_VIBRATE && sound != null) {
+            if(ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
                 Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 try {
-                    vibrator.vibrate(vibratePattern, -1);
+                    if (Build.VERSION.SDK_INT >= 26) {
+                        vibrator.vibrate(VibrationEffect.createOneShot(vibrateLength, DEFAULT_AMPLITUDE));
+                    } else {
+                        vibrator.vibrate(vibrateLength);
+                    }
                 } catch (SecurityException e) {   // if no VIBRATE permission
                     System.err.println("Warning: " + e);
                 } finally {
