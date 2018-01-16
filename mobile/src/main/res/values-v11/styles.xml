@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
     <style name="AppThemeDark" parent="android:Theme.Holo">
         <item name="listActivatedBackgroundIndicator">?android:attr/activatedBackgroundIndicator</item>
         <item name="colorListItemActivated">?android:attr/colorAccent</item>
         <item name="actionBarIconTint">@android:color/transparent</item>
-        <item name="handleIconTint">?android:attr/textColorPrimary</item>
+        <item name="handleIconTint">?android:attr/colorForeground</item>
         <item name="timerButtonStart">@color/buttonStartGreen</item>
         <item name="timerButtonStop">@color/buttonStartRed</item>
         <item name="timerButtonTextColor">@android:color/white</item>
@@ -22,9 +21,9 @@
         <item name="listActivatedBackgroundIndicator">?android:attr/activatedBackgroundIndicator</item>
         <item name="colorListItemActivated">?android:attr/colorAccent</item>
         <item name="actionBarIconTint">@android:color/transparent</item>
-        <item name="handleIconTint">?android:attr/textColorPrimary</item>
-        <item name="timerButtonStart">@color/buttonStartGreen</item>
-        <item name="timerButtonStop">@color/buttonStartRed</item>
+        <item name="handleIconTint">?android:attr/colorForeground</item>
+        <item name="timerButtonStart">@color/buttonStartGreen.Light</item>
+        <item name="timerButtonStop">@color/buttonStartRed.Light</item>
         <item name="timerButtonTextColor">@android:color/black</item>
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.Light</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
@@ -36,8 +35,12 @@
     </style>
 
     <style name="AppThemeNightMode" parent="android:Theme.Holo">
+        <item name="android:textColor">@color/nightModeLightRed</item>
         <item name="android:textColorPrimary">@color/nightModeRed</item>
+        <item name="android:textColorPrimaryDisableOnly">@color/nightModeRed</item>
+        <item name="android:textColorPrimaryNoDisable">@color/nightModeRed</item>
         <item name="android:textColorSecondary">@color/nightModeLightRed</item>
+        <item name="android:textColorSecondaryNoDisable">@color/nightModeRed</item>
         <item name="android:textColorTertiary">@color/nightModeLightRed</item>
         <item name="android:textColorHighlight">@color/nightModeLightRed</item>
         <item name="android:textColorHint">@color/nightModeLightRed</item>
@@ -45,19 +48,22 @@
         <item name="android:colorForeground">@color/nightModeRed</item>
         <item name="android:background">@color/nightModeBlack</item>
         <item name="android:windowBackground">@color/nightModeBlack</item>
-        <item name="android:actionModeCloseButtonStyle">@color/nightModeBlack</item>
+        <item name="android:popupBackground">@color/nightModeBlack</item>
         <item name="android:actionBarStyle">@style/ActionBarStyleNightMode</item>
-        <item name="android:alertDialogStyle">@style/AlertDialogThemeNightMode</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogThemeNightMode</item>
+        <item name="android:alertDialogStyle">@style/AlertDialogStyleNightMode</item>
+        <item name="android:windowTitleStyle">@style/WindowTitleStyleNightMode</item>
+        <item name="android:windowTitleBackgroundStyle">@style/WindowTitleStyleNightMode</item>
         <item name="android:panelBackground">@color/nightModeDarkRed</item>
         <item name="android:panelColorBackground">@color/nightModeDarkRed</item>
         <item name="android:panelFullBackground">@color/nightModeDarkRed</item>
         <item name="android:panelColorForeground">@color/nightModeLightRed</item>
         <item name="android:textColorAlertDialogListItem">@color/nightModeRed</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowContentOverlay">@null</item>
         <item name="android:listDivider">@drawable/list_divider_night_mode</item>
         <item name="android:dividerHorizontal">@drawable/list_divider_night_mode</item>
         <item name="android:dividerVertical">@drawable/list_divider_night_mode</item>
+        <item name="android:buttonStyle">@style/ButtonStyleNightMode</item>
+        <item name="android:windowFullscreen">true</item>
         <item name="listActivatedBackgroundIndicator">@drawable/list_activated_background_night_mode</item>
         <item name="colorListItemActivated">@color/nightModeDarkRed</item>
         <item name="actionBarIconTint">@color/nightModeLightRed</item>
@@ -68,9 +74,9 @@
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
         <item name="notificationTitle">@style/NotificationTitle</item>
         <item name="notificationText">@style/NotificationText</item>
-        <item name="resultTextSmall">@style/ResultTextSmall</item>
-        <item name="resultTextNormal">@style/ResultTextNormal</item>
-        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextSmall">@style/ResultTextSmall.NightMode</item>
+        <item name="resultTextNormal">@style/ResultTextNormal.NightMode</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength.NightMode</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>
     </style>
 

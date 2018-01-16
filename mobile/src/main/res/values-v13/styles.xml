@@ -6,4 +6,5 @@
     <style name="ResultTextNormal" parent="@android:style/TextAppearance.Holo.Large">
         <item name="android:textSize">@dimen/result_large_fontsize</item>
     </style>
+
 </resources>

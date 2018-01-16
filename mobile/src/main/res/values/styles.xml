@@ -57,7 +57,7 @@
         <item name="notificationText">@style/NotificationText</item>
         <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
-        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength.NightMode</item>
         <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.NightNode</item>
     </style>
 
@@ -119,6 +119,8 @@
         <item name="android:textSize">@dimen/result_large_fontsize</item>
     </style>
     <style name="ResultTextBulbLength" parent="ResultTextNormal">
+    </style>
+    <style name="ResultTextBulbLength.NightMode" parent="ResultTextNormal.NightMode">
     </style>
     <style name="ResultTextMaxExceeded" parent="ResultTextNormal">
         <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
