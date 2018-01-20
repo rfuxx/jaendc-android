@@ -74,6 +74,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private double calculatedTime;
     private long timerEnding;
 
+    private boolean isShowing = true;
     private boolean uiIsUpdating = false;
 
     public Calculator(final ThemedActivityWithActionBarSqueezer themedActivity)
@@ -302,6 +303,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     @Override
     public void run() {
+        if(!isShowing) {
+            System.err.println("run() despite not showing");
+            return;
+        }
         final long current = SystemClock.elapsedRealtime();
         final int remaining = (int) (timerEnding - current);
         if(showCountdown) {
@@ -396,6 +401,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     }
 
     void loadPersistentState() {
+        isShowing=true;
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(themedActivity);
         timerEnding = sharedPreferences.getLong(PERS_TIMER_ENDING, 0);
         multiselect = sharedPreferences.getBoolean(PERS_MULTISELECT, false);
@@ -426,6 +432,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     }
 
     void savePersistentState() {
+        isShowing=false;
         screen.removeCallbacks(this);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(themedActivity);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
