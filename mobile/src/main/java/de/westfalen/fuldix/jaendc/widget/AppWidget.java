@@ -93,7 +93,6 @@ public class AppWidget extends AppWidgetProvider{
                 final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
                 final RemoteViews remoteViews = createRemoteViews(context, data);
                 final int ndtimeMillis = (int) (data.calculatedTime *1000);
-                setTimerVisibility(context, remoteViews, data);
                 remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
                 remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
                 // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
@@ -102,6 +101,7 @@ public class AppWidget extends AppWidgetProvider{
                     remoteViews.setTextViewText(R.id.smallTime, data.countdownTextFormat.format(remaining));
                 }
                 remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, remaining, false);
+                setTimerVisibility(context, remoteViews, data);
                 appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
                 final int width = 600; // should actually be something like progressBar.getWidth(); -- if only we could query the remoteview about its size...
                 int delayToNext;
@@ -205,7 +205,7 @@ public class AppWidget extends AppWidgetProvider{
 */
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(Context context, final Intent intent) {
         super.onReceive(context, intent);
 
         final ComponentName name = new ComponentName(context, AppWidget.class);
@@ -214,7 +214,7 @@ public class AppWidget extends AppWidgetProvider{
         if (appWidgetIds == null || appWidgetIds.length == 0) {
             return;
         }
-        int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         if(appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             return;
         }
@@ -296,25 +296,6 @@ public class AppWidget extends AppWidgetProvider{
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
-
-        data.myHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                final RemoteViews remoteViews = createRemoteViews(context, data);
-                // try to restore list indexes -- can only scroll to them but not set them as checked?!?
-                int restoreTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
-                if (restoreTimeIndex < 0) {
-                    restoreTimeIndex = 16;
-                }
-                remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
-                final int restoreFilterIndex;
-                if (data.filter != null) {
-                    restoreFilterIndex = data.filter.getOrderpos();
-                    remoteViews.setScrollPosition(R.id.filterList, restoreFilterIndex);
-                }
-                appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
-            }
-        }, 1000);
     }
 
     private static void setupListAdapterAndIntent(final Context context, final int appWidgetId, final RemoteViews remoteViews, final int remoteViewId, final Class remoteViewsService, final String intentAction) {
@@ -429,7 +410,6 @@ public class AppWidget extends AppWidgetProvider{
                 if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
                     // we need to handle here also the rebuilding of start/top/bar if the timer is running or not (if updating from externally)
                     if(data.timerEnding > 0 && data.timerRunner != null) {
-                        setTimerVisibility(context, remoteViews, data);
                         if(data.showCountdown) {
                             final long current = SystemClock.elapsedRealtime();
                             final int remaining = (int) (data.timerEnding - current);
@@ -438,28 +418,11 @@ public class AppWidget extends AppWidgetProvider{
                             smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                         }
                     } else {
-                        setTimerVisibility(context, remoteViews, data);
                         smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                     }
-                    data.myHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // try to scroll list items back into view -- due to making the timer visible, they may have disappeared from view
-                            final RemoteViews remoteViews = createRemoteViews(context, data);
-                            final int restoreTimeIndex = Arrays.binarySearch(Time.times[data.timeStyle], data.time);
-                            if (restoreTimeIndex >= 0) {
-                                remoteViews.setScrollPosition(R.id.timeList, restoreTimeIndex);
-                            }
-                            if (data.filter != null) {
-                                remoteViews.setScrollPosition(R.id.filterList, data.filter.getOrderpos());
-                            }
-                            AppWidgetManager.getInstance(context).partiallyUpdateAppWidget(appWidgetId, remoteViews);
-                        }
-                    }, 100);
                 } else {
                     // we need to handle here also the rebuilding of start/top/bar
                     // (if updating from externally and settings may have been changed)
-                    setTimerVisibility(context, remoteViews, data);
                     remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
                     remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
                     remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
@@ -472,7 +435,6 @@ public class AppWidget extends AppWidgetProvider{
             } else {
                 largeTimeText = context.getString(R.string.text_na);
                 smallTimeText = context.getString(R.string.text_na);
-                setTimerVisibility(context, remoteViews, data);
             }
         } else {
             final String normalLargeText = String.format(context.getString(R.string.text_longer_than_symbol), data.outputTimeFormat.format(Integer.MAX_VALUE / 1000));
@@ -480,8 +442,8 @@ public class AppWidget extends AppWidgetProvider{
             spanString.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.ResultTextMaxExceededColor)), 0, normalLargeText.length(), 0);
             largeTimeText = spanString;
             smallTimeText = String.format(context.getString(R.string.text_longer_than), data.clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
-            setTimerVisibility(context, remoteViews, data);
         }
+        setTimerVisibility(context, remoteViews, data);
         remoteViews.setTextViewText(R.id.largeTime, largeTimeText);
         remoteViews.setTextViewText(R.id.smallTime, smallTimeText);
     }
@@ -496,13 +458,13 @@ public class AppWidget extends AppWidgetProvider{
             data.timerRunner = new TimerRunner(context, appWidgetId);
         }
         data.myHandler.post(data.timerRunner);
-        setTimerVisibility(context, remoteViews, data);
         remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, ndtimeMillis, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
         if(data.showCountdown) {
             remoteViews.setTextViewText(R.id.smallTime, data.countdownTextFormat.format(ndtimeMillis));
         }
+        setTimerVisibility(context, remoteViews, data);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
     }
 
@@ -512,11 +474,11 @@ public class AppWidget extends AppWidgetProvider{
         data.timerEnding = 0;
         data.myHandler.removeCallbacks(data.timerRunner);
         final RemoteViews remoteViews = createRemoteViews(context, data);
-        setTimerVisibility(context, remoteViews, data);
         remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
         remoteViews.setTextViewText(R.id.smallTime, data.clearTextTimeFormat.format(data.calculatedTime));
+        setTimerVisibility(context, remoteViews, data);
         appWidgetManager.partiallyUpdateAppWidget(appWidgetId, remoteViews);
     }
 
