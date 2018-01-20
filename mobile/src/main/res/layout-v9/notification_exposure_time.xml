@@ -4,25 +4,15 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_centerInParent="true"
-    android:paddingLeft="4dp"
-    android:paddingStart="4dp"
-    android:paddingRight="8dp"
-    android:paddingEnd="8dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:padding="8dp"
     >
     <ImageView
         android:scaleType="fitXY"
         android:id="@+id/notification_icon"
         android:layout_width="30sp"
         android:layout_height="30sp"
-        android:paddingLeft="0sp"
-        android:paddingStart="0sp"
-        android:paddingRight="4sp"
-        android:paddingEnd="4sp"
-        android:paddingBottom="4sp"
         android:src="@mipmap/ic_launcher" />
-    <TextView style="@android:style/TextAppearance.Medium.Inverse"
+    <TextView style="@android:style/TextAppearance.StatusBar.EventContent.Title"
         android:id="@+id/notification_app_name"
         android:text="@string/app_name"
         android:textStyle="bold"
@@ -31,14 +21,10 @@
         android:layout_toEndOf="@id/notification_icon"
         android:layout_toRightOf="@id/notification_icon"
         />
-    <TextView style="@android:style/TextAppearance.Inverse"
+    <TextView style="@android:style/TextAppearance.StatusBar.EventContent"
         android:text="@string/notification_exposure_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/notification_app_name"
-        android:paddingLeft="4sp"
-        android:paddingStart="4sp"
-        android:paddingRight="0sp"
-        android:paddingEnd="0sp"
         />
 </RelativeLayout>

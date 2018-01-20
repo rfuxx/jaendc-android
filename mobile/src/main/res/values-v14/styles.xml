@@ -38,8 +38,6 @@
         <item name="timerButtonStop">@color/nightModeDarkRed</item>
         <item name="timerButtonTextColor">@color/nightModeLightRed</item>
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
-        <item name="notificationTitle">@style/NotificationTitle</item>
-        <item name="notificationText">@style/NotificationText</item>
         <item name="resultTextSmall">@style/ResultTextSmall.NightMode</item>
         <item name="resultTextNormal">@style/ResultTextNormal.NightMode</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength.NightMode</item>

@@ -9,8 +9,6 @@
         <item name="timerButtonStop">@color/buttonStartRed</item>
         <item name="timerButtonTextColor">@android:color/white</item>
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle</item>
-        <item name="notificationTitle">@style/NotificationTitle</item>
-        <item name="notificationText">@style/NotificationText</item>
         <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
@@ -26,8 +24,6 @@
         <item name="timerButtonStop">@color/buttonStartRed.Light</item>
         <item name="timerButtonTextColor">@android:color/black</item>
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.Light</item>
-        <item name="notificationTitle">@style/NotificationTitle</item>
-        <item name="notificationText">@style/NotificationText</item>
         <item name="resultTextSmall">@style/ResultTextSmall</item>
         <item name="resultTextNormal">@style/ResultTextNormal</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
@@ -72,8 +68,6 @@
         <item name="timerButtonStop">@color/nightModeDarkRed</item>
         <item name="timerButtonTextColor">@color/nightModeLightRed</item>
         <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.NightMode</item>
-        <item name="notificationTitle">@style/NotificationTitle</item>
-        <item name="notificationText">@style/NotificationText</item>
         <item name="resultTextSmall">@style/ResultTextSmall.NightMode</item>
         <item name="resultTextNormal">@style/ResultTextNormal.NightMode</item>
         <item name="resultTextBulbLength">@style/ResultTextBulbLength.NightMode</item>

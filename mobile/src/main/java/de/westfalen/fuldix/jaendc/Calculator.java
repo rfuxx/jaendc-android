@@ -378,10 +378,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             smallTime.setVisibility(isTimerVisible ? isTimerRunning && showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE);
             final int largePixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
             final int smallPixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
-            if (Build.VERSION.SDK_INT >= 16) {
-                smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, isTimerRunning && showCountdown ? largePixels : smallPixels);
-                largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, isTimerRunning && showCountdown ? smallPixels : largePixels);
-            }
+            smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, isTimerRunning && showCountdown ? largePixels : smallPixels);
+            largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, isTimerRunning && showCountdown ? smallPixels : largePixels);
         } finally {
             uiIsUpdating = oldUiIsUpdating;
         }
