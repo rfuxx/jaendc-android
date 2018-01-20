@@ -211,6 +211,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     private void calculate() {
         final int timePos = timeList.getCheckedItemPosition();
         if(timePos == ListView.INVALID_POSITION || timePos >= Time.times[timeStyle].length) {
+            calculatedTime = 0;
             largeTime.setText(R.string.text_na);
             if (Build.VERSION.SDK_INT >= 23) {
                 largeTime.setTextAppearance(R.style.ResultTextNormal);
@@ -375,7 +376,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             startStopButton.setVisibility(isTimerVisible ? View.VISIBLE : View.GONE);
             startStopButton.setChecked(isTimerRunning);
             progressBar.setVisibility(isTimerRunning ? View.VISIBLE : View.INVISIBLE);
-            smallTime.setVisibility(isTimerVisible ? isTimerRunning && showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE);
+            smallTime.setVisibility(calculatedTime > 0 ? isTimerVisible ? isTimerRunning && showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE : View.GONE);
             final int largePixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
             final int smallPixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
             smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, isTimerRunning && showCountdown ? largePixels : smallPixels);

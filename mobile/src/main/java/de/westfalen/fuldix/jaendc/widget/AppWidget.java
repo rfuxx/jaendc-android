@@ -579,7 +579,7 @@ public class AppWidget extends AppWidgetProvider{
         remoteViews.setViewVisibility(R.id.startButton, isTimerVisible && !isTimerRunning ? View.VISIBLE : View.GONE);
         remoteViews.setViewVisibility(R.id.stopButton, isTimerVisible && isTimerRunning ? View.VISIBLE : View.GONE);
         remoteViews.setViewVisibility(R.id.progressBar, isTimerVisible ? View.VISIBLE : View.INVISIBLE);
-        remoteViews.setViewVisibility(R.id.smallTime, isTimerVisible ? isTimerRunning && data.showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE);
+        remoteViews.setViewVisibility(R.id.smallTime, data.calculatedTime > 0 ? isTimerVisible ? isTimerRunning && data.showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE : View.GONE);
         final int largePixels = context.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
         final int smallPixels = context.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
         if (Build.VERSION.SDK_INT >= 16) {
