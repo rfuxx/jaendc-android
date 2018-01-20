@@ -93,8 +93,7 @@ public class AppWidget extends AppWidgetProvider{
                 final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
                 final RemoteViews remoteViews = createRemoteViews(context, data);
                 final int ndtimeMillis = (int) (data.calculatedTime *1000);
-                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
+                setTimerVisibility(context, remoteViews, data);
                 remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
                 remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
                 // the above "just in case" to ensure all "partial" updates since the last "full" update get applied again
@@ -430,10 +429,7 @@ public class AppWidget extends AppWidgetProvider{
                 if (data.showTimer > 0 && data.calculatedTime >= data.showTimer) {
                     // we need to handle here also the rebuilding of start/top/bar if the timer is running or not (if updating from externally)
                     if(data.timerEnding > 0 && data.timerRunner != null) {
-                        remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                        remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
-                        setVisibilitiesAndSizesForTimer(context, remoteViews, View.VISIBLE, data);
-                        setSmallTextVisibility(context, remoteViews, data);
+                        setTimerVisibility(context, remoteViews, data);
                         if(data.showCountdown) {
                             final long current = SystemClock.elapsedRealtime();
                             final int remaining = (int) (data.timerEnding - current);
@@ -442,10 +438,7 @@ public class AppWidget extends AppWidgetProvider{
                             smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                         }
                     } else {
-                        remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
-                        remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
-                        setVisibilitiesAndSizesForTimer(context, remoteViews, View.INVISIBLE, data);
-                        setSmallTextVisibility(context, remoteViews, data);
+                        setTimerVisibility(context, remoteViews, data);
                         smallTimeText = data.clearTextTimeFormat.format(data.calculatedTime);
                     }
                     data.myHandler.postDelayed(new Runnable() {
@@ -466,10 +459,7 @@ public class AppWidget extends AppWidgetProvider{
                 } else {
                     // we need to handle here also the rebuilding of start/top/bar
                     // (if updating from externally and settings may have been changed)
-                    remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                    remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
-                    setVisibilitiesAndSizesForTimer(context, remoteViews, View.GONE, data);
-                    setSmallTextVisibility(context, remoteViews, data);
+                    setTimerVisibility(context, remoteViews, data);
                     remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
                     remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
                     remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
@@ -482,9 +472,7 @@ public class AppWidget extends AppWidgetProvider{
             } else {
                 largeTimeText = context.getString(R.string.text_na);
                 smallTimeText = context.getString(R.string.text_na);
-                remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-                setVisibilitiesAndSizesForTimer(context, remoteViews, View.GONE, data);
-                setSmallTextVisibility(context, remoteViews, data);
+                setTimerVisibility(context, remoteViews, data);
             }
         } else {
             final String normalLargeText = String.format(context.getString(R.string.text_longer_than_symbol), data.outputTimeFormat.format(Integer.MAX_VALUE / 1000));
@@ -492,9 +480,7 @@ public class AppWidget extends AppWidgetProvider{
             spanString.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.ResultTextMaxExceededColor)), 0, normalLargeText.length(), 0);
             largeTimeText = spanString;
             smallTimeText = String.format(context.getString(R.string.text_longer_than), data.clearTextTimeFormat.format(Integer.MAX_VALUE / 1000));
-            remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-            setVisibilitiesAndSizesForTimer(context, remoteViews, View.GONE, data);
-            setSmallTextVisibility(context, remoteViews, data);
+            setTimerVisibility(context, remoteViews, data);
         }
         remoteViews.setTextViewText(R.id.largeTime, largeTimeText);
         remoteViews.setTextViewText(R.id.smallTime, smallTimeText);
@@ -510,10 +496,7 @@ public class AppWidget extends AppWidgetProvider{
             data.timerRunner = new TimerRunner(context, appWidgetId);
         }
         data.myHandler.post(data.timerRunner);
-        remoteViews.setViewVisibility(R.id.startButton, View.GONE);
-        remoteViews.setViewVisibility(R.id.stopButton, View.VISIBLE);
-        setVisibilitiesAndSizesForTimer(context, remoteViews, View.VISIBLE, data);
-        setSmallTextVisibility(context, remoteViews, data);
+        setTimerVisibility(context, remoteViews, data);
         remoteViews.setProgressBar(R.id.progressBar, ndtimeMillis, ndtimeMillis, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", false);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", false);
@@ -529,10 +512,7 @@ public class AppWidget extends AppWidgetProvider{
         data.timerEnding = 0;
         data.myHandler.removeCallbacks(data.timerRunner);
         final RemoteViews remoteViews = createRemoteViews(context, data);
-        remoteViews.setViewVisibility(R.id.startButton, View.VISIBLE);
-        remoteViews.setViewVisibility(R.id.stopButton, View.GONE);
-        setVisibilitiesAndSizesForTimer(context, remoteViews, View.INVISIBLE, data);
-        setSmallTextVisibility(context, remoteViews, data);
+        setTimerVisibility(context, remoteViews, data);
         remoteViews.setProgressBar(R.id.progressBar, (int) (data.calculatedTime * 1000), 0, false);
         remoteViews.setBoolean(R.id.timeList, "setEnabled", true);
         remoteViews.setBoolean(R.id.filterList, "setEnabled", true);
@@ -593,20 +573,19 @@ public class AppWidget extends AppWidgetProvider{
         }
     }
 
-    private static void setVisibilitiesAndSizesForTimer(final Context context, final RemoteViews remoteViews, final int visibility, final NDCalcData data) {
-        remoteViews.setViewVisibility(R.id.progressBar, View.VISIBLE);
+    private static void setTimerVisibility(final Context context, final RemoteViews remoteViews, final NDCalcData data) {
+        boolean isTimerVisible = data.showTimer > 0 && data.calculatedTime >= data.showTimer && data.calculatedTime < Integer.MAX_VALUE / 1000;
+        boolean isTimerRunning = data.timerEnding > 0 && data.timerRunner != null;
+        remoteViews.setViewVisibility(R.id.startButton, isTimerVisible && !isTimerRunning ? View.VISIBLE : View.GONE);
+        remoteViews.setViewVisibility(R.id.stopButton, isTimerVisible && isTimerRunning ? View.VISIBLE : View.GONE);
+        remoteViews.setViewVisibility(R.id.progressBar, isTimerVisible ? View.VISIBLE : View.INVISIBLE);
+        remoteViews.setViewVisibility(R.id.smallTime, isTimerVisible ? isTimerRunning && data.showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE);
         final int largePixels = context.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
         final int smallPixels = context.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
         if (Build.VERSION.SDK_INT >= 16) {
-            remoteViews.setTextViewTextSize(R.id.smallTime, TypedValue.COMPLEX_UNIT_PX, data.showCountdown && visibility == View.VISIBLE ? largePixels : smallPixels);
-            remoteViews.setTextViewTextSize(R.id.largeTime, TypedValue.COMPLEX_UNIT_PX, data.showCountdown && visibility == View.VISIBLE ? smallPixels : largePixels);
+            remoteViews.setTextViewTextSize(R.id.smallTime, TypedValue.COMPLEX_UNIT_PX, isTimerRunning && data.showCountdown ? largePixels : smallPixels);
+            remoteViews.setTextViewTextSize(R.id.largeTime, TypedValue.COMPLEX_UNIT_PX, isTimerRunning && data.showCountdown ? smallPixels : largePixels);
         }
-    }
-
-    private static void setSmallTextVisibility(final Context context, final RemoteViews remoteViews, final NDCalcData data) {
-        boolean isTimerVisible = data.showTimer > 0 && data.calculatedTime >= data.showTimer && data.calculatedTime < Integer.MAX_VALUE / 1000;
-        boolean isTimerRunning = data.timerEnding > 0 && data.timerRunner != null;
-        remoteViews.setViewVisibility(R.id.smallTime, isTimerVisible ? isTimerRunning && data.showCountdown ? View.VISIBLE : View.GONE : View.VISIBLE);
     }
 
     private static RemoteViews createRemoteViews(final Context context, final NDCalcData data) {
