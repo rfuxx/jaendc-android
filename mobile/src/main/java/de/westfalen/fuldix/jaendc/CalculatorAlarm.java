@@ -46,7 +46,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
 
     private static PendingIntent mkPendingIntent(Context context) {
         Intent intent = new Intent(context, CalculatorAlarm.class);
-        return PendingIntent.getBroadcast(context, 0, intent, 0);
+        return PendingIntent.getBroadcast(context, 1000, intent, 0);
     }
 
     @TargetApi(19)

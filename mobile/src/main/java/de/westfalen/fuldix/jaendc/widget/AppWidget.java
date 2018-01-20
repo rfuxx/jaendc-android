@@ -330,7 +330,7 @@ public class AppWidget extends AppWidgetProvider{
         final Intent listItemClickIntent = new Intent(context, AppWidget.class);
         listItemClickIntent.setAction(intentAction);
         listItemClickIntent.setData(Uri.parse(listItemClickIntent.toUri(Intent.URI_INTENT_SCHEME)));
-        PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 0, listItemClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 100, listItemClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         remoteViews.setPendingIntentTemplate(remoteViewId, clickPendingIntent);
     }
 
@@ -339,7 +339,7 @@ public class AppWidget extends AppWidgetProvider{
         buttonClickIntent.setAction(intentAction);
         buttonClickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         buttonClickIntent.setData(Uri.parse(buttonClickIntent.toUri(Intent.URI_INTENT_SCHEME)));
-        PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 0, buttonClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 101, buttonClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         remoteViews.setOnClickPendingIntent(remoteViewId, clickPendingIntent);
     }
 

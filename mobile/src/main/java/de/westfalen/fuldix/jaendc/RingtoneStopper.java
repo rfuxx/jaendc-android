@@ -42,6 +42,6 @@ public class RingtoneStopper extends BroadcastReceiver {
 
     private static PendingIntent mkPendingIntent(Context context) {
         Intent intent = new Intent(context, RingtoneStopper.class);
-        return PendingIntent.getBroadcast(context, 0, intent, 0);
+        return PendingIntent.getBroadcast(context, 2, intent, 0);
     }
 }

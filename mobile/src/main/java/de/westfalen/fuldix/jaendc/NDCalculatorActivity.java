@@ -33,14 +33,17 @@ public class NDCalculatorActivity extends ThemedActivityWithActionBarSqueezer {
     @Override
     protected void onRestoreInstanceState(final Bundle savedInstanceState) {
         boolean uiWasUpdating = calculator.setUiIsUpdating(true);
-        super.onRestoreInstanceState(savedInstanceState);
-        calculator.setUiIsUpdating(uiWasUpdating);
-        calculator.restoreState(savedInstanceState);
+        try {
+            super.onRestoreInstanceState(savedInstanceState);
+            calculator.restoreInstanceState(savedInstanceState);
+        } finally {
+            calculator.setUiIsUpdating(uiWasUpdating);
+        }
     }
 
     @Override
     protected void onSaveInstanceState(final Bundle savedInstanceState) {
-        calculator.saveState(savedInstanceState);
+        calculator.saveInstanceState(savedInstanceState);
         super.onSaveInstanceState(savedInstanceState);
     }
 

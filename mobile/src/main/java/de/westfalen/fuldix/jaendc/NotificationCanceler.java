@@ -33,6 +33,6 @@ public class NotificationCanceler extends BroadcastReceiver {
 
     private static PendingIntent mkPendingIntent(Context context) {
         Intent intent = new Intent(context, NotificationCanceler.class);
-        return PendingIntent.getBroadcast(context, 0, intent, 0);
+        return PendingIntent.getBroadcast(context, 1, intent, 0);
     }
 }

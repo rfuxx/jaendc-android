@@ -353,7 +353,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 if (multiselectItem != null) {
                     multiselectItem.setEnabled(false);
                 }
-                progressBar.post(this);
+                screen.post(this);
             } else {
                 timeList.setEnabled(true);
                 filterList.setEnabled(true);
@@ -387,15 +387,16 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         }
     }
 
-    void restoreState(Bundle savedState) {
+    void restoreInstanceState(Bundle savedState) {
         timerEnding = savedState.getLong(PERS_TIMER_ENDING);
         multiselect = savedState.getBoolean(PERS_MULTISELECT);
         applyMultiselect();
+        filterAdapter.refreshFilters();
         calculate();
         restoreRunningTimer();
     }
 
-    void saveState(Bundle savedState) {
+    void saveInstanceState(Bundle savedState) {
         savedState.putLong(PERS_TIMER_ENDING, timerEnding);
         savedState.putBoolean(PERS_MULTISELECT, multiselect);
     }
@@ -408,7 +409,16 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         applyMultiselect();
         final int timeIndex = sharedPreferences.getInt(PERS_TIMELIST_CHECKED_INDEX, 18);
         timeList.setItemChecked(timeIndex, true);
+        filterAdapter.refreshFilters();
+        checkIfFiltersExist();
         final String checkedIds = sharedPreferences.getString(PERS_FILTERLIST_CHECKED_IDS, "");
+        setCheckedFilterIdsFromString(checkedIds);
+        filterList.post(scrollListsToSelection);
+        calculate();
+        restoreRunningTimer();
+    }
+
+    private void setCheckedFilterIdsFromString(final String checkedIds) {
         final StringTokenizer tok = new StringTokenizer(checkedIds, ";");
         final Collection<Long> idList = new HashSet<>();
         while(tok.hasMoreTokens()) {
@@ -420,15 +430,10 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 System.err.println(String.format("Warning: internal prefstate %s contains unparsable number %s", PERS_FILTERLIST_CHECKED_IDS, str));
             }
         }
-        filterAdapter.refreshFilters();
-        checkIfFiltersExist();
         for(int pos=0; pos<filterAdapter.getCount(); pos++) {
             final long id = filterAdapter.getItemId(pos);
             filterList.setItemChecked(pos, idList.contains(id));
         }
-        filterList.post(scrollListsToSelection);
-        calculate();
-        restoreRunningTimer();
     }
 
     void savePersistentState() {
@@ -439,6 +444,11 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         editor.putLong(PERS_TIMER_ENDING, timerEnding);
         editor.putBoolean(PERS_MULTISELECT, multiselect);
         editor.putInt(PERS_TIMELIST_CHECKED_INDEX, timeList.getCheckedItemPosition());
+        editor.putString(PERS_FILTERLIST_CHECKED_IDS, getCheckedFilterIdsAsString());
+        editor.commit();
+    }
+
+    private String getCheckedFilterIdsAsString() {
         final StringBuilder ids = new StringBuilder();
         final SparseBooleanArray states = filterList.getCheckedItemPositions();
         for(int f=0; f<filterAdapter.getCount(); f++) {
@@ -447,8 +457,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 ids.append(';');
             }
         }
-        editor.putString(PERS_FILTERLIST_CHECKED_IDS, ids.toString());
-        editor.commit();
+        return ids.toString();
     }
 
     private void checkIfFiltersExist() {
