@@ -109,7 +109,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         smallTimeSqueezer.onViewCreate(smallTime);
         startStopButton = (ToggleButton) themedActivity.findViewById(R.id.startStopButton);
         themedActivity.applyStartStopButtonStyle(startStopButton);
-        startStopButton.setVisibility(View.INVISIBLE);
+        startStopButton.setVisibility(View.GONE);
         startStopButton.setOnCheckedChangeListener(this);
         progressBar = (ProgressBar) themedActivity.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
@@ -224,7 +224,12 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                     ndtime *= filter.getFactor();
                 }
             }
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(themedActivity);
+            final double showTimerMinSeconds = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
             if(ndtime < Integer.MAX_VALUE / 1000) {
+                if(showTimerMinSeconds > 0 && ndtime >= showTimerMinSeconds) {
+                    ndtime = Time.roundTimeToCameraTime(ndtime, Time.times[timeStyle][Time.times[timeStyle].length-1], timeStyle);
+                }
                 final String formattedOutputText = outputTimeFormat.format(ndtime);
                 final int textAppearanceResource;
                 if(ndtime > Time.times[timeStyle][Time.times[timeStyle].length-1]) {
@@ -243,13 +248,13 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                     largeTime.setTextAppearance(themedActivity, textAppearanceResource);
                 }
                 smallTime.setText(clearTextTimeFormat.format(ndtime));
-                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(themedActivity);
-                final double startTimer = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
-                if (startTimer > 0 && ndtime >= startTimer) {
+                if (showTimerMinSeconds > 0 && ndtime >= showTimerMinSeconds) {
+                    smallTime.setVisibility(View.GONE);
                     startStopButton.setVisibility(View.VISIBLE);
                     progressBar.setMax((int) (ndtime * 1000));
                 } else {
-                    startStopButton.setVisibility(View.INVISIBLE);
+                    smallTime.setVisibility(View.VISIBLE);
+                    startStopButton.setVisibility(View.GONE);
                 }
             }  else {
                 largeTime.setText(String.format(themedActivity.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000)));
@@ -262,7 +267,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 }
                 styled.recycle();
                 smallTime.setText(String.format(themedActivity.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000)));
-                startStopButton.setVisibility(View.INVISIBLE);
+                startStopButton.setVisibility(View.GONE);
             }
         }
     }
@@ -279,6 +284,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? largePixels : smallPixels);
         largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? smallPixels : largePixels);
         timerEnding = SystemClock.elapsedRealtime() + (int) (ndtime * 1000);
+        if(showCountdown) {
+            smallTime.setVisibility(View.VISIBLE);
+        }
         CalculatorAlarm.schedule(themedActivity, timerEnding);
         run();
     }
@@ -299,6 +307,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             final int smallPixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
             smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallPixels);
             largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, largePixels);
+            smallTime.setVisibility(View.GONE);
             timeList.setEnabled(true);
             filterList.setEnabled(true);
             if (multiselectItem != null) {
@@ -348,8 +357,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             uiIsUpdating = true;
             screen.removeCallbacks(this);
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(themedActivity);
-            final double startTimer = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
-            if (!(startTimer > 0 && ndtime >= startTimer)) {
+            final double showTimerMinSeconds = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
+            if (!(showTimerMinSeconds > 0 && ndtime >= showTimerMinSeconds)) {
                 stopTimer(false);
             }
             final int largePixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_large_fontsize);
@@ -359,6 +368,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 progressBar.setVisibility(View.VISIBLE);
                 smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? largePixels : smallPixels);
                 largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? smallPixels : largePixels);
+                smallTime.setVisibility(showCountdown ? View.VISIBLE : View.GONE);
                 timeList.setEnabled(false);
                 filterList.setEnabled(false);
                 if (multiselectItem != null) {
@@ -370,6 +380,11 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 progressBar.setVisibility(View.INVISIBLE);
                 smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallPixels);
                 largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, largePixels);
+                if (showTimerMinSeconds > 0 && ndtime >= showTimerMinSeconds) {
+                    smallTime.setVisibility(View.GONE);
+                } else {
+                    smallTime.setVisibility(View.VISIBLE);
+                }
                 timeList.setEnabled(true);
                 filterList.setEnabled(true);
                 if (multiselectItem != null) {
@@ -491,13 +506,13 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(ConfigActivity.SHOW_TIMER.equals(key)) {
             if(ndtime < Integer.MAX_VALUE / 1000) {
-                final double startTimer = sharedPreferences.getInt(ConfigActivity.SHOW_TIMER, 4);
-                if (startTimer > 0 && ndtime >= startTimer) {
+                final double showTimerMinSeconds = sharedPreferences.getInt(ConfigActivity.SHOW_TIMER, 4);
+                if (showTimerMinSeconds > 0 && ndtime >= showTimerMinSeconds) {
                     startStopButton.setVisibility(View.VISIBLE);
                     progressBar.setMax((int) (ndtime * 1000));
                 } else {
                     stopTimer(false);
-                    startStopButton.setVisibility(View.INVISIBLE);
+                    startStopButton.setVisibility(View.GONE);
                 }
             }
         } else if(ConfigActivity.TIME_STYLE.equals(key)) {
@@ -521,9 +536,17 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             final int smallPixels = themedActivity.getResources().getDimensionPixelSize(R.dimen.result_small_fontsize);
             smallTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? largePixels : smallPixels);
             largeTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, showCountdown ? smallPixels : largePixels);
+            smallTime.setVisibility(showCountdown ? View.VISIBLE : View.GONE);
             if(showCountdown) {
                 screen.removeCallbacks(this);
                 run();
+            }
+        } else {
+            final double showTimerMinSeconds = sharedPreferences.getInt(ConfigActivity.SHOW_TIMER, 4);
+            if (showTimerMinSeconds > 0 && ndtime >= showTimerMinSeconds) {
+                smallTime.setVisibility(View.GONE);
+            } else {
+                smallTime.setVisibility(View.VISIBLE);
             }
         }
     }
