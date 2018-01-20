@@ -41,6 +41,7 @@
     <string name="stop">Stop</string>
     <string name="factor">Factor:</string>
     <string name="fstops">f-stops:</string>
+    <string name="notification_channel_name">Exposure</string>
     <string name="notification_exposure_time">Exposure time is over</string>
     <string name="title_ndfilter_list">Manage ND Filters</string>
     <string name="title_ndfilter_detail">Edit ND Filter</string>
