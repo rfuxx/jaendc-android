@@ -28,36 +28,36 @@ public class CalculatorAlarm extends BroadcastReceiver {
     private static final long vibrateLength = 500;
     private static final long[] vibratePattern = { 0, vibrateLength };
 
-    public static void schedule(Context context, long timeout) {
+    public static PendingIntent schedule(final Context context, final long timeout) {
+        cancel(context);
         NotificationCanceler.cancelNotification(context);
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pi = mkPendingIntent(context);
-        if (Build.VERSION.SDK_INT >= 19) {
-            setExactAlarm_19(am, timeout, pi);
+        final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        final PendingIntent pi = mkPendingIntent(context);
+        if (Build.VERSION.SDK_INT >= 23) {
+            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
+        } else if (Build.VERSION.SDK_INT >= 19) {
+            am.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
         } else {
             am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
         }
+        return pi;
     }
 
-    public static void cancel(Context context) {
-        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+    public static void cancel(final Context context) {
+        final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(mkPendingIntent(context));
     }
 
-    private static PendingIntent mkPendingIntent(Context context) {
-        Intent intent = new Intent(context, CalculatorAlarm.class);
-        return PendingIntent.getBroadcast(context, 1000, intent, 0);
-    }
-
-    @TargetApi(19)
-    private static void setExactAlarm_19(AlarmManager am, long triggerAtMillis, PendingIntent operation) {
-        am.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtMillis, operation);
+    private static PendingIntent mkPendingIntent(final Context context) {
+        final Intent intent = new Intent(context, CalculatorAlarm.class);
+        return PendingIntent.getBroadcast(context, 1000, intent, PendingIntent.FLAG_ONE_SHOT);
     }
 
     private int ringerMode;
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, final Intent intent) {
+        System.out.println("Exposure timer alarm received");
         final AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         ringerMode = audio.getRingerMode();
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -93,7 +93,9 @@ public class CalculatorAlarm extends BroadcastReceiver {
             final Intent cIntent = new Intent(context, NDCalculatorActivity.class);
             final PendingIntent contentIntent = PendingIntent.getActivity(context, 1, cIntent, 0);
             final Notification notification;
-            if (Build.VERSION.SDK_INT >= 11) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                notification = makeNotification_26(context, contentIntent, sound);
+            } else if (Build.VERSION.SDK_INT >= 11) {
                 notification = makeNotification_11(context, contentIntent, sound);
             } else {
                 notification = new Notification();
@@ -124,39 +126,35 @@ public class CalculatorAlarm extends BroadcastReceiver {
 
     @TargetApi(11)
     private Notification makeNotification_11(final Context context, final PendingIntent contentIntent, final Uri sound) {
-        if (Build.VERSION.SDK_INT >= 26) {
-            return makeNotification_26(context, contentIntent, sound);
+        final Notification.Builder builder = new Notification.Builder(context)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentText(context.getString(R.string.notification_exposure_time))
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setOngoing(false)
+                .setOnlyAlertOnce(false)
+                .setTicker(context.getString(R.string.notification_exposure_time));
+        if (ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            builder.setVibrate(vibratePattern);
+        }
+        if (Build.VERSION.SDK_INT >= 21) {
+            return buildNotification_21(builder, sound);
         } else {
-            final Notification.Builder builder = new Notification.Builder(context)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle(context.getString(R.string.app_name))
-                    .setContentText(context.getString(R.string.notification_exposure_time))
-                    .setContentIntent(contentIntent)
-                    .setAutoCancel(true)
-                    .setDefaults(Notification.DEFAULT_LIGHTS)
-                    .setOngoing(false)
-                    .setOnlyAlertOnce(false)
-                    .setTicker(context.getString(R.string.notification_exposure_time));
-            if (ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                builder.setVibrate(vibratePattern);
+            if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
+                builder.setSound(sound, AudioManager.STREAM_ALARM);
             }
-            if (Build.VERSION.SDK_INT >= 21) {
-                return buildNotification_21(builder, sound);
+            if (Build.VERSION.SDK_INT >= 16) {
+                return buildNotification_16(builder);
             } else {
-                if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
-                    builder.setSound(sound, AudioManager.STREAM_ALARM);
-                }
-                if (Build.VERSION.SDK_INT >= 16) {
-                    return buildNotification_16(builder);
-                } else {
-                    return builder.getNotification();
-                }
+                return builder.getNotification();
             }
         }
     }
 
     @TargetApi(16)
-    private static Notification buildNotification_16(Notification.Builder builder) {
+    private static Notification buildNotification_16(final Notification.Builder builder) {
         return builder
                 .setPriority(Notification.PRIORITY_HIGH)
                 .build();

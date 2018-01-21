@@ -1,6 +1,7 @@
 package de.westfalen.fuldix.jaendc;
 
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -39,6 +40,7 @@ import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
 public class Calculator implements ListView.OnItemClickListener, CompoundButton.OnCheckedChangeListener, Runnable, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PERS_TIMER_ENDING = "timer_ending";
+    private static final String PERS_ALARM_INTENT = "alarm_intent";
     private static final String PERS_MULTISELECT = "multiselect";
     private static final String PERS_TIMELIST_CHECKED_INDEX = "timeList.checkedIndex";
     private static final String PERS_FILTERLIST_CHECKED_IDS = "filterList.checkedIds";
@@ -76,6 +78,8 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     private boolean isShowing = true;
     private boolean uiIsUpdating = false;
+
+    private PendingIntent alarmIntent;
 
     public Calculator(final ThemedActivityWithActionBarSqueezer themedActivity)
     {
@@ -193,7 +197,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 if (isChecked) {
                     startTimer();
                 } else {
-                    stopTimer(false);
+                    stopTimer();
                 }
             } finally {
                 uiIsUpdating = oldUiIsUpdating;
@@ -277,14 +281,13 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         }
         timerEnding = SystemClock.elapsedRealtime() + (int) (calculatedTime * 1000);
         setTimerVisibility();
-        CalculatorAlarm.schedule(themedActivity, timerEnding);
+        alarmIntent = CalculatorAlarm.schedule(themedActivity, timerEnding);
         run();
     }
 
-    private void stopTimer(final boolean hasBeenTriggered) {
-        if(!hasBeenTriggered) {
-            CalculatorAlarm.cancel(themedActivity);
-        }
+    private void stopTimer() {
+        CalculatorAlarm.cancel(themedActivity);
+        alarmIntent = null;
         timerEnding = 0;
         final boolean oldUiIsUpdating = uiIsUpdating;
         try {
@@ -334,8 +337,16 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             }
             screen.postDelayed(this, delayToNext);
         } else {
-            // alarm is played through scheduled alarm
-            stopTimer(true);
+            // let the alarm go off (to do it right here from UI scope is more timely than relying on the schedulings in the AlarmManager due to weidness that even setExactAndAllowWhileIdle is not necessarily exact)
+            try {
+                if(alarmIntent != null) {
+                    alarmIntent.send();
+                }
+            } catch (final PendingIntent.CanceledException e) {
+                System.err.println("alarm-go-off not sent because canceled");
+            }
+            // and stop the timer visually
+            stopTimer();
         }
     }
 
@@ -345,7 +356,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             uiIsUpdating = true;
             screen.removeCallbacks(this);
             if (!(showTimerMinSeconds > 0 && calculatedTime >= showTimerMinSeconds)) {
-                stopTimer(false);
+                stopTimer();
             }
             setTimerVisibility();
             if (timerEnding > SystemClock.elapsedRealtime()) {
@@ -388,6 +399,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     void restoreInstanceState(Bundle savedState) {
         timerEnding = savedState.getLong(PERS_TIMER_ENDING);
+        alarmIntent = (PendingIntent) savedState.get(PERS_ALARM_INTENT);
         multiselect = savedState.getBoolean(PERS_MULTISELECT);
         applyMultiselect();
         filterAdapter.refreshFilters();
@@ -397,6 +409,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     void saveInstanceState(Bundle savedState) {
         savedState.putLong(PERS_TIMER_ENDING, timerEnding);
+        savedState.putParcelable(PERS_ALARM_INTENT, alarmIntent);
         savedState.putBoolean(PERS_MULTISELECT, multiselect);
     }
 
@@ -404,6 +417,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         isShowing=true;
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(themedActivity);
         timerEnding = sharedPreferences.getLong(PERS_TIMER_ENDING, 0);
+        alarmIntent = timerEnding > SystemClock.elapsedRealtime() ? CalculatorAlarm.schedule(themedActivity, timerEnding) : null;
         multiselect = sharedPreferences.getBoolean(PERS_MULTISELECT, false);
         applyMultiselect();
         final int timeIndex = sharedPreferences.getInt(PERS_TIMELIST_CHECKED_INDEX, 18);
@@ -511,7 +525,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 if (showTimerMinSeconds > 0 && calculatedTime >= showTimerMinSeconds) {
                     progressBar.setMax((int) (calculatedTime * 1000));
                 } else {
-                    stopTimer(false);
+                    stopTimer();
                 }
                 setTimerVisibility();
             }
