@@ -16,6 +16,7 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
@@ -33,8 +34,11 @@ public class CalculatorAlarm extends BroadcastReceiver {
         NotificationCanceler.cancelNotification(context);
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = mkPendingIntent(context);
-        if (Build.VERSION.SDK_INT >= 23) {
-            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
+//        if (Build.VERSION.SDK_INT >= 23) {
+//            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
+        if (Build.VERSION.SDK_INT >= 21) {
+            final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout - SystemClock.elapsedRealtime() + System.currentTimeMillis(), showIntent), pi);
         } else if (Build.VERSION.SDK_INT >= 19) {
             am.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
         } else {
