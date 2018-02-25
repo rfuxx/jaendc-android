@@ -16,7 +16,7 @@ public class NotificationCanceler extends BroadcastReceiver {
 
     public static void cancelNotification(Context context) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(1);
+        manager.cancel(CalculatorAlarm.TIMER_COMPLETED);
         cancelSchedule(context);
     }
 

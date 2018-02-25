@@ -41,8 +41,11 @@
     <string name="stop">Stop</string>
     <string name="factor">Faktor:</string>
     <string name="fstops">Blenden:</string>
-    <string name="notification_channel_name">Belichtungszeit</string>
+    <string name="notification_channel_name_expiry">Belichtungszeit</string>
+    <string name="notification_channel_name_timer">Timer</string>
     <string name="notification_exposure_time">Belichtungszeit ist abgelaufen</string>
+    <string name="notification_timer_running">Belichtungszeit-Timer ist aktiv</string>
+    <string name="notification_timer_counting">Belichtungszeit läuft: %s</string>
     <string name="title_ndfilter_list">Verwaltung der ND-Filter</string>
     <string name="title_ndfilter_detail">ND-Filter ändern</string>
     <string name="title_ndfilter_detail_new">Neuer ND-Filter</string>

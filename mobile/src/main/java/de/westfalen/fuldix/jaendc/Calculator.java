@@ -85,7 +85,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
     {
         this.themedActivity = themedActivity;
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.themedActivity);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this.themedActivity);
         prefs.registerOnSharedPreferenceChangeListener(this);
         timeStyle = prefs.getInt(ConfigActivity.TIME_STYLE, 0);
         showTimerMinSeconds = prefs.getInt(ConfigActivity.SHOW_TIMER, 4);
