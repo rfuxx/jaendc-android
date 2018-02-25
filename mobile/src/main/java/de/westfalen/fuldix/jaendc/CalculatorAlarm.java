@@ -281,22 +281,25 @@ public class CalculatorAlarm extends BroadcastReceiver {
     private static Notification makeNotification_26(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         final NotificationChannel channel;
+        final String channelId;
         switch (whichNotification) {
             case TIMER_COUNTING:
-                channel = new NotificationChannel("timerRunningChannel", context.getString(R.string.notification_channel_name_timer), NotificationManager.IMPORTANCE_LOW);
+                channelId = "timerRunningChannel";
+                channel = new NotificationChannel(channelId, context.getString(R.string.notification_channel_name_timer), NotificationManager.IMPORTANCE_LOW);
                 break;
             default:
-                channel = new NotificationChannel("timerExpiryChannel", context.getString(R.string.notification_channel_name_expiry), IMPORTANCE_HIGH);
+                channelId = "timerExpiryChannel";
+                channel = new NotificationChannel(channelId, context.getString(R.string.notification_channel_name_expiry), IMPORTANCE_HIGH);
+                if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                    channel.setVibrationPattern(vibratePattern);
+                }
+                if(sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                    channel.setSound(sound, mkAudioAttributes());
+                }
                 break;
         }
-        if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-            channel.setVibrationPattern(vibratePattern);
-        }
-        if(sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-            channel.setSound(sound, mkAudioAttributes());
-        }
         manager.createNotificationChannel(channel);
-        final Notification.Builder builder = new Notification.Builder(context, "timerExpiryChannel")
+        final Notification.Builder builder = new Notification.Builder(context, channelId)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentIntent(contentIntent)
