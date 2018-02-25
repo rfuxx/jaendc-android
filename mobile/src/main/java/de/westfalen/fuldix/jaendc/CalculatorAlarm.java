@@ -17,7 +17,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
@@ -53,10 +52,10 @@ public class CalculatorAlarm extends BroadcastReceiver {
         @Override
         public void run() {
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            final long prefsTimeout = prefs.getLong(PREFS_TIMEOUT, 0);
+            final long prefsTimeout = prefs.getLong(Calculator.PERS_TIMER_ENDING, 0);
             if(prefsTimeout != 0 && timeout == prefsTimeout) {
                 final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                if (timeout > SystemClock.elapsedRealtime()) {
+                if (timeout > System.currentTimeMillis()) {
                     final Intent cIntent = new Intent(context, NDCalculatorActivity.class);
                     final PendingIntent contentIntent = PendingIntent.getActivity(context, 1, cIntent, 0);
                     final Notification ongoingNotification = makeNotification(context, contentIntent, null, AudioManager.RINGER_MODE_SILENT, TIMER_COUNTING, this);
@@ -73,7 +72,6 @@ public class CalculatorAlarm extends BroadcastReceiver {
         }
     }
 
-    private static final String PREFS_TIMEOUT = "timer.running";
     private static final long vibrateLength = 500;
     private static final long[] vibratePattern = { 0, vibrateLength };
 
@@ -86,17 +84,17 @@ public class CalculatorAlarm extends BroadcastReceiver {
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = mkPendingIntent(context);
 //        if (Build.VERSION.SDK_INT >= 23) {
-//            am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
+//            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
         if (Build.VERSION.SDK_INT >= 21) {
             final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
-            am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout - SystemClock.elapsedRealtime() + System.currentTimeMillis(), showIntent), pi);
+            am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
         } else if (Build.VERSION.SDK_INT >= 19) {
-            am.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
+            am.setExact(AlarmManager.RTC_WAKEUP, timeout, pi);
         } else {
-            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, pi);
+            am.set(AlarmManager.RTC_WAKEUP, timeout, pi);
         }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putLong(PREFS_TIMEOUT, timeout).commit();
+        prefs.edit().putLong(Calculator.PERS_TIMER_ENDING, timeout).commit();
         final ScheduledAlarmNotification scheduledAlarmNotification = new ScheduledAlarmNotification(timeout, context, pi);
         scheduledAlarmNotification.run();
         return pi;
@@ -106,7 +104,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         am.cancel(mkPendingIntent(context));
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().remove(PREFS_TIMEOUT).commit();
+        prefs.edit().remove(Calculator.PERS_TIMER_ENDING).commit();
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(TIMER_COUNTING);
     }
@@ -191,7 +189,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
                     final boolean showCountdown = prefs.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
                     notification.flags = Notification.FLAG_ONGOING_EVENT;
                     if (showCountdown) {
-                        final int remainingTime = (int) (scheduledAlarmNotification.timeout - SystemClock.elapsedRealtime());
+                        final int remainingTime = (int) (scheduledAlarmNotification.timeout - System.currentTimeMillis());
                         msgText = context.getResources().getString(R.string.notification_timer_counting, scheduledAlarmNotification.countdownTextTimeFormat.format(remainingTime));
                         int delayToNext = scheduledAlarmNotification.countdownTextTimeFormat.delayToNext(remainingTime);
                         if (delayToNext >= 0) {
@@ -325,7 +323,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
                 final boolean showCountdown = prefs.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
                 builder.setOngoing(true);
                 if(showCountdown) {
-                    final int remainingTime = (int) (scheduledAlarmNotification.timeout - SystemClock.elapsedRealtime());
+                    final int remainingTime = (int) (scheduledAlarmNotification.timeout - System.currentTimeMillis());
                     builder.setContentText(context.getResources().getString(R.string.notification_timer_counting, scheduledAlarmNotification.countdownTextTimeFormat.format(remainingTime)));
                     int delayToNext = scheduledAlarmNotification.countdownTextTimeFormat.delayToNext(remainingTime);
                     if(delayToNext >= 0) {

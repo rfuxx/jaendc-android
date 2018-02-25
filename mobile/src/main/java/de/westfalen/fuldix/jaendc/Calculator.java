@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
@@ -39,7 +38,7 @@ import de.westfalen.fuldix.jaendc.text.OutputTimeFormat;
 import de.westfalen.fuldix.jaendc.widget.AppWidget;
 
 public class Calculator implements ListView.OnItemClickListener, CompoundButton.OnCheckedChangeListener, Runnable, SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final String PERS_TIMER_ENDING = "timer_ending";
+    public static final String PERS_TIMER_ENDING = "timer_ending";
     private static final String PERS_ALARM_INTENT = "alarm_intent";
     private static final String PERS_MULTISELECT = "multiselect";
     private static final String PERS_TIMELIST_CHECKED_INDEX = "timeList.checkedIndex";
@@ -279,7 +278,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         if(multiselectItem != null) {
             multiselectItem.setEnabled(false);
         }
-        timerEnding = SystemClock.elapsedRealtime() + (int) (calculatedTime * 1000);
+        timerEnding = System.currentTimeMillis() + (long) (calculatedTime * 1000);
         setTimerVisibility();
         alarmIntent = CalculatorAlarm.schedule(themedActivity, timerEnding);
         run();
@@ -311,7 +310,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
             System.err.println("run() despite not showing");
             return;
         }
-        final long current = SystemClock.elapsedRealtime();
+        final long current = System.currentTimeMillis();
         final int remaining = (int) (timerEnding - current);
         if(showCountdown) {
             smallTime.setText(countdownTextFormat.format(remaining));
@@ -359,7 +358,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 stopTimer();
             }
             setTimerVisibility();
-            if (timerEnding > SystemClock.elapsedRealtime()) {
+            if (timerEnding > System.currentTimeMillis()) {
                 timeList.setEnabled(false);
                 filterList.setEnabled(false);
                 if (multiselectItem != null) {
@@ -383,7 +382,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         try {
             uiIsUpdating = true;
             boolean isTimerVisible = showTimerMinSeconds > 0 && calculatedTime >= showTimerMinSeconds && calculatedTime < Integer.MAX_VALUE / 1000;
-            boolean isTimerRunning = timerEnding > SystemClock.elapsedRealtime();
+            boolean isTimerRunning = timerEnding > System.currentTimeMillis();
             startStopButton.setVisibility(isTimerVisible ? View.VISIBLE : View.GONE);
             startStopButton.setChecked(isTimerRunning);
             progressBar.setVisibility(isTimerRunning ? View.VISIBLE : View.INVISIBLE);
@@ -417,7 +416,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         isShowing=true;
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(themedActivity);
         timerEnding = sharedPreferences.getLong(PERS_TIMER_ENDING, 0);
-        alarmIntent = timerEnding > SystemClock.elapsedRealtime() ? CalculatorAlarm.schedule(themedActivity, timerEnding) : null;
+        alarmIntent = timerEnding > System.currentTimeMillis() ? CalculatorAlarm.schedule(themedActivity, timerEnding) : null;
         multiselect = sharedPreferences.getBoolean(PERS_MULTISELECT, false);
         applyMultiselect();
         final int timeIndex = sharedPreferences.getInt(PERS_TIMELIST_CHECKED_INDEX, 18);
@@ -454,7 +453,9 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         screen.removeCallbacks(this);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(themedActivity);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(PERS_TIMER_ENDING, timerEnding);
+        if(timerEnding > 0) {
+            editor.putLong(PERS_TIMER_ENDING, timerEnding);
+        }
         editor.putBoolean(PERS_MULTISELECT, multiselect);
         editor.putInt(PERS_TIMELIST_CHECKED_INDEX, timeList.getCheckedItemPosition());
         editor.putString(PERS_FILTERLIST_CHECKED_IDS, getCheckedFilterIdsAsString());
@@ -546,7 +547,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         }
 
         setTimerVisibility();
-        if (timerEnding > SystemClock.elapsedRealtime()) {
+        if (timerEnding > System.currentTimeMillis()) {
             if(showCountdown) {
                 screen.removeCallbacks(this);
                 run();

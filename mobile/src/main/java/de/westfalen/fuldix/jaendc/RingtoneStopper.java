@@ -32,7 +32,7 @@ public class RingtoneStopper extends BroadcastReceiver {
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         long timeout = SystemClock.elapsedRealtime() + (prefs.getInt(ConfigActivity.ALARM_DURATION, 29)+1) * 1000;
-        am.set(AlarmManager.ELAPSED_REALTIME, timeout, mkPendingIntent(context));
+        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, timeout, mkPendingIntent(context));
     }
 
     private static void cancelSchedule(Context context) {

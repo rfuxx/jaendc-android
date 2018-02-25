@@ -16,7 +16,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -87,7 +86,7 @@ public class AppWidget extends AppWidgetProvider{
         @Override
         public void run() {
             final NDCalcData data = getWidgetData(context, appWidgetId);
-            final long current = SystemClock.elapsedRealtime();
+            final long current = System.currentTimeMillis();
             final int remaining = (int) (data.timerEnding - current);
             if (remaining > 0) {
                 final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
@@ -411,7 +410,7 @@ public class AppWidget extends AppWidgetProvider{
                     // we need to handle here also the rebuilding of start/top/bar if the timer is running or not (if updating from externally)
                     if(data.timerEnding > 0 && data.timerRunner != null) {
                         if(data.showCountdown) {
-                            final long current = SystemClock.elapsedRealtime();
+                            final long current = System.currentTimeMillis();
                             final int remaining = (int) (data.timerEnding - current);
                             smallTimeText = data.countdownTextFormat.format(remaining);
                         } else {
@@ -453,7 +452,7 @@ public class AppWidget extends AppWidgetProvider{
         final NDCalcData data = getWidgetData(context, appWidgetId);
         final RemoteViews remoteViews = createRemoteViews(context, data);
         final int ndtimeMillis = (int) (data.calculatedTime *1000);
-        data.timerEnding = SystemClock.elapsedRealtime() + ndtimeMillis;
+        data.timerEnding = System.currentTimeMillis() + ndtimeMillis;
         if(data.timerRunner == null) {
             data.timerRunner = new TimerRunner(context, appWidgetId);
         }
