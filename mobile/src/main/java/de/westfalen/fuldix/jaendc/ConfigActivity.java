@@ -31,6 +31,7 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
     public static final String SHOW_COUNTDOWN = "showCountdown";
     public static final String THEME = "theme";
     public static final String TRANSPARENCY = "transparency";
+    public static final String USE_ALARMCLOCK = "useAlarmClock";
     public static final String ALARM_TONE_USE_SYSTEM_SOUND = "use_system_sound";
     public static final String ALARM_TONE_BE_SILENT = "silent";
     public static final int[] THEMES = {R.style.AppThemeDark, R.style.AppThemeLight, R.style.AppThemeNightMode};
@@ -72,6 +73,7 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
         boolean showCountdownValue = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, false);
         alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, ALARM_TONE_BE_SILENT);
         alarmDurationValue = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, alarmDurationValue);
+        final boolean useAlarmClockValue = prefs.getBoolean(prefPrefix + ConfigActivity.USE_ALARMCLOCK, false);
 
         setContentView(R.layout.activity_config);
         handleSystemUiVisibility(findViewById(R.id.screen), prefPrefix);
@@ -87,6 +89,8 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
         final Button applyButton = (Button) findViewById(R.id.applyButton);
         final SeekBar alarmDurationBar = (SeekBar) findViewById(R.id.alarmDurationSeek);
         final TextView alarmDurationText = (TextView) findViewById(R.id.alarmDurationValue);
+        final TextView useAlarmClockLabel = (TextView) findViewById(R.id.useAlarmClockLabel);
+        final CheckBox useAlarmClockSwitch = (CheckBox) findViewById(R.id.useAlarmClockSwitch);
         final Resources resources = getResources();
 
         if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
@@ -103,6 +107,7 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
                 final TextView themeLabel = (TextView) findViewById(R.id.themeLabel);
                 themeLabel.setVisibility(Build.VERSION.SDK_INT >= 23 ? View.VISIBLE : View.GONE);
                 themeButton.setVisibility(Build.VERSION.SDK_INT >= 23 ? View.VISIBLE : View.GONE);
+                useAlarmClockSwitch.setVisibility(View.GONE);
             } else {
                 Toast.makeText(this, R.string.widget_not_for_2x, Toast.LENGTH_LONG).show();
                 finish();
@@ -121,6 +126,8 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
             transparencyLabel.setVisibility(View.GONE);
             transparencyBar.setVisibility(View.GONE);
             transparencyText.setVisibility(View.GONE);
+            useAlarmClockLabel.setVisibility(Build.VERSION.SDK_INT >= 21 ? View.VISIBLE : View.GONE);
+            useAlarmClockSwitch.setVisibility(Build.VERSION.SDK_INT >= 21 ? View.VISIBLE : View.GONE);
             titleSqueezer.onViewCreate(resources.getString(R.string.title_activity_config), R.id.screen);
             titleSqueezer.onViewCreate(resources.getString(R.string.subtitle_activity_config_explain), R.id.screen);
         }
@@ -232,6 +239,7 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
         showTimerSeekBarListener.onProgressChanged(showTimerBar, showTimerValue, false);
         showTimerBar.setOnSeekBarChangeListener(showTimerSeekBarListener);
         showCountdownSwitch.setChecked(showCountdownValue);
+        useAlarmClockSwitch.setChecked(useAlarmClockValue);
         switch (alarmToneStr) {
             case ALARM_TONE_BE_SILENT: {
                 alarmToneButton.setText(getString(R.string.config_alarm_tone_silent));
@@ -299,6 +307,9 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
                         edit.putString(ALARM_TONE, ALARM_TONE_USE_SYSTEM_SOUND);
                     }
                     edit.putInt(ALARM_DURATION, alarmDurationValue);
+                    if (Build.VERSION.SDK_INT >= 21) {
+                        edit.putBoolean(USE_ALARMCLOCK, useAlarmClockSwitch.isChecked());
+                    }
                     edit.commit();
 
                     final Intent resultValue = new Intent();

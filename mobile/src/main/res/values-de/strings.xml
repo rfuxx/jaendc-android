@@ -66,9 +66,10 @@
         <item>1/2-Stufen mit Kommabrüchen (von 1/3 bis 1/1.3)</item>
     </array>
     <string name="config_show_timer">Timer anzeigen bei</string>
-    <string name="config_show_timer_countdown">Mit Countdown</string>
     <string name="config_show_timer_value">mind. %dsec</string>
     <string name="config_show_timer_value_never">Nie</string>
+    <string name="config_show_timer_countdown">Mit Countdown</string>
+    <string name="config_use_alarm_clock">Als Wecker (präziser)</string>
     <string name="config_alarm_tone">Timer-Ton</string>
     <string name="config_alarm_tone_silent">Stumm</string>
     <string name="config_alarm_tone_system">Standardklingelton</string>

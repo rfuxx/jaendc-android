@@ -83,11 +83,24 @@ public class CalculatorAlarm extends BroadcastReceiver {
         NotificationCanceler.cancelNotification(context);
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = mkPendingIntent(context);
-//        if (Build.VERSION.SDK_INT >= 23) {
-//            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
-        if (Build.VERSION.SDK_INT >= 21) {
-            final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
-            am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
+        if (Build.VERSION.SDK_INT >= 23) {
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            final boolean useAlarmClockValue = prefs.getBoolean(ConfigActivity.USE_ALARMCLOCK, false);
+            if (useAlarmClockValue) {
+                final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
+                am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
+            } else {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
+            }
+        } else if (Build.VERSION.SDK_INT >= 21) {
+            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            final boolean useAlarmClockValue = prefs.getBoolean(ConfigActivity.USE_ALARMCLOCK, false);
+            if(useAlarmClockValue) {
+                final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
+                am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
+            } else {
+                am.setExact(AlarmManager.RTC_WAKEUP, timeout, pi);
+            }
         } else if (Build.VERSION.SDK_INT >= 19) {
             am.setExact(AlarmManager.RTC_WAKEUP, timeout, pi);
         } else {

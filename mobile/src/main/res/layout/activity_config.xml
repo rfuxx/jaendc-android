@@ -111,6 +111,28 @@
             <TextView
                 style="@android:style/TextAppearance.Medium"
                 android:layout_below="@id/showCountdownLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/config_use_alarm_clock"
+                android:id="@+id/useAlarmClockLabel"
+                android:labelFor="@+id/useAlarmClockSwitch"
+                android:paddingTop="12sp"
+                />
+
+            <CheckBox
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBaseline="@id/useAlarmClockLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:id="@+id/useAlarmClockSwitch"
+                android:paddingTop="12sp"
+                />
+
+            <TextView
+                style="@android:style/TextAppearance.Medium"
+                android:layout_below="@id/useAlarmClockLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/config_alarm_tone"
