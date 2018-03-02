@@ -107,6 +107,7 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
                 final TextView themeLabel = (TextView) findViewById(R.id.themeLabel);
                 themeLabel.setVisibility(Build.VERSION.SDK_INT >= 23 ? View.VISIBLE : View.GONE);
                 themeButton.setVisibility(Build.VERSION.SDK_INT >= 23 ? View.VISIBLE : View.GONE);
+                useAlarmClockLabel.setVisibility(View.GONE);
                 useAlarmClockSwitch.setVisibility(View.GONE);
             } else {
                 Toast.makeText(this, R.string.widget_not_for_2x, Toast.LENGTH_LONG).show();
