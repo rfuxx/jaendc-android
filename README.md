@@ -11,4 +11,7 @@ In JaeNDC you select your ND Filter and the "normal" exposure that the scene wou
 
 JaeNDC is modeled after Boris Nienke's popular NDCalc2 app for iOS; this JaeNDC Android app is actually a nice exercise in Android app development for me.
 
-This app should also play well with tablets, but as I do not own an Andoid tablet yet, could only test it in the simuator.
+This app should also plays well with tablets, tested on two Android 5.x devices with different large screen sizes.
+
+## Install via Google Play Store
+https://play.google.com/store/apps/details?id=de.westfalen.fuldix.jaendc
