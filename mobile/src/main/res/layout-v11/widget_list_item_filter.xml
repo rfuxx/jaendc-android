@@ -12,8 +12,6 @@
         android:id="@+id/list_item_filter_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/list_item_drag_handle"
-        android:layout_toEndOf="@id/list_item_drag_handle"
         />
     <TextView
         style="?android:attr/textAppearanceSmall"
@@ -22,7 +20,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/list_item_filter_name"
-        android:layout_toRightOf="@id/list_item_drag_handle"
-        android:layout_toEndOf="@id/list_item_drag_handle"
         />
 </RelativeLayout>
