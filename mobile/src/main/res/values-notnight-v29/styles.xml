@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppThemeDayNight" parent="android:Theme.Material.Light">
+        <item name="listActivatedBackgroundIndicator">?android:attr/activatedBackgroundIndicator</item>
+        <item name="colorListItemActivated">?android:attr/colorAccent</item>
+        <item name="actionBarIconTint">?android:attr/iconTint</item>
+        <item name="handleIconTint">?android:attr/colorForeground</item>
+        <item name="timerButtonStart">@color/buttonStartGreen.Light</item>
+        <item name="timerButtonStop">@color/buttonStartRed.Light</item>
+        <item name="timerButtonTextColor">@android:color/black</item>
+        <item name="timerProgressBarStyle">@style/TimerProgressBarStyle.Light</item>
+        <item name="resultTextSmall">@style/ResultTextSmall</item>
+        <item name="resultTextNormal">@style/ResultTextNormal</item>
+        <item name="resultTextBulbLength">@style/ResultTextBulbLength</item>
+        <item name="resultTextMaxExceeded">@style/ResultTextMaxExceeded.Light</item>
+    </style>
+
+    <style name="TimerProgressBarStyle.DayNight" parent="android:Widget.Material.Light.ProgressBar.Horizontal" />
+
+</resources>

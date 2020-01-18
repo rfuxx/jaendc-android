@@ -121,4 +121,11 @@
         <item name="android:textSize">@dimen/result_large_fontsize</item>
     </style>
 
+    <style name="ResultTextSmall" parent="@android:style/TextAppearance.Material">
+        <item name="android:textSize">@dimen/result_small_fontsize</item>
+    </style>
+    <style name="ResultTextNormal" parent="@android:style/TextAppearance.Material.Large">
+        <item name="android:textSize">@dimen/result_large_fontsize</item>
+    </style>
+
 </resources>

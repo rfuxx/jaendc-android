@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
+    public static final int[] THEMES  = Build.VERSION.SDK_INT >= 29 ? new int[] {R.style.AppThemeDark, R.style.AppThemeLight, R.style.AppThemeNightMode, R.style.AppThemeDayNight} : new int[] {R.style.AppThemeDark, R.style.AppThemeLight, R.style.AppThemeNightMode};
+
     private class PrefsListener implements SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -51,8 +53,8 @@ public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        final int theme = prefs.getInt((prefPrefix != null ? prefPrefix : "") + ConfigActivity.THEME, 0);
-        setTheme(ConfigActivity.THEMES[theme]);
+        final int theme = sanitizeThemeValue(prefs.getInt((prefPrefix != null ? prefPrefix : "") + ConfigActivity.THEME, getDefaultDefaultTheme()));
+        setTheme(THEMES[theme]);
         if(themeApplyRestart) {
             prefs.registerOnSharedPreferenceChangeListener(prefsListener);
         }
@@ -117,7 +119,7 @@ public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
         if (Build.VERSION.SDK_INT >= 11) {
             if (view != null) {
                 final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                final int theme = prefs.getInt(prefPrefix + ConfigActivity.THEME, 0);
+                final int theme = sanitizeThemeValue(prefs.getInt(prefPrefix + ConfigActivity.THEME, getDefaultDefaultTheme()));
                 switch(theme) {
                     case 0:
                         break;
@@ -166,5 +168,17 @@ public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
 
     public void setPrefPrefix(final String prefPrefix) {
         this.prefPrefix = prefPrefix;
+    }
+
+    public static int getDefaultDefaultTheme() {
+        return Build.VERSION.SDK_INT >= 29 ? 3 : 0;
+    }
+
+    public static int sanitizeThemeValue(final int themeValue) {
+        if(themeValue >= 0 && themeValue < THEMES.length) {
+            return themeValue;
+        } else {
+            return 0;
+        }
     }
 }

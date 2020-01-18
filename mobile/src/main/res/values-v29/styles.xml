@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ResultTextSmall.NightMode" parent="@android:style/TextAppearance.Material">
+        <item name="android:textSize">@dimen/result_small_fontsize</item>
+    </style>
+    <style name="ResultTextNormal.NightMode" parent="@android:style/TextAppearance.Material.Large">
+        <item name="android:textSize">@dimen/result_large_fontsize</item>
+    </style>
+</resources>

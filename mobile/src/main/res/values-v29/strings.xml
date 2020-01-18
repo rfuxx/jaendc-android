@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="config_theme_options">
+        <item>Dark</item>
+        <item>Light</item>
+        <item>Night Mode</item>
+        <item>System Default</item>
+    </array>
+</resources>

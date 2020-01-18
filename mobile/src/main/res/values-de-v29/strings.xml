@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="config_theme_options">
+        <item>Dunkel</item>
+        <item>Hell</item>
+        <item>Nachtmodus</item>
+        <item>Gerätestandard</item>
+    </array>
+</resources>

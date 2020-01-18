@@ -50,9 +50,14 @@ public class AppWidget extends AppWidgetProvider{
     private static final String TIME_SELECTION = "time";
     private static final String FILTER_SELECTION = "filter";
 
-    private static int[] LAYOUT = { R.layout.app_widget_theme_dark,
-                                    R.layout.app_widget_theme_light,
-                                    R.layout.app_widget_theme_nightmode };
+    private static int[] LAYOUT = Build.VERSION.SDK_INT >= 29
+            ? new int[] { R.layout.app_widget_theme_dark,
+                          R.layout.app_widget_theme_light,
+                          R.layout.app_widget_theme_nightmode,
+                          R.layout.app_widget_theme_daynight }
+            : new int[] { R.layout.app_widget_theme_dark,
+                          R.layout.app_widget_theme_light,
+                          R.layout.app_widget_theme_nightmode };
 
     private static class NDCalcData {
         double time;
@@ -69,7 +74,7 @@ public class AppWidget extends AppWidgetProvider{
         Ringtone ringtonePlaying;
         Runnable ringtoneStopperRunner;
         int timeStyle;
-        int theme;
+        int theme = getDefaultDefaultTheme();
         boolean showCountdown;
         NumberFormat clearTextTimeFormat;
         NumberFormat outputTimeFormat;
@@ -253,7 +258,7 @@ public class AppWidget extends AppWidgetProvider{
                 data.alarmToneStr = prefs.getString(prefPrefix + ConfigActivity.ALARM_TONE, data.alarmToneStr);
                 data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
                 data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
-                data.theme = prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme);
+                data.theme = sanitizeThemeValue(prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme));
                 data.showCountdown = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, data.showCountdown);
                 updateAppWidget(context, appWidgetManager, appWidgetId);
                 break;
@@ -276,12 +281,9 @@ public class AppWidget extends AppWidgetProvider{
 
         final Resources.Theme theme = context.getResources().newTheme();
         theme.applyStyle(ConfigActivity.THEMES[data.theme], true);
-        final TypedArray styled = theme.obtainStyledAttributes(new int[]{android.R.attr.colorBackground});
-        int bgColor = styled.getColor(0, 0x000000);
-        styled.recycle();
 
         final int transpValue = 255 - getWidgetData(context, appWidgetId).transparency * 255 / 100;
-        remoteViews.setInt(R.id.widget, "setBackgroundColor", (transpValue & 0xff) << 24 | (bgColor & 0xffffff));
+        remoteViews.setInt(R.id.widgetBackground, "setImageAlpha", transpValue);
 
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, WIDGET_TIME_LIST);
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.filterList, NDFilterListService.class, WIDGET_FILTER_LIST);
@@ -344,7 +346,7 @@ public class AppWidget extends AppWidgetProvider{
             data.alarmDuration = prefs.getInt(prefPrefix + ConfigActivity.ALARM_DURATION, data.alarmDuration);
             data.transparency = prefs.getInt(prefPrefix + ConfigActivity.TRANSPARENCY, data.transparency);
             data.timeStyle = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, data.timeStyle);
-            data.theme = prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme);
+            data.theme = sanitizeThemeValue(prefs.getInt(prefPrefix + ConfigActivity.THEME, data.theme));
             data.showCountdown = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, data.showCountdown);
             data.clearTextTimeFormat = new ClearTextTimeFormat(context, data.timeStyle);
             data.outputTimeFormat = new OutputTimeFormat(context, data.timeStyle);
@@ -555,5 +557,17 @@ public class AppWidget extends AppWidgetProvider{
 
     public static String getPrefPrefix(final int appWidgetId) {
         return "widget0x" + Integer.toHexString(appWidgetId) + ":";
+    }
+
+    public static int getDefaultDefaultTheme() {
+        return Build.VERSION.SDK_INT >= 29 ? 3 : 0;
+    }
+
+    public static int sanitizeThemeValue(final int themeValue) {
+        if(themeValue >= 0 && themeValue < LAYOUT.length) {
+            return themeValue;
+        } else {
+            return 0;
+        }
     }
 }

@@ -34,14 +34,13 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
     public static final String USE_ALARMCLOCK = "useAlarmClock";
     public static final String ALARM_TONE_USE_SYSTEM_SOUND = "use_system_sound";
     public static final String ALARM_TONE_BE_SILENT = "silent";
-    public static final int[] THEMES = {R.style.AppThemeDark, R.style.AppThemeLight, R.style.AppThemeNightMode};
     private static final int PICK_RINGTONE = 201;
     private final TextViewDynamicSqueezer titleSqueezer = new TextViewDynamicSqueezer(this);
     private final TextViewDynamicSqueezer subTitleSqueezer = new TextViewDynamicSqueezer(this);
     private Button themeButton;
     private Button timeStyleButton;
     private Button alarmToneButton;
-    private int themeValue = 0;
+    private int themeValue = getDefaultDefaultTheme();
     private int timeStyleValue = 0;
     private int showTimerValue = 4;
     private int transparencyValue = 33;
@@ -67,7 +66,7 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
         setPrefPrefix(prefPrefix);
         super.onCreate(savedInstanceState);
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        themeValue = prefs.getInt(prefPrefix + ConfigActivity.THEME, themeValue);
+        themeValue = sanitizeThemeValue(prefs.getInt(prefPrefix + ConfigActivity.THEME, themeValue));
         timeStyleValue = prefs.getInt(prefPrefix + ConfigActivity.TIME_STYLE, timeStyleValue);
         showTimerValue = prefs.getInt(prefPrefix + ConfigActivity.SHOW_TIMER, showTimerValue);
         boolean showCountdownValue = prefs.getBoolean(prefPrefix + ConfigActivity.SHOW_COUNTDOWN, false);
@@ -402,11 +401,8 @@ public class ConfigActivity extends ThemedActivityWithActionBarSqueezer {
 
     private void setThemeButtonText() {
         String[] themesArr = getApplicationContext().getResources().getStringArray(R.array.config_theme_options);
-        if(themeValue < 0) {
+        if(themeValue < 0 || themeValue >= themesArr.length) {
             themeValue = 0;
-        }
-        if(themeValue >= themesArr.length) {
-            themeValue = themesArr.length -1;
         }
         themeButton.setText(themesArr[themeValue]);
     }
