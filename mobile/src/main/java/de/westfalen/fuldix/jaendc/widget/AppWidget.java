@@ -283,7 +283,7 @@ public class AppWidget extends AppWidgetProvider{
         theme.applyStyle(ConfigActivity.THEMES[data.theme], true);
 
         final int transpValue = 255 - getWidgetData(context, appWidgetId).transparency * 255 / 100;
-        remoteViews.setInt(R.id.widgetBackground, "setImageAlpha", transpValue);
+        remoteViews.setInt(R.id.widgetBackground, Build.VERSION.SDK_INT >= 16 ? "setImageAlpha" : "setAlpha", transpValue);
 
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.timeList, TimeListService.class, WIDGET_TIME_LIST);
         setupListAdapterAndIntent(context, appWidgetId, remoteViews, R.id.filterList, NDFilterListService.class, WIDGET_FILTER_LIST);
