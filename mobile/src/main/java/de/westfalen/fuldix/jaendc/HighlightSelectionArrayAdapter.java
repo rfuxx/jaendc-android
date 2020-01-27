@@ -1,8 +1,6 @@
 package de.westfalen.fuldix.jaendc;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -15,10 +13,7 @@ public class HighlightSelectionArrayAdapter<T> extends ArrayAdapter<T> implement
     public HighlightSelectionArrayAdapter(final Context context, final T[] data) {
         super(context, R.layout.list_item_single, data);
 
-        final Resources.Theme theme = context.getTheme();
-        final TypedArray styled = theme.obtainStyledAttributes(new int[]{R.attr.colorListItemActivated});
-        backgroundColorSelection = styled.getColor(0, 0x808080);
-        styled.recycle();
+        backgroundColorSelection = StyleHelper.getStyledColor(context.getTheme(), R.attr.colorListItemActivated, 0x808080);
     }
 
     @Override

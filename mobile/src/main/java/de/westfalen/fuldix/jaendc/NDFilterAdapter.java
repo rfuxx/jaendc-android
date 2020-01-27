@@ -3,9 +3,6 @@ package de.westfalen.fuldix.jaendc;
 import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.os.Build;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -55,10 +52,7 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
         this.filters = new ArrayList<>();
         this.indicateDragable = indicateDragable;
 
-        final Resources.Theme theme = context.getTheme();
-        final TypedArray styled = theme.obtainStyledAttributes(new int[]{R.attr.colorListItemActivated});
-        backgroundColorSelection = styled.getColor(0, 0x808080);
-        styled.recycle();
+        backgroundColorSelection = StyleHelper.getStyledColor(context.getTheme(), R.attr.colorListItemActivated, 0x808080);
     }
 
     public NDFilterAdapter(final Context context) {

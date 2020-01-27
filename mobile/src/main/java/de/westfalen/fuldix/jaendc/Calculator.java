@@ -258,14 +258,12 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 }
             }  else {
                 largeTime.setText(String.format(themedActivity.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000)));
-                final Resources.Theme theme = themedActivity.getTheme();
-                final TypedArray styled = theme.obtainStyledAttributes(new int[]{R.attr.resultTextMaxExceeded});
+                final int styledResourceId = StyleHelper.getStyledResourceId(themedActivity.getTheme(), R.attr.resultTextMaxExceeded, R.style.ResultTextMaxExceeded);
                 if (Build.VERSION.SDK_INT >= 23) {
-                    largeTime.setTextAppearance(styled.getResourceId(0, R.style.ResultTextMaxExceeded));
+                    largeTime.setTextAppearance(styledResourceId);
                 } else {
-                    largeTime.setTextAppearance(themedActivity, styled.getResourceId(0, R.style.ResultTextMaxExceeded));
+                    largeTime.setTextAppearance(themedActivity, styledResourceId);
                 }
-                styled.recycle();
                 smallTime.setText(String.format(themedActivity.getString(R.string.text_longer_than), clearTextTimeFormat.format(Integer.MAX_VALUE / 1000)));
             }
             setTimerVisibility();
