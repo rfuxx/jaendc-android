@@ -18,6 +18,7 @@
             android:paddingTop="8sp"
             android:paddingBottom="1sp"
             android:text="@string/edit_header_name"
+            android:labelFor="@id/edit_name"
             />
         <EditText android:id="@+id/edit_name"
             style="?android:attr/textAppearanceLarge"
@@ -27,6 +28,7 @@
             android:paddingBottom="8sp"
             android:inputType="text"
             android:layout_below="@id/header_name"
+            android:minHeight="48dp"
             />
         <TextView android:id="@+id/header_fstops"
             style="?android:attr/textAppearanceSmall"
@@ -36,6 +38,7 @@
             android:paddingBottom="1sp"
             android:text="@string/edit_header_fstops"
             android:layout_below="@id/edit_name"
+            android:labelFor="@id/edit_fstops"
             />
         <EditText android:id="@+id/edit_fstops"
             style="?android:attr/textAppearanceLarge"
@@ -46,6 +49,7 @@
             android:inputType="numberDecimal"
             android:digits="0123456789,."
             android:layout_below="@id/header_fstops"
+            android:minHeight="48dp"
             />
         <TextView android:id="@+id/header_factor"
             style="?android:attr/textAppearanceSmall"
@@ -55,6 +59,7 @@
             android:paddingBottom="1sp"
             android:text="@string/edit_header_factor"
             android:layout_below="@id/edit_fstops"
+            android:labelFor="@id/edit_factor"
             />
         <EditText android:id="@+id/edit_factor"
             style="?android:attr/textAppearanceLarge"
@@ -64,6 +69,7 @@
             android:paddingBottom="8sp"
             android:inputType="number"
             android:layout_below="@id/header_factor"
+            android:minHeight="48dp"
             />
         <TextView android:id="@+id/header_nd"
             style="?android:attr/textAppearanceSmall"
@@ -73,6 +79,7 @@
             android:paddingBottom="1sp"
             android:text="@string/edit_header_nd"
             android:layout_below="@id/edit_factor"
+            android:labelFor="@id/edit_nd"
             />
         <EditText android:id="@+id/edit_nd"
             style="?android:attr/textAppearanceLarge"
@@ -83,6 +90,7 @@
             android:inputType="numberDecimal"
             android:digits="0123456789,."
             android:layout_below="@id/header_nd"
+            android:minHeight="48dp"
             />
     </RelativeLayout>
 </ScrollView>

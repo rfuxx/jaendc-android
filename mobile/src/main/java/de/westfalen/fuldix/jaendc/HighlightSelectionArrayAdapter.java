@@ -13,7 +13,7 @@ public class HighlightSelectionArrayAdapter<T> extends ArrayAdapter<T> implement
     public HighlightSelectionArrayAdapter(final Context context, final T[] data) {
         super(context, R.layout.list_item_single, data);
 
-        backgroundColorSelection = StyleHelper.getStyledColor(context.getTheme(), R.attr.colorListItemActivated, 0x808080);
+        backgroundColorSelection = StyleHelper.getStyledColorSafe(context.getTheme(), R.attr.colorListItemActivated, 0x808080);
     }
 
     @Override

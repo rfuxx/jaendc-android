@@ -2,8 +2,8 @@
 <resources>
     <style name="AppThemeDark" parent="android:Theme.Material">
         <item name="listActivatedBackgroundIndicator">?android:attr/activatedBackgroundIndicator</item>
-        <item name="colorListItemActivated">?android:attr/textColorPrimary</item>
         <item name="actionBarIconTint">?android:attr/iconTint</item>
+        <item name="dialogIconTint">?android:attr/colorAccent</item>
         <item name="handleIconTint">?android:attr/colorForeground</item>
         <item name="timerButtonStart">@color/buttonStartGreen</item>
         <item name="timerButtonStop">@color/buttonStartRed</item>
@@ -17,8 +17,8 @@
 
     <style name="AppThemeLight" parent="android:Theme.Material.Light">
         <item name="listActivatedBackgroundIndicator">?android:attr/activatedBackgroundIndicator</item>
-        <item name="colorListItemActivated">?android:attr/colorAccent</item>
         <item name="actionBarIconTint">?android:attr/iconTint</item>
+        <item name="dialogIconTint">?android:attr/colorAccent</item>
         <item name="handleIconTint">?android:attr/colorForeground</item>
         <item name="timerButtonStart">@color/buttonStartGreen.Light</item>
         <item name="timerButtonStop">@color/buttonStartRed.Light</item>
@@ -67,6 +67,7 @@
         <item name="listActivatedBackgroundIndicator">@drawable/list_activated_background_night_mode</item>
         <item name="colorListItemActivated">@color/nightModeDarkRed</item>
         <item name="actionBarIconTint">@color/nightModeLightRed</item>
+        <item name="dialogIconTint">@color/nightModeLightRed</item>
         <item name="handleIconTint">@color/nightModeRed</item>
         <item name="timerButtonStart">@color/nightModeDarkGreen</item>
         <item name="timerButtonStop">@color/nightModeDarkRed</item>

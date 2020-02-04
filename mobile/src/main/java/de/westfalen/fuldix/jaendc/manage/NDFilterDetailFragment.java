@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import de.westfalen.fuldix.jaendc.R;
+import de.westfalen.fuldix.jaendc.StyleHelper;
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
 import de.westfalen.fuldix.jaendc.model.NDFilter;
 
@@ -83,7 +84,8 @@ public class NDFilterDetailFragment extends Fragment {
         Activity activity = getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(R.string.confirm_delete_title);
-        builder.setIcon(R.drawable.ic_dialog_alert_tinted);
+        StyleHelper.setDialogIcon(builder, activity, R.drawable.ic_dialog_alert_tinted, R.attr.dialogIconTint);
+
         String filterName = mItem.getName().trim();
         if(filterName.equals("")) {
             filterName = activity.getString(R.string.confirm_delete_this_filter);

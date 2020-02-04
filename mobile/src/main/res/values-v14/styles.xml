@@ -31,8 +31,8 @@
         <item name="android:buttonStyle">@style/ButtonStyleNightMode</item>
         <item name="android:windowFullscreen">true</item>
         <item name="listActivatedBackgroundIndicator">@drawable/list_activated_background_night_mode</item>
-        <item name="colorListItemActivated">@color/nightModeDarkRed</item>
         <item name="actionBarIconTint">@color/nightModeLightRed</item>
+        <item name="dialogIconTint">@color/nightModeLightRed</item>
         <item name="handleIconTint">@color/nightModeRed</item>
         <item name="timerButtonStart">@color/nightModeDarkGreen</item>
         <item name="timerButtonStop">@color/nightModeDarkRed</item>

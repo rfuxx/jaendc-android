@@ -52,7 +52,7 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
         this.filters = new ArrayList<>();
         this.indicateDragable = indicateDragable;
 
-        backgroundColorSelection = StyleHelper.getStyledColor(context.getTheme(), R.attr.colorListItemActivated, 0x808080);
+        backgroundColorSelection = StyleHelper.getStyledColorSafe(context.getTheme(), R.attr.colorListItemActivated, 0x808080);
     }
 
     public NDFilterAdapter(final Context context) {
@@ -103,22 +103,26 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
         final NDFilter filter = filters.get(position);
         nameView.setText(filter.getName());
         dataView.setText(filter.getDescription(context));
-        if (Build.VERSION.SDK_INT >= 11) {
-            final View dragHandle = twoLineListItem.findViewById(R.id.list_item_drag_handle);
-            if(dragHandle != null) {
-                dragHandle.setVisibility(indicateDragable ? View.VISIBLE : View.GONE);
-                dragHandle.setOnTouchListener(new OnTouchDragListener(position));
-            }
-        } else { // (Build.VERSION.SDK_INT < 11)
-            if (parent instanceof ListView) {
-                final ListView listView = (ListView) parent;
-                final SparseBooleanArray states = listView.getCheckedItemPositions();
-                final boolean selected = states != null && states.get(position);
+        if (parent instanceof ListView) {
+            final ListView listView = (ListView) parent;
+            final SparseBooleanArray states = listView.getCheckedItemPositions();
+            final boolean selected = states != null && states.get(position);
+            nameView.setSelected(selected);
+            dataView.setSelected(selected);
+            if (Build.VERSION.SDK_INT < 11) {
                 if(selected) {
                     twoLineListItem.setBackgroundColor(backgroundColorSelection);
                 } else {
                     twoLineListItem.setBackgroundResource(android.R.color.transparent);
                 }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= 11) {
+            final View dragHandle = twoLineListItem.findViewById(R.id.list_item_drag_handle);
+            if(dragHandle != null) {
+                dragHandle.setVisibility(indicateDragable ? View.VISIBLE : View.GONE);
+                dragHandle.setOnTouchListener(new OnTouchDragListener(position));
             }
         }
 

@@ -84,12 +84,16 @@ public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
         if (android.os.Build.VERSION.SDK_INT < 21) {
-            final int colorToUse = StyleHelper.getStyledColor(getTheme(), R.attr.actionBarIconTint, 0x808080);
-            for (int i = 0; i < menu.size(); i++) {
-                final Drawable drawable = menu.getItem(i).getIcon();
-                if (drawable != null) {
-                    drawable.setColorFilter(colorToUse, PorterDuff.Mode.SRC_ATOP);
+            try {
+                final int colorToUse = StyleHelper.getStyledColor(getTheme(), R.attr.actionBarIconTint, 0x808080);
+                for (int i = 0; i < menu.size(); i++) {
+                    final Drawable drawable = menu.getItem(i).getIcon();
+                    if (drawable != null) {
+                        drawable.setColorFilter(colorToUse, PorterDuff.Mode.SRC_ATOP);
+                    }
                 }
+            } catch(final Exception e) {
+                e.printStackTrace();
             }
         }
         return super.onCreateOptionsMenu(menu);
@@ -144,7 +148,11 @@ public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
         if (android.os.Build.VERSION.SDK_INT < 21) {
             drawable = getResources().getDrawable(id);
             if (drawable != null) {
-                drawable.setColorFilter(StyleHelper.getStyledColor(getTheme(), R.attr.actionBarIconTint, 0x808080), PorterDuff.Mode.SRC_ATOP);
+                try {
+                    drawable.setColorFilter(StyleHelper.getStyledColor(getTheme(), R.attr.actionBarIconTint, 0x808080), PorterDuff.Mode.SRC_ATOP);
+                } catch(final Exception e) {
+                    e.printStackTrace();
+                }
             }
         } else {
             drawable = getResources().getDrawable(id, getTheme());
@@ -154,8 +162,9 @@ public abstract class ThemedActivityWithActionBarSqueezer extends Activity {
 
     public void applyStartStopButtonStyle(final CompoundButton button) {
         if (android.os.Build.VERSION.SDK_INT < 21) {
+            final boolean isButtonChecked = button.isChecked();
             final Drawable drawable = button.getBackground();
-            drawable.setColorFilter(StyleHelper.getStyledColor(getTheme(), button.isChecked() ? R.attr.timerButtonStop : R.attr.timerButtonStart, 0x808080), PorterDuff.Mode.SRC_ATOP);
+            drawable.setColorFilter(StyleHelper.getStyledColorSafe(getTheme(), isButtonChecked ? R.attr.timerButtonStop : R.attr.timerButtonStart, isButtonChecked ? 0x900000 : 0x009000), PorterDuff.Mode.SRC_ATOP);
         }
     }
 

@@ -3,6 +3,7 @@
     <style name="AppThemeDark" parent="android:Theme">
         <item name="colorListItemActivated">@color/listActivatedBackground</item>
         <item name="actionBarIconTint">@android:color/transparent</item>
+        <item name="dialogIconTint">?android:attr/textColorSecondary</item>
         <item name="handleIconTint">?android:attr/textColorPrimary</item>
         <item name="timerButtonStart">@color/buttonStartGreen</item>
         <item name="timerButtonStop">@color/buttonStartRed</item>
@@ -17,6 +18,7 @@
     <style name="AppThemeLight" parent="android:Theme.Light">
         <item name="colorListItemActivated">@color/listActivatedBackground.Light</item>
         <item name="actionBarIconTint">@android:color/transparent</item>
+        <item name="dialogIconTint">?android:attr/textColorSecondary</item>
         <item name="handleIconTint">?android:attr/textColorPrimary</item>
         <item name="timerButtonStart">@color/buttonStartGreen.Light</item>
         <item name="timerButtonStop">@color/buttonStartRed.Light</item>
@@ -44,6 +46,7 @@
         <item name="android:buttonStyle">@style/ButtonStyleNightMode</item>
         <item name="colorListItemActivated">@color/nightModeDarkRed</item>
         <item name="actionBarIconTint">@color/nightModeDarkRed</item>
+        <item name="dialogIconTint">@color/nightModeDarkRed</item>
         <item name="handleIconTint">@color/nightModeRed</item>
         <item name="timerButtonStart">@color/nightModeDarkGreen</item>
         <item name="timerButtonStop">@color/nightModeDarkRed</item>
@@ -114,10 +117,10 @@
         <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
     </style>
     <style name="ResultTextMaxExceeded.Light" parent="ResultTextNormal">
-        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+        <item name="android:textColor">@color/ResultTextMaxExceededColor.Light</item>
     </style>
     <style name="ResultTextMaxExceeded.NightNode" parent="ResultTextNormal">
-        <item name="android:textColor">@color/ResultTextMaxExceededColor</item>
+        <item name="android:textColor">@color/ResultTextMaxExceededColor.NightMode</item>
     </style>
 
     <attr name="timerProgressBarStyle" format="reference" />
@@ -128,6 +131,7 @@
     <attr name="listActivatedBackgroundIndicator" format="reference" />
     <attr name="handleIconTint" format="color" />
     <attr name="actionBarIconTint" format="color" />
+    <attr name="dialogIconTint" format="color" />
     <attr name="colorListItemActivated" format="color" />
     <attr name="timerButtonStart" format="color" />
     <attr name="timerButtonStop" format="color" />
@@ -135,7 +139,7 @@
 
     <color name="listActivatedBackground">#ff047ea8</color>
     <color name="listActivatedBackground.Light">#ff33b5e5</color>
-    <color name="buttonStartGreen">#ff00aa00</color>
+    <color name="buttonStartGreen">#ff008a00</color>
     <color name="buttonStartRed">#ffaa0000</color>
     <color name="buttonStartGreen.Light">#ff44ff44</color>
     <color name="buttonStartRed.Light">#ffff8080</color>

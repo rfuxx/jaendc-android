@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -258,7 +256,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
                 }
             }  else {
                 largeTime.setText(String.format(themedActivity.getString(R.string.text_longer_than_symbol), outputTimeFormat.format(Integer.MAX_VALUE / 1000)));
-                final int styledResourceId = StyleHelper.getStyledResourceId(themedActivity.getTheme(), R.attr.resultTextMaxExceeded, R.style.ResultTextMaxExceeded);
+                final int styledResourceId = StyleHelper.getStyledResourceIdSafe(themedActivity.getTheme(), R.attr.resultTextMaxExceeded, R.style.ResultTextMaxExceeded);
                 if (Build.VERSION.SDK_INT >= 23) {
                     largeTime.setTextAppearance(styledResourceId);
                 } else {
@@ -476,7 +474,7 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
         if(filterAdapter.getCount() == 0) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(themedActivity);
             builder.setTitle(R.string.dialog_create_filters_title);
-            builder.setIcon(R.drawable.ic_dialog_alert_tinted);
+            StyleHelper.setDialogIcon(builder, themedActivity, R.drawable.ic_dialog_alert_tinted, R.attr.dialogIconTint);
             builder.setMessage(R.string.dialog_create_filters_text);
             builder.setCancelable(true);
             builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {

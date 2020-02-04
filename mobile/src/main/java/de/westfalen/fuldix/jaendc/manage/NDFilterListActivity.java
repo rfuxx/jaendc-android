@@ -16,6 +16,7 @@ import android.widget.ListView;
 import de.westfalen.fuldix.jaendc.NDCalculatorActivity;
 import de.westfalen.fuldix.jaendc.NDFilterAdapter;
 import de.westfalen.fuldix.jaendc.R;
+import de.westfalen.fuldix.jaendc.StyleHelper;
 import de.westfalen.fuldix.jaendc.TextViewDynamicSqueezer;
 import de.westfalen.fuldix.jaendc.ThemedActivityWithActionBarSqueezer;
 import de.westfalen.fuldix.jaendc.db.NDFilterDAO;
@@ -117,7 +118,7 @@ public class NDFilterListActivity extends ThemedActivityWithActionBarSqueezer im
             if (numFiltersToDelete > 0) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(NDFilterListActivity.this);
                 builder.setTitle(R.string.confirm_delete_title);
-                builder.setIcon(R.drawable.ic_dialog_alert_tinted);
+                StyleHelper.setDialogIcon(builder, NDFilterListActivity.this, R.drawable.ic_dialog_alert_tinted, R.attr.dialogIconTint);
                 final String msg;
                 if (numFiltersToDelete > 1) {
                     msg = getResources().getQuantityString(R.plurals.confirm_delete_multiple_filter, numFiltersToDelete, numFiltersToDelete);
