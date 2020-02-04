@@ -4,6 +4,6 @@
         <item>Dark</item>
         <item>Light</item>
         <item>Night Mode</item>
-        <item>System Default</item>
+        <item>Device Setting Light/Dark</item>
     </array>
 </resources>
