@@ -44,7 +44,7 @@
                 android:layout_below="@id/themeButton"
                 android:text="@string/config_time_style"
                 android:id="@+id/timeStyleLabel"
-                android:labelFor="@+id/timeStylePOV"
+                android:labelFor="@id/timeStyleButton"
                 />
 
             <Button
@@ -103,7 +103,7 @@
                 android:layout_alignBaseline="@id/showCountdownLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="end"
+                android:gravity="center"
                 android:id="@+id/showCountdownSwitch"
                 android:paddingTop="12sp"
                 android:minWidth="48dp"
@@ -127,7 +127,7 @@
                 android:layout_alignBaseline="@id/useAlarmClockLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="end"
+                android:gravity="center"
                 android:id="@+id/useAlarmClockSwitch"
                 android:paddingTop="12sp"
                 android:minWidth="48dp"
@@ -191,7 +191,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/config_transparency"
                 android:id="@+id/transparencyLabel"
-                android:labelFor="@+id/transparencySeek"
+                android:labelFor="@id/transparencySeek"
                 android:paddingTop="12sp"
                 />
 
