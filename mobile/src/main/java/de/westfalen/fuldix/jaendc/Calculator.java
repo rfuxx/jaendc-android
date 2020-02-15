@@ -499,18 +499,19 @@ public class Calculator implements ListView.OnItemClickListener, CompoundButton.
 
     private static void scrollListToSelection(final ListView listView) {
         final int pos = listView.getCheckedItemPosition();
-        if(pos < 0 || pos >= listView.getCount())
-        {
+        final int count = listView.getCount();
+        if(pos < 0 || pos >= count) {
             return;
         }
         final int first = listView.getFirstVisiblePosition();
         final int last = listView.getLastVisiblePosition();
-        if (pos < first)
-        {
+        if (pos < first) {
             listView.setSelection(pos);
-        } else if (pos >= last)
-        {
-            listView.setSelection(1 + pos - (last - first));
+        } else if (pos > last) {
+            final int newPos = 1 + pos - (last - first);
+            if(newPos >= 0 && newPos < count) {
+                listView.setSelection(newPos);
+            }
         }
     }
 

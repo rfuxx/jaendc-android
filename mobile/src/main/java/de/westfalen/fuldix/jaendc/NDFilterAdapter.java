@@ -71,13 +71,15 @@ public class NDFilterAdapter extends BaseAdapter implements ListAdapter {
     }
 
     @Override
-    public NDFilter getItem(final int position) {
-        return filters.get(position);
+    public synchronized NDFilter getItem(final int position) {
+        final int last = filters.size();
+        return filters.get(position < 0 ? 0 : position > last ? last : position);
     }
 
     @Override
-    public long getItemId(final int position) {
-        return filters.get(position).getId();
+    public synchronized long getItemId(final int position) {
+        final int last = filters.size();
+        return filters.get(position < 0 ? 0 : position > last ? last : position).getId();
     }
 
     @Override
