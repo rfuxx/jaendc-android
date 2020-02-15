@@ -10,6 +10,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Icon;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
@@ -54,12 +56,16 @@ public class CalculatorAlarm extends BroadcastReceiver {
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             final long prefsTimeout = prefs.getLong(Calculator.PERS_TIMER_ENDING, 0);
             if(prefsTimeout != 0 && timeout == prefsTimeout) {
-                final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (timeout > System.currentTimeMillis()) {
                     final Intent cIntent = new Intent(context, NDCalculatorActivity.class);
                     final PendingIntent contentIntent = PendingIntent.getActivity(context, 1, cIntent, 0);
                     final Notification ongoingNotification = makeNotification(context, contentIntent, null, AudioManager.RINGER_MODE_SILENT, TIMER_COUNTING, this);
-                    manager.notify(TIMER_COUNTING, ongoingNotification);
+                    final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                    if(manager != null) {
+                        manager.notify(TIMER_COUNTING, ongoingNotification);
+                    } else {
+                        System.err.println("Warning: NotificationManager is null");
+                    }
                 } else {
                     cancel(context);
                     try {
@@ -81,30 +87,34 @@ public class CalculatorAlarm extends BroadcastReceiver {
     public static PendingIntent schedule(final Context context, final long timeout) {
         cancel(context);
         NotificationCanceler.cancelNotification(context);
-        final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         final PendingIntent pi = mkPendingIntent(context);
-        if (Build.VERSION.SDK_INT >= 23) {
-            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            final boolean useAlarmClockValue = prefs.getBoolean(ConfigActivity.USE_ALARMCLOCK, false);
-            if (useAlarmClockValue) {
-                final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
-                am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
-            } else {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
-            }
-        } else if (Build.VERSION.SDK_INT >= 21) {
-            final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            final boolean useAlarmClockValue = prefs.getBoolean(ConfigActivity.USE_ALARMCLOCK, false);
-            if(useAlarmClockValue) {
-                final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
-                am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
-            } else {
+        final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if(am != null) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                final boolean useAlarmClockValue = prefs.getBoolean(ConfigActivity.USE_ALARMCLOCK, false);
+                if (useAlarmClockValue) {
+                    final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
+                    am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
+                } else {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeout, pi);  // Despite the name, this is not at all exact, especially not when idle
+                }
+            } else if (Build.VERSION.SDK_INT >= 21) {
+                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                final boolean useAlarmClockValue = prefs.getBoolean(ConfigActivity.USE_ALARMCLOCK, false);
+                if (useAlarmClockValue) {
+                    final PendingIntent showIntent = PendingIntent.getBroadcast(context, 0, new Intent(context, NDCalculatorActivity.class), 0);
+                    am.setAlarmClock(new AlarmManager.AlarmClockInfo(timeout, showIntent), pi);
+                } else {
+                    am.setExact(AlarmManager.RTC_WAKEUP, timeout, pi);
+                }
+            } else if (Build.VERSION.SDK_INT >= 19) {
                 am.setExact(AlarmManager.RTC_WAKEUP, timeout, pi);
+            } else {
+                am.set(AlarmManager.RTC_WAKEUP, timeout, pi);
             }
-        } else if (Build.VERSION.SDK_INT >= 19) {
-            am.setExact(AlarmManager.RTC_WAKEUP, timeout, pi);
         } else {
-            am.set(AlarmManager.RTC_WAKEUP, timeout, pi);
+            System.err.println("Warning: AlarmManager is null");
         }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putLong(Calculator.PERS_TIMER_ENDING, timeout).commit();
@@ -115,11 +125,19 @@ public class CalculatorAlarm extends BroadcastReceiver {
 
     public static void cancel(final Context context) {
         final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        am.cancel(mkPendingIntent(context));
+        if(am != null) {
+            am.cancel(mkPendingIntent(context));
+        } else {
+            System.err.println("Warning: AlarmManager is null");
+        }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().remove(Calculator.PERS_TIMER_ENDING).commit();
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(TIMER_COUNTING);
+        if(manager != null) {
+            manager.cancel(TIMER_COUNTING);
+        } else {
+            System.err.println("Warning: NotificationManager is null");
+        }
     }
 
     private static PendingIntent mkPendingIntent(final Context context) {
@@ -131,19 +149,33 @@ public class CalculatorAlarm extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
         System.out.println("Exposure timer alarm received");
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(TIMER_COUNTING);
+        if(manager != null) {
+            manager.cancel(TIMER_COUNTING);
+        } else {
+            System.err.println("Warning: NotificationManager is null");
+        }
+        final int ringerMode;
         final AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        final int ringerMode = audio.getRingerMode();
+        if(audio != null) {
+            ringerMode = audio.getRingerMode();
+        } else {
+            System.err.println("Warning: AudioManager is null");
+            ringerMode = AudioManager.RINGER_MODE_SILENT;
+        }
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final Uri sound = ConfigActivity.getConfiguredAlarmTone(context, prefs.getString(ConfigActivity.ALARM_TONE, ConfigActivity.ALARM_TONE_USE_SYSTEM_SOUND));
         if(NDCalculatorActivity.isShowing) {
             if(ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                final Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
                 try {
-                    if (Build.VERSION.SDK_INT >= 26) {
-                        vibrator.vibrate(VibrationEffect.createOneShot(vibrateLength, DEFAULT_AMPLITUDE));
+                    final Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                    if(vibrator != null) {
+                        if (Build.VERSION.SDK_INT >= 26) {
+                            vibrator.vibrate(VibrationEffect.createOneShot(vibrateLength, DEFAULT_AMPLITUDE));
+                        } else {
+                            vibrator.vibrate(vibrateLength);
+                        }
                     } else {
-                        vibrator.vibrate(vibrateLength);
+                        System.err.println("Warning: Vibrator is null");
                     }
                 } catch (SecurityException e) {   // if no VIBRATE permission
                     System.err.println("Warning: " + e);
@@ -169,8 +201,12 @@ public class CalculatorAlarm extends BroadcastReceiver {
             final Notification notification = makeNotification(context, contentIntent, sound, ringerMode, TIMER_COMPLETED, null);
 
             try {
-                manager.notify(TIMER_COMPLETED, notification);
-            } catch (SecurityException e) {   // if no VIBRATE permission
+                if(manager != null) {
+                    manager.notify(TIMER_COMPLETED, notification);
+                } else {
+                    System.err.println("Warning: NotificationManager is null");
+                }
+            } catch (final SecurityException e) {   // if no VIBRATE permission
                 System.err.println("Warning: " + e);
             } finally {
                 NotificationCanceler.schedule(context);
@@ -182,55 +218,64 @@ public class CalculatorAlarm extends BroadcastReceiver {
     private static Notification makeNotification(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         if (Build.VERSION.SDK_INT >= 26) {
             return makeNotification_26(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
+        } else if (Build.VERSION.SDK_INT >= 21) {
+            return makeNotification_21(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
+        } else if (Build.VERSION.SDK_INT >= 16) {
+            return makeNotification_16(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
         } else if (Build.VERSION.SDK_INT >= 11) {
             return makeNotification_11(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
         } else {
-            final Notification notification = new Notification();
-            notification.defaults = Notification.DEFAULT_LIGHTS;
-            notification.contentView = new RemoteViews(context.getPackageName(), R.layout.notification_exposure_time);
-            switch (whichNotification) {
-                case TIMER_COMPLETED: {
-                    final String msgText = context.getString(R.string.notification_exposure_time);
-                    notification.contentView.setTextViewText(R.id.notification_text, msgText);
-                    notification.tickerText = msgText;
-                    notification.flags = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_SHOW_LIGHTS;
-                    break;
-                }
-                case TIMER_COUNTING: {
-                    final String msgText;
-                    final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                    final boolean showCountdown = prefs.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
-                    notification.flags = Notification.FLAG_ONGOING_EVENT;
-                    if (showCountdown) {
-                        final int remainingTime = (int) (scheduledAlarmNotification.timeout - System.currentTimeMillis());
-                        msgText = context.getResources().getString(R.string.notification_timer_counting, scheduledAlarmNotification.countdownTextTimeFormat.format(remainingTime));
-                        int delayToNext = scheduledAlarmNotification.countdownTextTimeFormat.delayToNext(remainingTime);
-                        if (delayToNext >= 0) {
-                            scheduledAlarmNotification.getHandler().postDelayed(scheduledAlarmNotification, delayToNext);
-                        }
-                    } else {
-                        msgText = context.getString(R.string.notification_timer_running);
-                    }
-                    notification.contentView.setTextViewText(R.id.notification_text, msgText);
-                    break;
-                }
-            }
-            notification.icon = R.mipmap.ic_launcher;
-            notification.contentIntent = contentIntent;
-            if(sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                notification.sound = sound;
-            }
-            if(sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                notification.vibrate = vibratePattern;
-            }
-            return notification;
+            return makeNotification_legacy(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
         }
+    }
+
+    private static Notification makeNotification_legacy(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
+        final Notification notification = new Notification();
+        notification.defaults = Notification.DEFAULT_LIGHTS;
+        notification.contentView = new RemoteViews(context.getPackageName(), R.layout.notification_exposure_time);
+        switch (whichNotification) {
+            case TIMER_COMPLETED: {
+                final String msgText = context.getString(R.string.notification_exposure_time);
+                notification.contentView.setTextViewText(R.id.notification_text, msgText);
+                notification.tickerText = msgText;
+                notification.flags = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_SHOW_LIGHTS;
+                break;
+            }
+            case TIMER_COUNTING: {
+                final String msgText;
+                final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                final boolean showCountdown = prefs.getBoolean(ConfigActivity.SHOW_COUNTDOWN, false);
+                notification.flags = Notification.FLAG_ONGOING_EVENT;
+                if (showCountdown) {
+                    final int remainingTime = (int) (scheduledAlarmNotification.timeout - System.currentTimeMillis());
+                    msgText = context.getResources().getString(R.string.notification_timer_counting, scheduledAlarmNotification.countdownTextTimeFormat.format(remainingTime));
+                    int delayToNext = scheduledAlarmNotification.countdownTextTimeFormat.delayToNext(remainingTime);
+                    if (delayToNext >= 0) {
+                        scheduledAlarmNotification.getHandler().postDelayed(scheduledAlarmNotification, delayToNext);
+                    }
+                } else {
+                    msgText = context.getString(R.string.notification_timer_running);
+                }
+                notification.contentView.setTextViewText(R.id.notification_text, msgText);
+                break;
+            }
+        }
+        notification.icon = R.mipmap.ic_launcher;
+        notification.contentIntent = contentIntent;
+        if(sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            notification.sound = sound;
+        }
+        if(sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            notification.vibrate = vibratePattern;
+        }
+        return notification;
     }
 
     @TargetApi(11)
     private static Notification makeNotification_11(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         final Notification.Builder builder = new Notification.Builder(context)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentIntent(contentIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS);
@@ -238,43 +283,51 @@ public class CalculatorAlarm extends BroadcastReceiver {
         if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
             builder.setVibrate(vibratePattern);
         }
-        if (Build.VERSION.SDK_INT >= 21) {
-            return buildNotification_21(builder, sound, ringerMode, whichNotification);
-        } else {
-            if(sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                builder.setSound(sound, AudioManager.STREAM_ALARM);
-            }
-            if (Build.VERSION.SDK_INT >= 16) {
-                return buildNotification_16(builder, whichNotification);
-            } else {
-                return builder.getNotification();
-            }
+        if (sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            builder.setSound(sound, AudioManager.STREAM_ALARM);
         }
+        return builder.getNotification();
     }
 
     @TargetApi(16)
-    private static Notification buildNotification_16(final Notification.Builder builder, final int whichNotification) {
-        switch (whichNotification) {
-            case TIMER_COMPLETED:
-                builder.setPriority(Notification.PRIORITY_HIGH);
-                break;
-            case TIMER_COUNTING:
-                builder.setPriority(Notification.PRIORITY_LOW);
-                break;
+    private static Notification makeNotification_16(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
+        final Notification.Builder builder = new Notification.Builder(context)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentIntent(contentIntent)
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setPriority(getPriorityForType(whichNotification));
+        buildNotificationByType(builder, context, whichNotification, scheduledAlarmNotification);
+        if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            builder.setVibrate(vibratePattern);
+        }
+        if (sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            builder.setSound(sound, AudioManager.STREAM_ALARM);
         }
         return builder.build();
     }
 
     @TargetApi(21)
-    private static Notification buildNotification_21(final Notification.Builder builder, final Uri sound, final int ringerMode, final int whichNotification) {
+    private static Notification makeNotification_21(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
+        final Notification.Builder builder = new Notification.Builder(context)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentIntent(contentIntent)
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setPriority(getPriorityForType(whichNotification))
+                .setCategory(getCategoryForType(whichNotification))
+                .setLocalOnly(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC);
+        buildNotificationByType(builder, context, whichNotification, scheduledAlarmNotification);
+        if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            builder.setVibrate(vibratePattern);
+        }
         if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
             builder.setSound(sound, mkAudioAttributes());
         }
-        return builder
-                .setCategory(getCategoryForType(whichNotification))
-                .setLocalOnly(true)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .build();
+        return builder.build();
     }
 
     @TargetApi(21)
@@ -293,27 +346,34 @@ public class CalculatorAlarm extends BroadcastReceiver {
     @TargetApi(26)
     private static Notification makeNotification_26(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         final NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        final NotificationChannel channel;
         final String channelId;
-        switch (whichNotification) {
-            case TIMER_COUNTING:
-                channelId = "timerRunningChannel";
-                channel = new NotificationChannel(channelId, context.getString(R.string.notification_channel_name_timer), NotificationManager.IMPORTANCE_LOW);
-                break;
-            default:
-                channelId = "timerExpiryChannel";
-                channel = new NotificationChannel(channelId, context.getString(R.string.notification_channel_name_expiry), IMPORTANCE_HIGH);
-                if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                    channel.setVibrationPattern(vibratePattern);
-                }
-                if(sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                    channel.setSound(sound, mkAudioAttributes());
-                }
-                break;
+        if(manager != null) {
+            switch (whichNotification) {
+                case TIMER_COUNTING:
+                    channelId = "timerRunningChannelWithoutBadge";
+                    ensureNotificationChannel_26(context, manager, channelId, NotificationManager.IMPORTANCE_LOW, R.string.notification_channel_name_timer, R.string.notification_channel_description_timer);
+                    break;
+                case TIMER_COMPLETED:
+                    channelId = "timerExpiryChannelWithoutBadge";
+                    final NotificationChannel channel = ensureNotificationChannel_26(context, manager, channelId, IMPORTANCE_HIGH, R.string.notification_channel_name_expiry, R.string.notification_channel_description_expiry);
+                    if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                        channel.setVibrationPattern(vibratePattern);
+                    }
+                    if (sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+                        channel.setSound(sound, mkAudioAttributes());
+                    }
+                    break;
+                default:
+                    channelId = NotificationChannel.DEFAULT_CHANNEL_ID;
+                    break;
+            }
+        } else {
+            System.err.println("Warning: NotificationManager is null");
+            channelId = NotificationChannel.DEFAULT_CHANNEL_ID;
         }
-        manager.createNotificationChannel(channel);
         final Notification.Builder builder = new Notification.Builder(context, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(Icon.createWithResource(context, R.mipmap.ic_launcher))
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentIntent(contentIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
@@ -322,6 +382,23 @@ public class CalculatorAlarm extends BroadcastReceiver {
                 .setVisibility(Notification.VISIBILITY_PUBLIC);
         buildNotificationByType(builder, context, whichNotification, scheduledAlarmNotification);
         return builder.build();
+    }
+
+    @TargetApi(26)
+    private static NotificationChannel ensureNotificationChannel_26(final Context context, final NotificationManager manager, final String channelId, final int importance, final int channelNameResource, final int channelDescriptionResource) {
+        final NotificationChannel channel;
+        final String channelName = context.getString(channelNameResource);
+        final NotificationChannel existingChannel = manager.getNotificationChannel(channelId);
+        if(existingChannel != null) {
+            channel = existingChannel;
+            channel.setName(channelName);
+        } else {
+            channel = new NotificationChannel(channelId, channelName, importance);
+            channel.setShowBadge(false);
+            manager.createNotificationChannel(channel);
+        }
+        channel.setDescription(context.getString(channelDescriptionResource));
+        return channel;
     }
 
     @TargetApi(11)
@@ -361,6 +438,18 @@ public class CalculatorAlarm extends BroadcastReceiver {
                 return Notification.CATEGORY_PROGRESS;
             default:
                 return null;
+        }
+    }
+
+    @TargetApi(16)
+    private static int getPriorityForType(final int whichNotification) {
+        switch (whichNotification) {
+            case TIMER_COMPLETED:
+                return Notification.PRIORITY_HIGH;
+            case TIMER_COUNTING:
+                return Notification.PRIORITY_LOW;
+            default:
+                return Notification.PRIORITY_DEFAULT;
         }
     }
 }

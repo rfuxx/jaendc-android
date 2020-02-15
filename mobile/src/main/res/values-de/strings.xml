@@ -41,8 +41,6 @@
     <string name="stop">Stop</string>
     <string name="factor">Faktor:</string>
     <string name="fstops">Blenden:</string>
-    <string name="notification_channel_name_expiry">Belichtungszeit</string>
-    <string name="notification_channel_name_timer">Timer</string>
     <string name="notification_exposure_time">Belichtungszeit ist abgelaufen</string>
     <string name="notification_timer_running">Belichtungszeit-Timer ist aktiv</string>
     <string name="notification_timer_counting">Belichtungszeit läuft: %s</string>

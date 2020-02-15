@@ -41,8 +41,6 @@
     <string name="stop">Stop</string>
     <string name="factor">Factor:</string>
     <string name="fstops">f-stops:</string>
-    <string name="notification_channel_name_expiry">Exposure</string>
-    <string name="notification_channel_name_timer">Timer</string>
     <string name="notification_exposure_time">Exposure time is over</string>
     <string name="notification_timer_running">Exposure timer is running</string>
     <string name="notification_timer_counting">Exposure time: %s</string>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_name_expiry">Exposure</string>
+    <string name="notification_channel_description_expiry">Alert when the exposure time is over</string>
+    <string name="notification_channel_name_timer">Timer</string>
+    <string name="notification_channel_description_timer">Remind that the exposure timer ist still actively going on</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_channel_name_expiry">Belichtungszeit</string>
+    <string name="notification_channel_description_expiry">Benachrichtigung über das Ablaufen der Belichtungszeit</string>
+    <string name="notification_channel_name_timer">Timer</string>
+    <string name="notification_channel_description_timer">Erinnerung an den noch aktiv laufenden Belichtungs-Timer</string>
+</resources>
