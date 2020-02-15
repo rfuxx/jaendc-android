@@ -24,9 +24,14 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.widget.RemoteViews;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import de.westfalen.fuldix.jaendc.text.CountdownTextTimeFormat;
 
-import static android.app.NotificationManager.IMPORTANCE_HIGH;
 import static android.os.VibrationEffect.DEFAULT_AMPLITUDE;
 
 public class CalculatorAlarm extends BroadcastReceiver {
@@ -81,6 +86,10 @@ public class CalculatorAlarm extends BroadcastReceiver {
     private static final long vibrateLength = 500;
     private static final long[] vibratePattern = { 0, vibrateLength };
 
+    private static final String[] channelIds = { ""
+                                                , "timerExpiryChannel.V2"
+                                                , "timerRunningChannel.V2" };
+    private static final Set<String> channelIdsSet = new HashSet<>(Arrays.asList(channelIds));
     public static final int TIMER_COMPLETED = 1;
     public static final int TIMER_COUNTING = 2;
 
@@ -187,7 +196,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
                 final Ringtone r = RingtoneManager.getRingtone(context, sound);
                 if(r != null) {
                     if (Build.VERSION.SDK_INT >= 21) {
-                        ringtoneSetAudioAttributes(r);
+                        r.setAudioAttributes(mkAudioAttributes());
                     } else {
                         r.setStreamType(AudioManager.STREAM_ALARM);
                     }
@@ -335,12 +344,8 @@ public class CalculatorAlarm extends BroadcastReceiver {
         return new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
+                .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                 .build();
-    }
-
-    @TargetApi(21)
-    private static void ringtoneSetAudioAttributes(final Ringtone r) {
-        r.setAudioAttributes(mkAudioAttributes());
     }
 
     @TargetApi(26)
@@ -349,23 +354,22 @@ public class CalculatorAlarm extends BroadcastReceiver {
         final String channelId;
         if(manager != null) {
             switch (whichNotification) {
-                case TIMER_COUNTING:
-                    channelId = "timerRunningChannelWithoutBadge";
-                    ensureNotificationChannel_26(context, manager, channelId, NotificationManager.IMPORTANCE_LOW, R.string.notification_channel_name_timer, R.string.notification_channel_description_timer);
+                case TIMER_COUNTING: {
+                    // no cleanupNotificationChannels_26 because this channel id cannot change due to configuration
+                    final NotificationChannel channel = ensureNotificationChannel_26(context, manager, channelIds[TIMER_COUNTING], NotificationManager.IMPORTANCE_LOW, null, null, R.string.notification_channel_name_timer, R.string.notification_channel_description_timer);
+                    channelId = channel.getId();
                     break;
-                case TIMER_COMPLETED:
-                    channelId = "timerExpiryChannelWithoutBadge";
-                    final NotificationChannel channel = ensureNotificationChannel_26(context, manager, channelId, IMPORTANCE_HIGH, R.string.notification_channel_name_expiry, R.string.notification_channel_description_expiry);
-                    if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                        channel.setVibrationPattern(vibratePattern);
-                    }
-                    if (sound != null && ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                        channel.setSound(sound, mkAudioAttributes());
-                    }
+                }
+                case TIMER_COMPLETED: {
+                    cleanupNotificationChannels_26(manager, channelIds[TIMER_COMPLETED], sound, vibratePattern); // do this only on completed timer (otherwise may imact performance too much)
+                    final NotificationChannel channel = ensureNotificationChannel_26(context, manager, channelIds[TIMER_COMPLETED], NotificationManager.IMPORTANCE_HIGH, sound, vibratePattern, R.string.notification_channel_name_expiry, R.string.notification_channel_description_expiry);
+                    channelId = channel.getId();
                     break;
-                default:
+                }
+                default: {
                     channelId = NotificationChannel.DEFAULT_CHANNEL_ID;
                     break;
+                }
             }
         } else {
             System.err.println("Warning: NotificationManager is null");
@@ -385,20 +389,81 @@ public class CalculatorAlarm extends BroadcastReceiver {
     }
 
     @TargetApi(26)
-    private static NotificationChannel ensureNotificationChannel_26(final Context context, final NotificationManager manager, final String channelId, final int importance, final int channelNameResource, final int channelDescriptionResource) {
+    private static NotificationChannel ensureNotificationChannel_26(final Context context, final NotificationManager manager, final String baseChannelId, final int importance, final Uri sound, final long[] vibratePattern, final int channelNameResource, final int channelDescriptionResource) {
+        final String actualChannelId = getActualChannelId_26(baseChannelId, sound, vibratePattern);
         final NotificationChannel channel;
         final String channelName = context.getString(channelNameResource);
-        final NotificationChannel existingChannel = manager.getNotificationChannel(channelId);
+        final NotificationChannel existingChannel = manager.getNotificationChannel(actualChannelId);
         if(existingChannel != null) {
             channel = existingChannel;
             channel.setName(channelName);
         } else {
-            channel = new NotificationChannel(channelId, channelName, importance);
+            channel = new NotificationChannel(actualChannelId, channelName, importance);
             channel.setShowBadge(false);
+            if(vibratePattern != null) {
+                channel.setVibrationPattern(vibratePattern);
+            }
+            if(sound != null) {
+                channel.setSound(sound, mkAudioAttributes());
+            }
             manager.createNotificationChannel(channel);
         }
         channel.setDescription(context.getString(channelDescriptionResource));
         return channel;
+    }
+
+    @TargetApi(26)
+    private static void cleanupNotificationChannels_26(final NotificationManager manager, final String baseChannelId, final Uri sound, final long[] vibratePattern) {
+        final String actualChannelId = getActualChannelId_26(baseChannelId, sound, vibratePattern);
+        final List<NotificationChannel> channels = manager.getNotificationChannels();
+        for(final NotificationChannel channel : channels) {
+            final String id = channel.getId();
+            final StringTokenizer tok = new StringTokenizer(id, ":");
+            if(tok.hasMoreTokens()) {
+                final String base = tok.nextToken();
+                if(tok.hasMoreTokens()) {
+                    if(channelIdsSet.contains(base)) {
+                        if(baseChannelId.equals(base)) {
+                            final String vibrateIndicator = tok.nextToken();
+                            if(("v".equals(vibrateIndicator) && vibratePattern != null)
+                                ||("n".equals(vibrateIndicator) && vibratePattern == null))
+                            {
+                                if (!actualChannelId.equals(id)) {
+                                    // base id ok but actual id does not exist anymore
+                                    manager.deleteNotificationChannel(id);
+                                }
+                            } else {
+                                // base id has the wrong vibrate indicator token
+                                manager.deleteNotificationChannel(id);
+                            }
+                        }
+                    } else {
+                        // base id does not exist (channel ids from a previous app version?)
+                        manager.deleteNotificationChannel(id);
+                    }
+                } else {
+                    // base id has not vibrate indicator token (from a previous dev/beta version?)
+                    manager.deleteNotificationChannel(id);
+                }
+            }
+        }
+    }
+
+    @TargetApi(26)
+    private static String getActualChannelId_26(final String baseChannelId, final Uri sound, final long[] vibratePattern) {
+        if (sound != null) {
+            if (vibratePattern != null) {
+                return baseChannelId + ":v:" + sound;
+            } else {
+                return baseChannelId + ":n:" + sound;
+            }
+        } else {
+            if (vibratePattern != null) {
+                return baseChannelId + ":v:";
+            } else {
+                return baseChannelId + ":n:";
+            }
+        }
     }
 
     @TargetApi(11)
