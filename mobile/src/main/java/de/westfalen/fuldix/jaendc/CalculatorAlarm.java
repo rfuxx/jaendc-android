@@ -320,8 +320,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
     @TargetApi(21)
     private static Notification makeNotification_21(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         final Notification.Builder builder = new Notification.Builder(context)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
+                .setSmallIcon(R.drawable.ic_notification)   // no large icon, because large icons should represent the notification, not the app: https://material.io/design/platform-guidance/android-notifications.html#style
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentIntent(contentIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
@@ -376,8 +375,7 @@ public class CalculatorAlarm extends BroadcastReceiver {
             channelId = NotificationChannel.DEFAULT_CHANNEL_ID;
         }
         final Notification.Builder builder = new Notification.Builder(context, channelId)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setLargeIcon(Icon.createWithResource(context, R.mipmap.ic_launcher))
+                .setSmallIcon(R.drawable.ic_notification)   // no large icon, because large icons should represent the notification, not the app: https://material.io/design/platform-guidance/android-notifications.html#style
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentIntent(contentIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
