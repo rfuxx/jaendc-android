@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Icon;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
@@ -227,6 +226,8 @@ public class CalculatorAlarm extends BroadcastReceiver {
     private static Notification makeNotification(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         if (Build.VERSION.SDK_INT >= 26) {
             return makeNotification_26(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
+        } else if (Build.VERSION.SDK_INT >= 24) {
+            return makeNotification_24(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
         } else if (Build.VERSION.SDK_INT >= 21) {
             return makeNotification_21(context, contentIntent, sound, ringerMode, whichNotification, scheduledAlarmNotification);
         } else if (Build.VERSION.SDK_INT >= 16) {
@@ -320,7 +321,8 @@ public class CalculatorAlarm extends BroadcastReceiver {
     @TargetApi(21)
     private static Notification makeNotification_21(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
         final Notification.Builder builder = new Notification.Builder(context)
-                .setSmallIcon(R.drawable.ic_notification)   // no large icon, because large icons should represent the notification, not the app: https://material.io/design/platform-guidance/android-notifications.html#style
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher))
                 .setContentTitle(context.getString(R.string.app_name))
                 .setContentIntent(contentIntent)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
@@ -345,6 +347,27 @@ public class CalculatorAlarm extends BroadcastReceiver {
                 .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
                 .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                 .build();
+    }
+
+    @TargetApi(24)
+    private static Notification makeNotification_24(final Context context, final PendingIntent contentIntent, final Uri sound, final int ringerMode, final int whichNotification, final ScheduledAlarmNotification scheduledAlarmNotification) {
+        final Notification.Builder builder = new Notification.Builder(context)
+                .setSmallIcon(R.drawable.ic_notification)   // no large icon, because large icons should represent the notification, not the app: https://material.io/design/platform-guidance/android-notifications.html#style
+                .setContentTitle(context.getString(R.string.app_name))
+                .setContentIntent(contentIntent)
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setPriority(getPriorityForType(whichNotification))
+                .setCategory(getCategoryForType(whichNotification))
+                .setLocalOnly(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC);
+        buildNotificationByType(builder, context, whichNotification, scheduledAlarmNotification);
+        if (sound != null && ringerMode == AudioManager.RINGER_MODE_VIBRATE || ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            builder.setVibrate(vibratePattern);
+        }
+        if(ringerMode == AudioManager.RINGER_MODE_NORMAL && sound != null) {
+            builder.setSound(sound, mkAudioAttributes());
+        }
+        return builder.build();
     }
 
     @TargetApi(26)
