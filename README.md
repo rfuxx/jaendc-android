@@ -9,9 +9,9 @@ In JaeNDC you select your ND Filter and the "normal" exposure that the scene wou
 - You can add/edit/delete filters to match your personal filter collection (feature not available when running on old Android 2.x devices).
 - When calculated exposure time is four seconds or more, you can also start a timer for the exposure which will notify you when the calculated time is over, even when the app has been closed meanwhile.
 
-JaeNDC is modeled after Boris Nienke's popular NDCalc2 app for iOS; this JaeNDC Android app is actually a nice exercise in Android app development for me.
+JaeNDC is modeled after Boris Nienke's popular NDCalc2 app for iOS; this JaeNDC Android app is actually a nice exercise in Android app development for me. Meanwhile some suggestions and extras have been implemented into JaeNDC, which make it a bit different from its original design and its original idol.
 
-This app should also plays well with tablets, tested on two Android 5.x devices with different large screen sizes.
+This app also plays well with tablets, tested on several different simulated and real devices with different large screen sizes.
 
 ## Install via Google Play Store
 https://play.google.com/store/apps/details?id=de.westfalen.fuldix.jaendc
